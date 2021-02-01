@@ -6,12 +6,14 @@ let router = express.Router();
 const customers = require('../controllers/customers.js');
 
 //API para tabla de prueba clientes (si se fijan aca podemos definir las rutas para cada metodo)
-//router.post('/api/customer', customers.createCustomer);
+router.post('/customer-create', customers.createCustomer);
 //router.get('/api/customer/:id', customers.getCustomer);
 router.get('/customers', customers.customers);
-//router.put('/api/customer', customers.updateCustomer);
-//router.delete('/api/customer/:id', customers.deleteCustomer);
+router.get('/customer-info/:id', customers.getCustomerInfo);
+router.put('/customer-update/:id', customers.updateCustomer);
+router.delete('/customer-delete/:id', customers.deleteCustomer);
 
 
 
 module.exports = router;
+
