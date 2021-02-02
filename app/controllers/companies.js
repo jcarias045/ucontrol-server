@@ -170,11 +170,36 @@ async function updateCompany(req, res){
     }
 }
 
+async function deleteCompany(req, res){
+    console.log(req.params.id);
+    try{
+        let companyId = req.params.id;
+        let company = await Company.findByPk(companyId);
+       
+        if(!company){
+            res.status(404).json({
+                message: "La compañia con este ID no existe = " + companyId,
+                error: "404",
+            });
+        } else {
+            await company.destroy();
+            res.status(200).send({
+                message:"Compañia eliminada con exito"
+            });
+        }
+    } catch(error) {
+        res.status(500).json({
+            message: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
 module.exports={
     getCompanies,
     createCompany,
     uploadLogo,
     getLogo,
-    updateCompany
+    updateCompany,
+    deleteCompany
 
 };
