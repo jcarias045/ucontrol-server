@@ -9,11 +9,15 @@ const db= require('./app/config/db.config.js');
 
 const Customer = db.Customer;
 const User = db.User;
+const Product = db.Product;
 
 let router = require('./app/routers/router.js');
 let customerRoutes = require('./app/routers/customer');
 let authRoutes = require('./app/routers/auth');
 let companyRoutes=require('./app/routers/company');
+let productRoutes=require('./app/routers/product');
+let catproudctRoutes=require('./app/routers/catproduct');
+let notesRoutes=require('./app/routers/notes');
 
 const cors = require('cors');
 const corsOptions = {
@@ -29,8 +33,10 @@ app.use(express.static('resources'));
 app.use('/api', router);
 app.use('/api', customerRoutes);
 app.use('/api', authRoutes);
-app.use('/api',companyRoutes);
-
+app.use('/api', companyRoutes);
+app.use('/api', productRoutes);
+app.use('/api', catproudctRoutes);
+app.use('/api', notesRoutes);
 
 // Create a Server
 const server = app.listen(3050, function () {
