@@ -23,4 +23,32 @@ db.Sequelize = Sequelize;
 db.Customer = require('../models/customer.model.js')(sequelize, Sequelize);
 db.User = require('../models/user.model.js')(sequelize, Sequelize);
 db.Company = require('../models/company.model.js')(sequelize, Sequelize);
+db.Profile = require('../models/profile.model.js')(sequelize, Sequelize);
+
+
+//estableciendo relaciones entre las tablas sys_user y sys_profile
+db.Profile.hasMany(db.User,{   
+  foreignKey: 'ID_Profile' 
+});
+
+db.User.belongsTo(db.Profile, { 
+  foreignKey: {
+    name: 'ID_Profile'
+  }
+});
+
+//estableciendo relaciones entre las tablas sys_user y sys_company
+db.User.belongsTo(db.Company, {   
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.Company.hasMany(db.User,{
+  foreignKey: 'ID_Company'
+});
+
+
+
+
 module.exports = db;

@@ -10,10 +10,11 @@ const db= require('./app/config/db.config.js');
 const Customer = db.Customer;
 const User = db.User;
 
-let router = require('./app/routers/router.js');
+let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
 let authRoutes = require('./app/routers/auth');
 let companyRoutes=require('./app/routers/company');
+let profileRoutes=require('./app/routers/profile');
 
 const cors = require('cors');
 const corsOptions = {
@@ -26,10 +27,11 @@ app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
 app.use(express.static('resources'));
-app.use('/api', router);
+app.use('/api', userRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', authRoutes);
 app.use('/api',companyRoutes);
+app.use('/api',profileRoutes);
 
 
 // Create a Server

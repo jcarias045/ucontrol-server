@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-	const Company = sequelize.define('sys_company', {	
-	  ID_Company: {
+	const Profile = sequelize.define('sys_profile', {	
+	  ID_Profile: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
@@ -8,23 +8,15 @@ module.exports = (sequelize, Sequelize) => {
 	  Name: {
 			type: Sequelize.STRING
       },
-      Logo:{
+      Description:{
         type: Sequelize.STRING
-      },
-      Web:{
-        type: Sequelize.STRING
-      },
-      ShortName:{
-        type: Sequelize.STRING
-      },
-      Active:{
-          type: Sequelize.BOOLEAN
       }
+      
    
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
 	  });
 	
-	return Company;
+	return Profile;
 }

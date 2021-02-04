@@ -194,12 +194,35 @@ async function deleteCompany(req, res){
         });
     }
 }
+
+
+function getCompaniesId(req, res){
+    // Buscamos informacion para llenar el modelo de 
+    try{
+        Company.findAll({attributes:['ID_Company', 'Name']})
+        .then(companies => {
+            res.status(200).send({companies});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+
 module.exports={
     getCompanies,
     createCompany,
     uploadLogo,
     getLogo,
     updateCompany,
-    deleteCompany
+    deleteCompany,
+    getCompaniesId
 
 };
