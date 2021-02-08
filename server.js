@@ -10,6 +10,7 @@ const db= require('./app/config/db.config.js');
 const Customer = db.Customer;
 const User = db.User;
 const Product = db.Product;
+const Inventory = db.Inventory;
 
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
@@ -21,6 +22,7 @@ let catproudctRoutes=require('./app/routers/catproduct');
 let notesRoutes=require('./app/routers/notes');
 
 let supplierRoutes= require('./app/routers/supplier');
+let inventoryRoutes = require('./app/routers/inventory');
 
 const cors = require('cors');
 const corsOptions = {
@@ -36,12 +38,17 @@ app.use(express.static('resources'));
 app.use('/api', userRoutes);
 app.use('/api', customerRoutes);
 app.use('/api', authRoutes);
-app.use('/api',productRoutes)
-app.use('/api',companyRoutes);
-app.use('/api',profileRoutes);
+
 app.use('/api',supplierRoutes)
 
 
+app.use('/api',companyRoutes);
+app.use('/api',profileRoutes);
+app.use('/api', companyRoutes);
+app.use('/api', productRoutes);
+app.use('/api', catproudctRoutes);
+app.use('/api', notesRoutes);
+app.use('/api', inventoryRoutes);
 
 // Create a Server
 const server = app.listen(3050, function () {

@@ -23,6 +23,10 @@ db.Customer = require('../models/customer.model.js')(sequelize, Sequelize);
 db.User = require('../models/user.model.js')(sequelize, Sequelize);
 db.Company = require('../models/company.model.js')(sequelize, Sequelize);
 db.Profile = require('../models/profile.model.js')(sequelize, Sequelize);
+db.Product = require('../models/product.model.js')(sequelize, Sequelize);
+db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
+db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
+db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
 
 db.Product = require('../models/product.model.js')(sequelize, Sequelize);
 db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
@@ -81,4 +85,15 @@ db.PurchaseOrder.belongsTo(db.User, {
 
 
 
+<<<<<<< HEAD
+=======
+db.Product = require('../models/product.model.js')(sequelize, Sequelize);
+db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
+db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
+db.Profile = require('../models/profile.model.js')(sequelize, Sequelize);
+db.Product = require('../models/product.model.js')(sequelize, Sequelize);
+db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
+db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
+db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
+>>>>>>> origin/master
 module.exports = db;
