@@ -45,12 +45,16 @@ module.exports = (sequelize, Sequelize) => {
 		type: Sequelize.INTEGER,
 		foreign_key:true,
 	  },
-	  ID_Access:{
-		type: Sequelize.INTEGER,
+	  Access:{
+		type: Sequelize.BOOLEAN,
 		foreign_key:true,
 	  },
 	  AccountsReceivable:{
 		type: Sequelize.DECIMAL
+	  },
+	  ID_PaymentTime:{
+		type: Sequelize.INTEGER,
+		foreign_key:true,
 	  }
 	  
    

@@ -25,7 +25,7 @@ exports.getCustomer = (req, res) => {
 
 function createCustomer(req, res){
     let customer = {};
-
+     console.log(req.body);
     try{
         // Construimos el modelo del objeto Customer para enviarlo como body del request
         customer.Name = req.body.Name;
@@ -41,8 +41,9 @@ function createCustomer(req, res){
         customer.IdNumber=req.body.IdNumber;
         customer.Images=req.body.Images;
         customer.ID_Company=req.body.ID_Company;
-        customer.ID_Access=req.body.ID_Access;
+        customer.Access=req.body.Access;
         customer.AccountsReceivable=req.body.AccountsReceivable;
+        customer.ID_PaymentTime =req.body.ID_PaymentTime;
 
         if(customer.Password!==""){  //esto nada más para encriptar si no es necesario solo guardar como parte que esta comentada abajo
             bcrypt.hash(customer.Password,null,null,function(err,hash){   
@@ -95,8 +96,14 @@ function getCustomerInfo(req, res){
 //Seleccionar TODOS
 function customers(req, res){
     // Buscamos informacion para llenar el modelo de Customers
+    let companyId = 1;
+    let perfil =1;
+    const {ID_Company}=req.body;
+    console.log(req.params.id);
+    console.log(req.params.perfil);
+   
     try{
-        Customer.findAll()
+        Customer.findAll({where: {ID_Company: companyId}})
         .then(customers => {
             res.status(200).send({customers});
           

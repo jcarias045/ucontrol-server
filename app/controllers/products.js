@@ -1,7 +1,6 @@
-const { custom } = require('joi');
+
 const db = require('../config/db.config.js');
-const bcrypt=require("bcrypt-nodejs");
-const jwt=require('../services/jwt');
+
 const Product = db.Product;
 
 function createProduct(req, res){

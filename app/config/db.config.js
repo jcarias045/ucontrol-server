@@ -22,9 +22,15 @@ db.Sequelize = Sequelize;
 db.Customer = require('../models/customer.model.js')(sequelize, Sequelize);
 db.User = require('../models/user.model.js')(sequelize, Sequelize);
 db.Company = require('../models/company.model.js')(sequelize, Sequelize);
-<<<<<<< HEAD
 db.Profile = require('../models/profile.model.js')(sequelize, Sequelize);
 
+db.Product = require('../models/product.model.js')(sequelize, Sequelize);
+db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
+db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
+
+
+db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
+db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
@@ -49,11 +55,30 @@ db.Company.hasMany(db.User,{
 });
 
 
+//relaciones PurchaseOrder y Supplier
+db.Supplier.hasMany(db.PurchaseOrder,{   
+  foreignKey: 'ID_Supplier' 
+});
+
+db.PurchaseOrder.belongsTo(db.Supplier, { 
+  foreignKey: {
+    name: 'ID_Supplier'
+  }
+});
+
+//relaciones purchaseorder y  user
+db.User.hasMany(db.PurchaseOrder,{   
+  foreignKey: 'ID_User' 
+});
+
+db.PurchaseOrder.belongsTo(db.User, { 
+  foreignKey: {
+    name: 'ID_User'
+  }
+});
+
+//Relaciones purchase order y inventario 
 
 
-=======
-db.Product = require('../models/product.model.js')(sequelize, Sequelize);
-db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
-db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
->>>>>>> origin/master
+
 module.exports = db;

@@ -10,19 +10,23 @@ exports.createAccessToken=function(user){
        Name: user.Name,
        LastName: user.LastName,
        ID_User:user.ID_User,
- 
+       ID_Company:user.ID_Company,
+       ID_Profile:user.ID_Profile,
        createToken: moment().unix(),
        exp: moment().add(1,"hours").unix()
-
-
    };
    return jwt.encode(payload, SECRET_KEY);
 };
 
 exports.createRefreshToken=function(user){
     const payload={
-        id:user._id,
-        exp: moment().add(30,"days").unix()
+       Email:user.Email,
+       Name: user.Name,
+       LastName: user.LastName,
+       ID_User:user.ID_User,
+       ID_Company:user.ID_Company,
+       ID_Profile:user.ID_Profile,
+       exp: moment().add(30,"days").unix()
     };
     return jwt.encode(payload,SECRET_KEY);
 };

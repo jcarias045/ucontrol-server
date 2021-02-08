@@ -47,19 +47,20 @@ async function signIn(req, res) {
     
     let user= await User.findOne({attributes: ['Email','Password'],where:{Email:Email}});
     console.log(user.Password);
-     User.findOne({attributes: ['Email','Password','Name','LastName','ID_User'],where:{Email:Email}})
+     User.findOne({attributes: ['Email','Password','Name','LastName','ID_User','ID_Company','ID_Profile'],where:{Email:Email}})
         .then(function (user) {
             console.log(Password);
             const infoUser= user.get();
+            console.log(infoUser.Password);
             if( bcrypt.compareSync(Password, infoUser.Password)){
                 res.status(200).send({
                     accessToken:jwt.createAccessToken(infoUser),
-                    resfreshToken: jwt.createRefreshToken(infoUser),
-                    message:"Exito"
+                    resfreshToken: jwt.createRefreshToken(infoUser)
+                    
                 });
             }
             else{
-                res.status(500).send({message:"error del servidor", user});
+                res.status(500).send({message:"Error del servidor", user});
             }})
         .catch(error => {
         // imprimimos a consola
@@ -79,30 +80,45 @@ function createUser(req, res){
     let user = {};
     let now= new Date();
     let LastLogin=now.getTime();
-    console.log('La fecha actual es',now);
-    console.log('UNIX time:',now.getTime());
+    let password=req.body.Password;
+   
     try{
         // Construimos el modelo del objeto user para enviarlo como body del request
         user.ID_Company = req.body.ID_Company;
         user.Name = req.body.Name;
         user.LastName = req.body.LastName;
-        user.Email = req.body.Email;
-        user.Password=req.body.Password;
+        user.Email = req.body.Email.toLowerCase();
+        user.Password=password;
         user.Gender=req.body.Gender;
         user.BirthDate=req.body.BirthDate;
         user.Country=req.body.Country;
         user.Address=req.body.Address;
         user.ID_Profile=req.body.ID_Profile;
+        user.UserName=req.body.UserName;
         user.LastLogin=LastLogin;
         user.Active=true;
-       
-    
+        
+        bcrypt.hash(password,null,null,function(err,hash){
+            if(err){
+                res.status(505).send({message:"Error al encriptar la contraseña"})
+
+            }
+            else{
+                user.Password=hash;
+                User.create(user)
+                .then(result => {    
+                  res.status(200).json(result);
+              
+                });  
+            }
+        })
+        
         // Save to MySQL database
-       User.create(user)
-      .then(result => {    
-        res.status(200).json(result);
+    //    User.create(user)
+    //   .then(result => {    
+    //     res.status(200).json(result);
     
-      });  
+    //   });  
     }catch(error){
         res.status(500).json({
             message: "Fail!",
@@ -213,7 +229,7 @@ async function desactivateUser(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = { 
                
-                Active:false          
+                Active:Active          
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await user.update(updatedObject,

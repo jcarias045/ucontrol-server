@@ -216,6 +216,55 @@ function getCompaniesId(req, res){
 }
 
 
+
+async function desactivateCompany(req, res){
+   
+    let companyId = req.params.id; 
+  
+    const {Active} = req.body;  //
+    try{
+        let company = await Company.findByPk(companyId);
+        
+        if(!company){
+           // retornamos el resultado al cliente
+            res.status(404).json({
+                message: "No se encuentra el cliente con ID = " + companyId,
+                error: "404"
+            });
+        } else {    
+            // actualizamos nuevo cambio en la base de datos, definición de
+            let updatedObject = { 
+               
+                Active:Active          
+            }
+            console.log(updatedObject);    //agregar proceso de encriptacion
+            let result = await company.update(updatedObject,
+                              { 
+                                returning: true,                
+                                where: {ID_Company: companyId},
+                                attributes:['Active' ]
+                              }
+                            );
+
+            // retornamos el resultado al cliente
+            if(!result) {
+                res.status(500).json({
+                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+                    error: "No se puede actualizar",
+                });
+            }
+
+            res.status(200).json(result);
+        }
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
+
 module.exports={
     getCompanies,
     createCompany,
@@ -223,6 +272,7 @@ module.exports={
     getLogo,
     updateCompany,
     deleteCompany,
-    getCompaniesId
+    getCompaniesId,
+    desactivateCompany
 
 };

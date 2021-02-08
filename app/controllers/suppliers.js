@@ -1,0 +1,195 @@
+
+const db = require('../config/db.config.js');
+const bcrypt=require("bcrypt-nodejs");
+const jwt=require('../services/jwt');
+const Supplier = db.Supplier;
+
+
+
+function createSupplier(req, res){
+    let supplier = {};
+
+    try{
+        // Construimos el modelo del objeto supplier para enviarlo como body del request
+        supplier.ID_supplier = req.body.ID_supplier;
+        supplier.Name=req.body.Name;
+        supplier.Web= req.body.Web;
+        supplier.Email=req.body.Email;
+        supplier.Phone=req.body.Phone;
+        supplier.Adress=req.body.Adress;
+        supplier.Active=true;
+        supplier.UserName=req.body.UserName;
+        supplier.ID_PaymentTime=req.body.ID_PaymentTime;
+        supplier.ID_Company=req.body.ID_Company;
+        
+    
+        // Save to MySQL database
+       Supplier.create(supplier)
+      .then(result => {    
+        res.status(200).json(result);
+    
+      });  
+    }catch(error){
+        res.status(500).json({
+            message: "Fail!",
+            error: error.message
+        });
+    }
+}
+
+
+function getSuppliers(req, res){
+ 
+   
+    try{
+        Supplier.findAll()
+        .then(suppliers => {
+            res.status(200).send({suppliers});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+async function updateSupplier(req, res){
+   
+    let supplierId = req.params.id;
+  
+    
+    const { Name,Web,Email,Phone,Adress,Active,UserName,ID_PaymentTime} = req.body;  //
+   
+    try{
+        let supplier = await Supplier.findByPk(supplierId);
+        console.log(supplier);
+        if(!supplier){
+           // retornamos el resultado al cliente
+            res.status(404).json({
+                message: "No se encuentra el cliente con ID = " + supplierId,
+                error: "404"
+            });
+        } else {    
+            // actualizamos nuevo cambio en la base de datos, definición de
+            let updatedObject = {             
+                Name:Name,
+                Web: Web,
+                Email: Email,
+                Phone:Phone,
+                Adress:Adress,
+                Active: Active,
+                UserName: UserName,
+                ID_PaymentTime: ID_PaymentTime
+
+            }
+            console.log(updatedObject);    //agregar proceso de encriptacion
+            let result = await supplier.update(updatedObject,
+                              { 
+                                returning: true,                
+                                where: {ID_Supplier: supplierId}
+                              }
+                            );
+
+            // retornamos el resultado al cliente
+            if(!result) {
+                res.status(500).json({
+                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+                    error: "No se puede actualizar",
+                });
+            }
+
+            res.status(200).json(result);
+        }
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
+async function deleteSupplier(req, res){
+    console.log(req.params.id);
+    try{
+        let supplierId = req.params.id;
+        let supplier = await Supplier.findByPk(supplierId);
+       
+        if(!supplier){
+            res.status(404).json({
+                message: "La compañia con este ID no existe = " + supplierId,
+                error: "404",
+            });
+        } else {
+            await supplier.destroy();
+            res.status(200).send({
+                message:"Compañia eliminada con exito"
+            });
+        }
+    } catch(error) {
+        res.status(500).json({
+            message: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
+async function desactivateSupplier(req, res){
+   
+    let supplierId = req.params.id; 
+  
+    const {Active} = req.body;  //
+    try{
+        let supplier = await Supplier.findByPk(supplierId);
+        
+        if(!supplier){
+           // retornamos el resultado al cliente
+            res.status(404).json({
+                message: "No se encuentra el cliente con ID = " + supplierId,
+                error: "404"
+            });
+        } else {    
+            // actualizamos nuevo cambio en la base de datos, definición de
+            let updatedObject = {      
+                Active:Active          
+            }
+               //agregar proceso de encriptacion
+            let result = await supplier.update(updatedObject,
+                              { 
+                                returning: true,                
+                                where: {ID_Supplier: supplierId},
+                                attributes:['Active' ]
+                              }
+                            );
+
+            // retornamos el resultado al cliente
+            if(!result) {
+                res.status(500).json({
+                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+                    error: "No se puede actualizar",
+                });
+            }
+
+            res.status(200).json(result);
+        }
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
+
+module.exports={
+    createSupplier,
+    getSuppliers,
+    updateSupplier,
+    deleteSupplier,
+    desactivateSupplier
+
+};
