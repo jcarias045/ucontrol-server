@@ -28,9 +28,7 @@ db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
 db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
 db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
 
-db.Product = require('../models/product.model.js')(sequelize, Sequelize);
-db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
-db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
+
 
 
 db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
@@ -82,18 +80,16 @@ db.PurchaseOrder.belongsTo(db.User, {
 });
 
 //Relaciones purchase order y inventario 
+db.Inventory.hasMany(db.PurchaseOrder,{   
+  foreignKey: 'ID_Inventory' 
+});
+
+db.PurchaseOrder.belongsTo(db.Inventory, { 
+  foreignKey: {
+    name: 'ID_Inventory'
+  }
+});
 
 
 
-<<<<<<< HEAD
-=======
-db.Product = require('../models/product.model.js')(sequelize, Sequelize);
-db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
-db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
-db.Profile = require('../models/profile.model.js')(sequelize, Sequelize);
-db.Product = require('../models/product.model.js')(sequelize, Sequelize);
-db.CatProduct = require('../models/catproduct.model.js')(sequelize, Sequelize);
-db.Notes = require('../models/notes.model.js')(sequelize, Sequelize);
-db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
->>>>>>> origin/master
 module.exports = db;
