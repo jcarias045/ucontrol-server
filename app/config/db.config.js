@@ -1,5 +1,4 @@
-const env = require('./env.js');
- 
+const env = require('./env.js'); 
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
@@ -27,6 +26,7 @@ db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
 db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
 db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
 db.Note = require('../models/note.model')(sequelize, Sequelize);
+db.CatProduct = require('../models/CatProduct.model')(sequelize, Sequelize);
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   

@@ -11,6 +11,7 @@ const Customer = db.Customer;
 const User = db.User;
 const Inventory = db.Inventory;
 const Note = db.Note;
+const Catproduct = db.CatProduct;
 
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
@@ -20,6 +21,7 @@ let profileRoutes=require('./app/routers/profile');
 let supplierRoutes= require('./app/routers/supplier');
 let inventoryRoutes = require('./app/routers/inventory');
 let noteRoutes = require('./app/routers/note');
+let catproductRoutes = require('./app/routers/catproduct');
 
 const cors = require('cors');
 const corsOptions = {
@@ -40,6 +42,7 @@ app.use('/api',profileRoutes);
 app.use('/api', companyRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
+app.use('/api', catproductRoutes)
 
 // Create a Server
 const server = app.listen(3050, function () {
