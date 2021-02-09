@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-	const Notes = sequelize.define('crm_note', {	
-	  ID_Notes: {
+	const Note = sequelize.define('crm_note', {	
+	  ID_Note: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
@@ -16,11 +16,11 @@ module.exports = (sequelize, Sequelize) => {
       },
       UserName:{
         type: Sequelize.STRING
-      }
+      }   
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
 	  });
 	
-	return Notes;
+	return Note;
 }
