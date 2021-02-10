@@ -25,13 +25,10 @@ db.Profile = require('../models/profile.model.js')(sequelize, Sequelize);
 db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
 db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
 db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
-<<<<<<< HEAD
 db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequelize);
-=======
 db.Note = require('../models/note.model')(sequelize, Sequelize);
-db.CatProduct = require('../models/CatProduct.model')(sequelize, Sequelize);
+// db.CatProduct = require('../models/CatProduct.model')(sequelize, Sequelize);
 
->>>>>>> origin/master
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
@@ -90,15 +87,15 @@ db.PurchaseOrder.belongsTo(db.Inventory, {
 
 
 //Relaciones purchase order y inventario 
-db.Inventory.belongsTo(db.Product,{   
-  foreignKey: 'ID_Products' 
-});
+// db.Inventory.belongsTo(db.Product,{   
+//   foreignKey: 'ID_Products' 
+// });
 
-db.Product.hasMany(db.Inventory, { 
-  foreignKey: {
-    name: 'ID_Products'
-  }
-});
+// db.Product.hasMany(db.Inventory, { 
+//   foreignKey: {
+//     name: 'ID_Products'
+//   }
+// });
 
 
 //Relaciones purchase order y inventario 
