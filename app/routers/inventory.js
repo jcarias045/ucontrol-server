@@ -13,4 +13,9 @@ router.put('/inventory-update/:id', inventories.updateInventory);
 router.delete('/inventory-delete/:id', inventories.deleteInventory);
 router.get('/get-inventory', inventories.getInventoriesID);
 
+
+
+
+router.get('/inventory-product/:id', inventories.getNameProduct);
+
 module.exports = router;

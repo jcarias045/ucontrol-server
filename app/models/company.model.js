@@ -6,7 +6,8 @@ module.exports = (sequelize, Sequelize) => {
             primaryKey: true
     },
 	  Name: {
-			type: Sequelize.STRING
+			type: Sequelize.STRING,
+      unique: true
       },
       Logo:{
         type: Sequelize.STRING

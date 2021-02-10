@@ -33,7 +33,7 @@ db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
 
 db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
 db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
-
+db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequelize);
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
@@ -91,5 +91,27 @@ db.PurchaseOrder.belongsTo(db.Inventory, {
 });
 
 
+//Relaciones purchase order y inventario 
+db.Inventory.belongsTo(db.Product,{   
+  foreignKey: 'ID_Products' 
+});
+
+db.Product.hasMany(db.Inventory, { 
+  foreignKey: {
+    name: 'ID_Products'
+  }
+});
+
+
+//Relaciones purchase order y inventario 
+db.PurchaseDetails.belongsTo(db.PurchaseOrder,{   
+  foreignKey: 'ID_PurchaseOrder ' 
+});
+
+db.PurchaseOrder.hasMany(db.PurchaseDetails, { 
+  foreignKey: {
+    name: 'ID_PurchaseOrder '
+  }
+});
 
 module.exports = db;

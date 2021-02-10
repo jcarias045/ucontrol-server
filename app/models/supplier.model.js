@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
             autoIncrement: true,
             primaryKey: true
     },
-	  ID_Company: {
+	   ID_Company: {
 			type: Sequelize.INTEGER,
             foreign_key:true,
       },
@@ -16,7 +16,8 @@ module.exports = (sequelize, Sequelize) => {
         type: Sequelize.STRING
       },
       Email:{
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        unique: true
       },
       Phone:{
         type: Sequelize.STRING

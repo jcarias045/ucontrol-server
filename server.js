@@ -24,6 +24,9 @@ let notesRoutes=require('./app/routers/notes');
 let supplierRoutes= require('./app/routers/supplier');
 let inventoryRoutes = require('./app/routers/inventory');
 
+
+let orderRoutes= require('./app/routers/purchaseOrder');
+
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -50,6 +53,8 @@ app.use('/api', catproudctRoutes);
 app.use('/api', notesRoutes);
 app.use('/api', inventoryRoutes);
 
+
+app.use('/api',orderRoutes)
 // Create a Server
 const server = app.listen(3050, function () {
  

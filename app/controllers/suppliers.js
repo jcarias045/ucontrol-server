@@ -3,7 +3,7 @@ const db = require('../config/db.config.js');
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
 const Supplier = db.Supplier;
-
+const { Op } = require("sequelize");
 
 
 function createSupplier(req, res){
@@ -22,13 +22,25 @@ function createSupplier(req, res){
         supplier.ID_PaymentTime=req.body.ID_PaymentTime;
         supplier.ID_Company=req.body.ID_Company;
         
+        Supplier.findOne({where:{[Op.or]: [
+            { Email: supplier.Email},
+            { Name: supplier.Name}
+          ]}}).then(function(exist){
+              if(!exist){
+                Supplier.create(supplier)
+                .then(result => {    
+                  res.status(200).json(result);
+              
+                });  
+              }
+              else{
+                res.status(505).send({message:"El proveedor ya existe"})
+
+              }
+            });
     
         // Save to MySQL database
-       Supplier.create(supplier)
-      .then(result => {    
-        res.status(200).json(result);
-    
-      });  
+      
     }catch(error){
         res.status(500).json({
             message: "Fail!",
@@ -40,9 +52,9 @@ function createSupplier(req, res){
 
 function getSuppliers(req, res){
  
-   
+    let companyId = req.params.id;
     try{
-        Supplier.findAll()
+        Supplier.findAll({where: {ID_Company: companyId}})
         .then(suppliers => {
             res.status(200).send({suppliers});
           
@@ -184,12 +196,34 @@ async function desactivateSupplier(req, res){
     }
 }
 
+function getSuppliersInfo(req, res){
+    let companyId = req.params.id;
+    try{
+        Supplier.findAll({where: {ID_Company: companyId},
+            attributes:['ID_Supplier','Name']})
+        .then(suppliers => {
+            res.status(200).send({suppliers});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+
 
 module.exports={
     createSupplier,
     getSuppliers,
     updateSupplier,
     deleteSupplier,
-    desactivateSupplier
+    desactivateSupplier,
+    getSuppliersInfo
 
 };

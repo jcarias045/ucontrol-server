@@ -1,6 +1,7 @@
 const db = require('../config/db.config.js');
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
+const { Op } = require("sequelize");
 
 const User = db.User;
 const Company = db.Company;
@@ -98,20 +99,32 @@ function createUser(req, res){
         user.LastLogin=LastLogin;
         user.Active=true;
         
-        bcrypt.hash(password,null,null,function(err,hash){
-            if(err){
-                res.status(505).send({message:"Error al encriptar la contraseña"})
+        User.findOne({where:{[Op.or]: [
+            { Email: user.Email},
+            { UserName: user.UserName }
+          ]}}).then(function(us){
+              if(!us){       
+                    bcrypt.hash(password,null,null,function(err,hash){
+                        if(err){
+                            res.status(505).send({message:"Error al encriptar la contraseña"})
 
-            }
-            else{
-                user.Password=hash;
-                User.create(user)
-                .then(result => {    
-                  res.status(200).json(result);
-              
-                });  
-            }
-        })
+                        }
+                        else{
+                            user.Password=hash;
+                            User.create(user)
+                            .then(result => {    
+                            res.status(200).json(result);
+                        
+                            });  
+                        }
+                    });
+              }
+              else{
+                res.status(505).send({message:"El usuario ya existe "})
+              }
+               
+          });
+
         
         // Save to MySQL database
     //    User.create(user)

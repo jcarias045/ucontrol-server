@@ -2,6 +2,7 @@ const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
 const Inventory = db.Inventory;
+const Product=db.Product;
 
 
 function getInventories(req, res){
@@ -137,11 +138,41 @@ function getInventoriesID(req, res){
     }
 }
 
+function getNameProduct(req,res){
+    let companyId = req.params.id; 
+    try{
+        Inventory.findAll({    
+             include: [
+            {
+                 model: Product,
+                 attributes: ['ID_Products','Name'],
+                 where:{ID_Company:companyId}
+             }
+            ],
+            attributes: ['ID_Inventory','Cantidad']
+          })
+        .then(inventories => {
+            res.status(200).send({inventories});
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+    
+}
+
 
 module.exports={
     getInventories,
     createInventory,
     updateInventory,
     deleteInventory,
-    getInventoriesID
+    getInventoriesID,
+    getNameProduct
 };

@@ -23,7 +23,7 @@ module.exports = (sequelize, Sequelize) => {
         },
        ID_User:{
         type: Sequelize.INTEGER,
-        foreign_key:true,
+       
         },
         ID_Inventory:{
             type: Sequelize.INTEGER,

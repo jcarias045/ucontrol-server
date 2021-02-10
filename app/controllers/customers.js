@@ -2,6 +2,7 @@ const { custom } = require('joi');
 const db = require('../config/db.config.js');
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
+const { Op } = require("sequelize");
 const Customer = db.Customer;
 
 /* //Crear
@@ -26,6 +27,7 @@ exports.getCustomer = (req, res) => {
 function createCustomer(req, res){
     let customer = {};
      console.log(req.body);
+    const pass=req.body.Password;
     try{
         // Construimos el modelo del objeto Customer para enviarlo como body del request
         customer.Name = req.body.Name;
@@ -44,32 +46,36 @@ function createCustomer(req, res){
         customer.Access=req.body.Access;
         customer.AccountsReceivable=req.body.AccountsReceivable;
         customer.ID_PaymentTime =req.body.ID_PaymentTime;
-
-        if(customer.Password!==""){  //esto nada más para encriptar si no es necesario solo guardar como parte que esta comentada abajo
-            bcrypt.hash(customer.Password,null,null,function(err,hash){   
-                if(err){
-                    res.status(505).send({message:"Error al encriptar la contraseña"})
-                }
-                else{
-                    customer.Password=hash;
-                    Customer.create(customer
-                          )
-                    .then(result => {    
-                      res.status(200).json(result);
-                      console.log(hash);
+        
+        Customer.findOne({where:{[Op.or]: [
+            { Email: customer.Email},
+            { User: customer.User }
+          ]}}).then(function(exist){
+              if(!exist){
+                  console.log(customer.Password);
+                if(pass!==""){  //esto nada más para encriptar si no es necesario solo guardar como parte que esta comentada abajo
+                    bcrypt.hash(pass,null,null,function(err,hash){   
+                        if(err){
+                            res.status(505).send({message:"Error al encriptar la contraseña"})
+                        }
+                        else{
+                            customer.Password=hash;
+                            console.log(customer.Password);
+                            Customer.create(customer)
+                            .then(result => {    
+                              res.status(200).json(result);
+                             
+                            });
+                        }
                     });
-                }
-            })
-        } //FIN DEL PROCESO DE ENCRIPTACION 
+                } //FIN DEL PROCESO DE ENCRIPTACION 
+              }
+              else{
+                res.status(505).send({message:"El cliente ya existe"})
+              }
+          });
 
-
-        // Save to MySQL database
-    //     Customer.create(customer
-    //         )
-    //   .then(result => {    
-    //     res.status(200).json(result);
-    //     console.log(hash);
-    //   });  
+        
     }catch(error){
         res.status(500).json({
             message: "Fail!",
@@ -95,13 +101,7 @@ function getCustomerInfo(req, res){
 }
 //Seleccionar TODOS
 function customers(req, res){
-    // Buscamos informacion para llenar el modelo de Customers
-    let companyId = 1;
-    let perfil =1;
-    const {ID_Company}=req.body;
-    console.log(req.params.id);
-    console.log(req.params.perfil);
-   
+    let companyId = req.params.id; 
     try{
         Customer.findAll({where: {ID_Company: companyId}})
         .then(customers => {

@@ -1,6 +1,8 @@
 const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
+const { Op } = require("sequelize");
+
 const Company = db.Company;
 
 
@@ -33,13 +35,26 @@ function createCompany(req, res){
         company.Web= req.body.Web;
         company.ShortName=req.body.ShortName;
         company.Active=true;
-    
+        
+        Company.findOne({where:{[Op.or]: [
+            { Name: company.Name},
+            { ShortName: company.ShortName}
+          ]}}).then(function(exist){
+              if(!exist){
+                Company.create(company)
+                .then(result => {    
+                  res.status(200).json(result);
+              
+                });  
+              }
+              else{
+                res.status(505).send({message:"La empresa ya existe"})
+
+              }
+            });
+
         // Save to MySQL database
-       Company.create(company)
-      .then(result => {    
-        res.status(200).json(result);
-    
-      });  
+       
     }catch(error){
         res.status(500).json({
             message: "Fail!",
