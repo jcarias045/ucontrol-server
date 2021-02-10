@@ -1,19 +1,14 @@
 let express = require('express');
 let router = express.Router();
- 
 
-//Test clientes
-const catproduct = require('../controllers/catproduct.js');
+const catproducts = require('../controllers/catproducts');
 
-//API para tabla de prueba clientes (si se fijan aca podemos definir las rutas para cada metodo)
-router.post('/customer-create', catproduct.createCatProduct);
-//router.get('/api/CatProduct/:id', catproduct.getCatProduct);
-router.get('/catproduct', catproduct.catproducts);
-router.get('/catproduct-info/:id', catproduct.getCatProductInfo);
-router.put('/catproduct-update/:id', catproduct.updateCatProduct);
-router.delete('/catproduct-delete/:id', catproduct.deleteCatProduct);
+router.get('/get-catproducts', catproducts.getCatProducts);
+router.post('/catproducts-create', catproducts.creatCatProduct);
+router.delete('/catproducts-delete/:id',catproducts.deleteCatProduct);
+router.put('/catproducts-update/:id', catproducts.updateCatProduct);
 
-
+//para obtener nada más el id y nombre 
+router.get('/get-catproduct',catproducts.getCatProductsId);
 
 module.exports = router;
-

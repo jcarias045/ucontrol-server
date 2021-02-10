@@ -71,9 +71,7 @@ async function signIn(req, res) {
               message: "Error!",
               error: error
           });
-        });
-        
-      
+        });     
 }
 
 

@@ -97,15 +97,15 @@ async function deleteInventory(req, res){
     console.log(req.params.id);
     try{
         let inventoryId = req.params.id;
-        let inventory = await Company.findByPk(inventoryId);
+        let inventory = await Inventory.findByPk(inventoryId);
        
-        if(!company){
+        if(!inventory){
             res.status(404).json({
-                message: "La compañia con este ID no existe = " + companyId,
+                message: "La compañia con este ID no existe = " + inventoryId,
                 error: "404",
             });
         } else {
-            await company.destroy();
+            await inventory.destroy();
             res.status(200).send({
                 message:"Compañia eliminada con exito"
             });
