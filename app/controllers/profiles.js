@@ -1,6 +1,6 @@
 const db = require('../config/db.config.js');;
 const Profile = db.Profile;
-
+const ProfileOptions=db.ProfileOptions;
 
 function getProfiles(req, res){
     // Buscamos informacion para llenar el modelo de 
@@ -21,10 +21,14 @@ function getProfiles(req, res){
     }
 }
 
-function createProfile(req, res){
+ function createProfile(req, res){
     let profile = {};
-
+    let sysOp={};
+    console.log();
+    let opciones=req.body.opciones;
+    
     try{
+        let promises = [];
         // Construimos el modelo del objeto
         profile.Name = req.body.Name;
         profile.Description=req.body.Description;
@@ -33,8 +37,28 @@ function createProfile(req, res){
        Profile.create(profile)
       .then(result => {    
         res.status(200).json(result);
-    
+         let perfilId=result.ID_Profile;
+          if(perfilId){
+            try{
+            for(var i = 0; i < opciones.length; i++){
+                            sysOp.ID_Profile=perfilId;
+                            sysOp.ID_OptionMenu=element[i];
+                            console.log(Object.keys(sysOp).length);
+                            let s=  ProfileOptions.create(sysOp)
+                             promises.push(s);
+                            console.log(sysOp);
+                        }
+            }catch{
+
+            }
+             
+            console.log(promises);
+             Promise.all(promises).then(function(users) {console.log(users);})
+           
+        }
       });  
+
+      
     }catch(error){
         res.status(500).json({
             message: "Fail!",

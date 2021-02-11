@@ -29,6 +29,10 @@ db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequeli
 db.Note = require('../models/note.model')(sequelize, Sequelize);
 // db.CatProduct = require('../models/CatProduct.model')(sequelize, Sequelize);
 
+
+
+db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
+db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
