@@ -28,6 +28,8 @@ db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize)
 db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequelize);
 db.Note = require('../models/note.model')(sequelize, Sequelize);
 // db.CatProduct = require('../models/CatProduct.model')(sequelize, Sequelize);
+db.Product = require('../models/product.model')(sequelize, Sequelize);
+
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
@@ -108,5 +110,7 @@ db.PurchaseOrder.hasMany(db.PurchaseDetails, {
     name: 'ID_PurchaseOrder '
   }
 });
+
+db.Product
 
 module.exports = db;
