@@ -12,6 +12,7 @@ const User = db.User;
 const Inventory = db.Inventory;
 const Note = db.Note;
 const Catproduct = db.CatProduct;
+const Product = db.Product;
 
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
@@ -22,7 +23,7 @@ let supplierRoutes= require('./app/routers/supplier');
 let inventoryRoutes = require('./app/routers/inventory');
 let noteRoutes = require('./app/routers/note');
 let catproductRoutes = require('./app/routers/catproduct');
-
+let ProductRoutes = require('./app/routers/product');
 
 let orderRoutes= require('./app/routers/purchaseOrder');
 let systemOpRoutes=require('./app/routers/sysOptions');
@@ -46,8 +47,12 @@ app.use('/api', companyRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
 app.use('/api', catproductRoutes);
+<<<<<<< HEAD
+app.use('./api', ProductRoutes );
+=======
 
 app.use('/api',systemOpRoutes);
+>>>>>>> origin/master
 
 
 app.use('/api',orderRoutes)
