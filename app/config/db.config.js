@@ -91,15 +91,15 @@ db.PurchaseOrder.belongsTo(db.Inventory, {
 
 
 //Relaciones purchase order y inventario 
-// db.Inventory.belongsTo(db.Product,{   
-//   foreignKey: 'ID_Products' 
-// });
+db.Inventory.belongsTo(db.Product,{   
+  foreignKey: 'ID_Products' 
+});
 
-// db.Product.hasMany(db.Inventory, { 
-//   foreignKey: {
-//     name: 'ID_Products'
-//   }
-// });
+db.Product.hasMany(db.Inventory, { 
+  foreignKey: {
+    name: 'ID_Products'
+  }
+});
 
 
 //Relaciones purchase order y inventario 
