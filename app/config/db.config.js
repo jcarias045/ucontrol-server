@@ -27,8 +27,9 @@ db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
 db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
 db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequelize);
 db.Note = require('../models/note.model')(sequelize, Sequelize);
-// db.CatProduct = require('../models/CatProduct.model')(sequelize, Sequelize);
 db.Product = require('../models/product.model')(sequelize, Sequelize);
+db.Order = require('../models/order.model')(sequelize, Sequelize);
+db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
 
 
 
@@ -115,6 +116,67 @@ db.PurchaseOrder.hasMany(db.PurchaseDetails, {
   }
 });
 
-db.Product
+//Relaciones entre order y customers
+db.Customer.hasMany(db.Order,{   
+  foreignKey: 'ID_Customer' 
+});
+
+db.Order.belongsTo(db.Customer, { 
+  foreignKey: {
+    name: 'ID_Customer'
+  }
+});
+
+
+//Relacion entre order y user
+db.User.hasMany(db.Order,{   
+  foreignKey: 'ID_User' 
+});
+
+db.Order.belongsTo(db.User, { 
+  foreignKey: {
+    name: 'ID_User'
+  }
+});
+
+db.Company.hasMany(db.Product,{   
+  foreignKey: 'ID_Company' 
+});
+
+db.Product.belongsTo(db.Company, { 
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.CatProduct.hasMany(db.Product,{   
+  foreignKey: 'ID_CatProduct' 
+});
+
+db.Product.belongsTo(db.CatProduct, { 
+  foreignKey: {
+    name: 'CatProduct'
+  }
+});
+
+db.Company.hasMany(db.Product,{   
+  foreignKey: 'ID_Company' 
+});
+
+db.Product.belongsTo(db.Company, { 
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.Company.hasMany(db.Product,{   
+  foreignKey: 'ID_Company' 
+});
+
+db.Product.belongsTo(db.Company, { 
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
 
 module.exports = db;

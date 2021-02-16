@@ -51,14 +51,22 @@ module.exports = (sequelize, Sequelize) => {
 		foreign_key:true,
 	  },
 	  AccountsReceivable:{
-		type: Sequelize.DECIMAL
+		type: Sequelize.DECIMAL,
+		null: true
+		
 	  },
 	  ID_PaymentTime:{
 		type: Sequelize.INTEGER,
 		foreign_key:true,
-	  }
-	  
-   
+	  },
+	  ID_User:{
+		type: Sequelize.INTEGER,
+		foreign_key:true,
+	  },
+	  ID_Discount:{
+		type: Sequelize.INTEGER,
+		foreign_key:true
+	  }	    
 	},{
 		freezeTableName: true,
 		timestamps: false,
