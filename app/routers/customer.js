@@ -12,6 +12,7 @@ router.get('/customers/:id', customers.customers);
 router.get('/customer-info/:id', customers.getCustomerInfo);
 router.put('/customer-update/:id', customers.updateCustomer);
 router.delete('/customer-delete/:id', customers.deleteCustomer);
+router.post("/sign-in-customer", customers.signInCustomer);
 
 
 

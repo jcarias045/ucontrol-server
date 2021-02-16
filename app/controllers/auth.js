@@ -2,6 +2,7 @@ const db = require('../config/db.config.js');
 const jwt= require('../services/jwt');
 const moment= require('moment');
 const User = db.User;
+const Customer = db.Customer;
 
 
 function willExpiredToken(token){
@@ -23,8 +24,7 @@ function resfreshAccessToken(req,res){
          res.status(404).send({message:"El Refresh token ha expirado"});
      }
      else{
-        const {ID_User}=jwt.decodedToken(refreshToken);
-        
+        const {ID_User}=jwt.decodedToken(refreshToken);        
         User.findOne({attributes: ['Email','Password','Name','LastName','ID_User'],where:{ID_User:ID_User}})
         .then(function (userStored){
             console.log(userStored); 
@@ -36,24 +36,55 @@ function resfreshAccessToken(req,res){
                         accessToken: jwt.createAccessToken(userStored),
                         refreshToken: refreshToken
                     });
-                }          
-           
+                }                     
         })
         .catch(error => {
             // imprimimos a consola
-              console.log(error);
-    
+              console.log(error);    
               res.status(500).json({
                   message: "Error!",
                   error: error
               });
-            });
-            
-       
+            });      
+     }
+}
+
+function resfreshCustomerAccessToken(req,res){
+
+    const {refreshToken} =req.body;
+    console.log(refreshToken);
+    const isTokenExpired= willExpiredToken(refreshToken);
+     if(isTokenExpired){
+         res.status(404).send({message:"El Refresh token ha expirado"});
+     }
+     else{
+        const {ID_Customer}=jwt.decodedToken(refreshToken);        
+        Customer.findOne({attributes: ['ID_Customer','Name','LastName','User','Email','Country','City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable','ID_PaymentTime','ID_User','ID_Discount'],where:{ID_Customer:ID_Customer}})
+        .then(function (customerStored){
+            console.log(customerStored); 
+                if(!customerStored){
+                    res.status(404).send({message:"Usuario no encontrado"});
+                }
+                else{
+                    res.status(200).send({
+                        accessToken: jwt.createAccessTokenCustomer(customerStored),
+                        refreshToken: refreshToken
+                    });
+                }                     
+        })
+        .catch(error => {
+            // imprimimos a consola
+              console.log(error);    
+              res.status(500).json({
+                  message: "Error!",
+                  error: error
+              });
+            });      
      }
 }
 
 
 module.exports={
-    resfreshAccessToken
+    resfreshAccessToken,
+    resfreshCustomerAccessToken
 }

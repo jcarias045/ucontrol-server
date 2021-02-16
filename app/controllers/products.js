@@ -1,9 +1,8 @@
 const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
-const { Op } = require("sequelize");
-
 const Product = db.Product;
+<<<<<<< HEAD
 const Inventory = db.Inventory;
 
 function getPoducts(req, res){
@@ -318,13 +317,13 @@ function getRecommendedProducts(req,res){
 }
 
 }
+=======
+
+function getProducts(req, res) {
+    console.log("Probando");
+}
+
+>>>>>>> origin/master
 module.exports={
-    getPoducts,
-    createProduct,
-    uploadLogo,
-    getLogo,
-    updateProduct,
-    deleteProduct,
-    getPoductsId,
-    desactiveProduct
-};
+    getProducts
+}
