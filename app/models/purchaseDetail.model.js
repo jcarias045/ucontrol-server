@@ -1,11 +1,11 @@
 module.exports = (sequelize, Sequelize) => {
 	const OrderDetails = sequelize.define('ec_purchasedetail', {	
-        ID_PurchaseOrder: {
+        ID_PurchaseDetail : {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    ID_PurchaseOrder : {
+    ID_PurchaseOrder: {
         type: Sequelize.INTEGER,
         foreign_key:true,
       },
@@ -28,6 +28,10 @@ module.exports = (sequelize, Sequelize) => {
     ExperiationTime:{
         type: Sequelize.DATE,
         
+    },
+    ID_Inventory:{
+        type: Sequelize.INTEGER,
+        foreign_key:true,
     }
       
    

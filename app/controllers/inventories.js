@@ -1,8 +1,10 @@
 const db = require('../config/db.config.js');
-const fs =require("fs");
-const path=require("path");
+const { Op } = require("sequelize");
+
+
 const Inventory = db.Inventory;
 const Product=db.Product;
+const Supplier = db.Supplier;
 
 
 function getInventories(req, res){
@@ -140,16 +142,21 @@ function getInventoriesID(req, res){
 
 function getNameProduct(req,res){
     let companyId = req.params.id; 
+    let supplierId=req.params.supplier;
     try{
         Inventory.findAll({    
              include: [
             {
                  model: Product,
-                 attributes: ['ID_Products','Name'],
-                 where:{ID_Company:companyId}
-             }
+                 attributes: ['ID_Products','Name','MinStack','MaxStock'],
+                 where:{[Op.and]: [
+                    { ID_Supplier:supplierId },
+                    { ID_Company:companyId }
+                  ]},
+        
+                }  
             ],
-            attributes: ['ID_Inventory','Cantidad']
+            attributes: ['ID_Inventory','Stock']
           })
         .then(inventories => {
             res.status(200).send({inventories});

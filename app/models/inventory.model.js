@@ -9,7 +9,7 @@ module.exports = (sequelize, Sequelize) => {
 			type: Sequelize.INTEGER,
             foreign_key:true,
       },
-      Cantidad:{
+      Stock:{
         type: Sequelize.INTEGER,
       },
       Description:{

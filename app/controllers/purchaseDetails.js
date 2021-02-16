@@ -4,20 +4,12 @@ const db = require('../config/db.config.js');
 const PurchaseDetails = db.PurchaseDetails;
 
 
-function getPurchaseOrders(req, res){
-    let companyId = req.params.id; 
+function getPurchaseDetails(req, res){
+    let purchaseId = req.params.id; 
     try{
-        PurchaseOrder.findAll({    
-             include: [
-            {
-                 model: Product,
-                 attributes: ['ID_Products','Name'],
-                 where:{ID_Company:companyId}
-             }
-            ]
-          })
-        .then(inventories => {
-            res.status(200).send({inventories});
+        PurchaseDetails.findAll({where: {ID_PurchaseOrder : purchaseId}})
+        .then(details => {
+            res.status(200).send({details});
             
         })
     }catch(error) {
@@ -33,23 +25,20 @@ function getPurchaseOrders(req, res){
 
 
 function createPurchaseOrder(req, res){
-    let orden = {};
+    let ordenDetails = {};
     let now= new Date();
     let creacion=now.getTime();
     try{
         //asignando valores 
-        orden.ID_Supplier=req.body.ID_Supplier;
-        orden.InvoiceNumber=req.body.InvoiceNumber;
-        orden.Image=req.body.Image;
-        orden.Total=req.body.Total;
-        orden.Active=req.body.Active;
-        orden.ID_User=req.body.ID_User;
-        orden.ID_Inventory=req.body.ID_Inventory;
-        orden.DeliverDate=req.body.DeliverDate;
-        orden.CreationDate= creacion;
-        orden.State=req.body.State;  
+        ordenDetails.ID_PurchaseOrder=req.body.ID_PurchaseOrder;
+        ordenDetails.Quantity=req.body.Quantity;
+        ordenDetails.Discount=req.body.Discount;
+        ordenDetails.Price=req.body.Price;
+        ordenDetails.ProductName=req.body.ProductName;
+        ordenDetails.Measures=req.body.Measures;
+        ordenDetails.ExperiationTime=req.body.ExperiationTime;
         // Save to MySQL database
-     PurchaseOrder.create(orden)
+        PurchaseDetails.create(ordenDetails)
       .then(result => {    
         res.status(200).json(result);
     
@@ -62,9 +51,37 @@ function createPurchaseOrder(req, res){
     }
 }
 
+
+async function deletePurchaseDetail(req, res){
+    console.log(req.params.id);
+
+    try{
+        let detailId = req.params.id;
+        let detalle= await PurchaseDetails.findByPk(detailId);
+        console.log(detalle);
+        if(!detalle){
+            res.status(404).json({
+                message: "La compañia con este ID no existe = " + detailId,
+                error: "404",
+            });
+        } else {
+            await detalle.destroy();
+            res.status(200).send({
+                message:"Compañia eliminada con exito"
+            });
+        }
+    } catch(error) {
+        res.status(500).json({
+            message: "Error -> No se puede eliminar el detalle de la orden con el ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
 module.exports={
-    getPurchaseOrders,
+    getPurchaseDetails,
     createPurchaseOrder,
+    deletePurchaseDetail
 }
 
 

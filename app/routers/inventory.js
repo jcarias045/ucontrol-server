@@ -16,6 +16,6 @@ router.get('/get-inventory', inventories.getInventoriesID);
 
 
 
-router.get('/inventory-product/:id', inventories.getNameProduct);
+router.get('/inventory-product/:id/:supplier', inventories.getNameProduct);
 
 module.exports = router;

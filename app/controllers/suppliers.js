@@ -18,7 +18,7 @@ function createSupplier(req, res){
         supplier.Phone=req.body.Phone;
         supplier.Adress=req.body.Adress;
         supplier.Active=true;
-        supplier.UserName=req.body.UserName;
+        supplier.codsupplier=req.body.UserName;
         supplier.ID_PaymentTime=req.body.ID_PaymentTime;
         supplier.ID_Company=req.body.ID_Company;
         

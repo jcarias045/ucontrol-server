@@ -70,26 +70,26 @@ db.PurchaseOrder.belongsTo(db.Supplier, {
 });
 
 //relaciones purchaseorder y  user
-db.User.hasMany(db.PurchaseOrder,{   
+db.User.belongsTo(db.PurchaseOrder,{   
   foreignKey: 'ID_User' 
 });
 
-db.PurchaseOrder.belongsTo(db.User, { 
+db.PurchaseOrder.hasMany(db.User, { 
   foreignKey: {
     name: 'ID_User'
   }
 });
 
 //Relaciones purchase order y inventario 
-db.Inventory.hasMany(db.PurchaseOrder,{   
-  foreignKey: 'ID_Inventory' 
-});
+// db.Inventory.hasMany(db.PurchaseOrder,{   
+//   foreignKey: 'ID_Inventory' 
+// });
 
-db.PurchaseOrder.belongsTo(db.Inventory, { 
-  foreignKey: {
-    name: 'ID_Inventory'
-  }
-});
+// db.PurchaseOrder.belongsTo(db.Inventory, { 
+//   foreignKey: {
+//     name: 'ID_Inventory'
+//   }
+// });
 
 
 //Relaciones purchase order y inventario 
@@ -104,17 +104,27 @@ db.Product.hasMany(db.Inventory, {
 });
 
 
-//Relaciones purchase order y inventario 
-db.PurchaseDetails.belongsTo(db.PurchaseOrder,{   
+//Relaciones purchase order y detalle
+db.PurchaseDetails.hasMany(db.PurchaseOrder,{   
   foreignKey: 'ID_PurchaseOrder ' 
 });
 
-db.PurchaseOrder.hasMany(db.PurchaseDetails, { 
+db.PurchaseOrder.belongsTo(db.PurchaseDetails, { 
   foreignKey: {
     name: 'ID_PurchaseOrder '
   }
 });
 
-db.Product
+
+db.Supplier.belongsTo(db.Product,{   
+  foreignKey: 'ID_Supplier' 
+});
+
+db.Product.hasMany(db.Supplier, { 
+  foreignKey: {
+    name: 'ID_Supplier'
+  }
+});
+
 
 module.exports = db;

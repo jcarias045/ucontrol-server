@@ -31,7 +31,7 @@ module.exports = (sequelize, Sequelize) => {
         Active:{
             type: Sequelize.BOOLEAN
         },
-        UserName:{
+        codsupplier:{
             type: Sequelize.STRING
         },
         ID_PaymentTime:{
