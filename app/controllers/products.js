@@ -4,7 +4,7 @@ const path=require("path");
 const { Op } = require("sequelize");
 
 const Product = db.Product;
-
+const Inventory = db.Inventory;
 
 function getPoducts(req, res){
     // Buscamos informacion para llenar el modelo de 
@@ -246,7 +246,6 @@ function getPoductsId(req, res){
 }
 
 
-
 async function desactiveProduct(req, res){
    
     let productId = req.params.id; 
@@ -294,7 +293,31 @@ async function desactiveProduct(req, res){
     }
 }
 
+function getRecommendedProducts(req,res){
+   // Buscamos informacion para llenar el modelo de 
+   try{
+    Product.findAll({
+        where:{
+            MinStack:{
 
+            }
+        }
+    })
+    .then(products => {
+        res.status(200).send({products});
+      
+    })
+}catch(error) {
+    // imprimimos a consola
+    console.log(error);
+
+    res.status(500).json({
+        message: "Error en query!",
+        error: error
+    });
+}
+
+}
 module.exports={
     getPoducts,
     createProduct,
