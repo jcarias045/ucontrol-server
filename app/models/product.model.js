@@ -1,5 +1,3 @@
-
-
 module.exports = (sequelize, Sequelize) => {
 	const Product = sequelize.define('crm_products', {	
 	  ID_Products: {
@@ -9,7 +7,7 @@ module.exports = (sequelize, Sequelize) => {
     },
 	  Name: {
 			type: Sequelize.STRING,
-      unique: true
+      
       },
       Brand:{
         type: Sequelize.STRING
@@ -30,7 +28,8 @@ module.exports = (sequelize, Sequelize) => {
       },
       ID_Supplier:{
           type: Sequelize.INTEGER,
-          foreignKey: true
+          foreignKey: true,
+          null: true,
       },
       Measure:{
         type: Sequelize.INTEGER

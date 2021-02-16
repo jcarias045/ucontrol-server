@@ -2,6 +2,8 @@ const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
 const Note = db.Note;
+const moment=require("moment");
+const jwt= require('../services/jwt');
 
 
 function getNotes(req, res){
@@ -23,12 +25,12 @@ function getNotes(req, res){
 }
 
 function createNote(req, res){
+
     let note = {};
-    let CreationDate = now.getTime();
+    let CreationDate = moment().unix();
 
     try{
-        // Construimos el modelo del objeto company para enviarlo como body del request
-        note.ID_Note = req.body.ID_Note;
+        // Construimos el modelo del objeto company para enviarlo como body del reques
         note.Subject = req.body.Subject;
         note.Text=req.body.Text;
         note.CreationDate= CreationDate;
@@ -52,7 +54,7 @@ async function updateNote(req, res){
    
     let noteID = req.params.id; 
     console.log(noteID); 
-    const { Subject, Text, CreationDate, UserName} = req.body;  //
+    const { Subject, Text} = req.body;  //
     try{
         let note = await Note.findByPk(noteID);
         console.log(note);
@@ -66,9 +68,7 @@ async function updateNote(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Subject: Subject,
-                Text: Text,
-                CreationDate: CreationDate,
-                UserName: UserName            
+                Text: Text       
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await note.update(updatedObject,

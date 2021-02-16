@@ -4,6 +4,8 @@ const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
 const { Op } = require("sequelize");
 const Customer = db.Customer;
+const Company = db.Company;
+const User = db.User; 
 
 /* //Crear
 
@@ -251,12 +253,51 @@ exports.updateCustomer = async (req, res) => {
     }
 } */
 
+async function signInCustomer(req, res) {
+    const params=req.body;
+    const Email=params.Email;
+    const Password=params.Password;
+    let CustomerDetails = req.query;
+    console.log("EndPointFunciona");
+    let customer= await Customer.findOne({attributes: ['Email','Password'],where:{Email:Email}});
+    console.log(customer.Password);
+     Customer.findOne({attributes: ['ID_Customer','Name','LastName','User','Email','Password','Country','City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable','ID_PaymentTime','ID_User','ID_Discount'],where:{Email:Email}})
+        .then(function (customer) {
+            console.log(Password);
+            const infoCustomer= customer.get();
+            console.log(infoCustomer.Password);
+            console.log(infoCustomer.Access);
+            // if( bcrypt.compareSync(Password, infoCustomer.Password) || Password == infoCustomer.Password){
+                //Se deja documentada linea superior por error con hash.
+                if( Password == infoCustomer.Password){
+                    if (infoCustomer.Access == true){
+                        res.status(200).send({
+                            accessToken:jwt.createAccessTokenCustomer(infoCustomer),
+                            resfreshToken: jwt.createRefreshTokenCustomer(infoCustomer)  
+                            })
+                        } else {
+                            res.status(500).send({message:"Error el usuario no tiene acceso", customer} )
+                    }
+                }else{
+                        res.status(500).send({message:"Error de contraseña contraseña incorrecta", customer});
+                    }
+                })
+        .catch(error => {
+        // imprimimos a consola
+          console.log(error);
+
+          res.status(500).json({
+              message: "Error!",
+              error: error
+          });
+        });     
+}
 
 module.exports={
     createCustomer,
     getCustomerInfo,
     customers,
     updateCustomer,
-    deleteCustomer
-
+    deleteCustomer,
+    signInCustomer
 };

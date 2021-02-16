@@ -9,14 +9,12 @@ const db= require('./app/config/db.config.js');
 
 const Customer = db.Customer;
 const User = db.User;
-const Inventory = db.Inventory;
-const Note = db.Note;
-const Catproduct = db.CatProduct;
-const Product = db.Product;
+
 
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
 let authRoutes = require('./app/routers/auth');
+let authCustomerRoutes = require('./app/routers/auth');
 let companyRoutes=require('./app/routers/company');
 let profileRoutes=require('./app/routers/profile');
 let supplierRoutes= require('./app/routers/supplier');
@@ -24,9 +22,9 @@ let inventoryRoutes = require('./app/routers/inventory');
 let noteRoutes = require('./app/routers/note');
 let catproductRoutes = require('./app/routers/catproduct');
 let ProductRoutes = require('./app/routers/product');
-
 let orderRoutes= require('./app/routers/purchaseOrder');
-
+let sellOrderRoutes = require ('./app/routers/order');
+//let systemOpRoutes=require('./app/routers/sysOptions');
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -48,9 +46,10 @@ app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
 app.use('/api', catproductRoutes);
 app.use('./api', ProductRoutes );
-
-
+//app.use('/api',systemOpRoutes);
 app.use('/api',orderRoutes)
+app.use('/api', sellOrderRoutes);
+app.use('./api', authCustomerRoutes);
 // Create a Server
 const server = app.listen(3050, function () {
  
