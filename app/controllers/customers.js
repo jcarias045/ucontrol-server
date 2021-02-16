@@ -30,6 +30,8 @@ function createCustomer(req, res){
     let customer = {};
      console.log(req.body);
     const pass=req.body.Password;
+    const id = req.body.ID_User;
+    console.log(id);
     try{
         // Construimos el modelo del objeto Customer para enviarlo como body del request
         customer.Name = req.body.Name;
@@ -48,6 +50,8 @@ function createCustomer(req, res){
         customer.Access=req.body.Access;
         customer.AccountsReceivable=req.body.AccountsReceivable;
         customer.ID_PaymentTime =req.body.ID_PaymentTime;
+        customer.ID_User = req.body.ID_User;
+        customer.ID_Discount = req.body.ID_Discount;
         
         Customer.findOne({where:{[Op.or]: [
             { Email: customer.Email},

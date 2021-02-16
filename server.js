@@ -46,18 +46,9 @@ app.use('/api', companyRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
 app.use('/api', catproductRoutes);
-<<<<<<< HEAD
 app.use('./api', ProductRoutes );
-<<<<<<< HEAD
-=======
-
 app.use('/api',systemOpRoutes);
->>>>>>> origin/master
-
-
-=======
-//app.use('/api',systemOpRoutes);
->>>>>>> manuel1
+app.use('/api',systemOpRoutes);
 app.use('/api',orderRoutes)
 app.use('/api', sellOrderRoutes);
 app.use('./api', authCustomerRoutes);

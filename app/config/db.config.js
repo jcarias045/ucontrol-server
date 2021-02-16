@@ -30,12 +30,9 @@ db.Note = require('../models/note.model')(sequelize, Sequelize);
 db.Product = require('../models/product.model')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
-
-
-
-
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
+
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
@@ -46,6 +43,17 @@ db.User.belongsTo(db.Profile, {
     name: 'ID_Profile'
   }
 });
+
+// estableciendo relacion entre las tablas customer y user
+db.User.hasMany(db.Customer,{
+  foreignkey: 'ID_User'
+});
+
+db.Customer.belongsTo(db.User,{
+  foreignKey:{
+    name:'ID_User'
+  }
+})
 
 //estableciendo relaciones entre las tablas sys_user y sys_company
 db.User.belongsTo(db.Company, {   
