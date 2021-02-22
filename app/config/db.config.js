@@ -59,11 +59,11 @@ db.User.belongsTo(db.Profile, {
 });
 
 // estableciendo relacion entre las tablas customer y user
-db.User.hasMany(db.Customer,{
+db.User.belongsTo(db.Customer,{
   foreignkey: 'ID_User'
 });
 
-db.Customer.belongsTo(db.User,{
+db.Customer.hasMany(db.User,{
   foreignKey:{
     name:'ID_User'
   }
