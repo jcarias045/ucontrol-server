@@ -69,15 +69,7 @@ db.Customer.belongsTo(db.User,{
   }
 })
 //estableciendo relacion entre las tablas customer y user
-db.Customer.hasMany(db.User,{
-  foreignkey: 'ID_User'
-});
 
-db.User.belongsTo(db.Customer,{
-  foreignKey:{
-    name:'ID_User'
-  }
-});
 
 //estableciendo relacion entre compañia y descuento
 
