@@ -25,6 +25,8 @@ let ProductRoutes = require('./app/routers/product');
 let orderRoutes= require('./app/routers/purchaseOrder');
 let sellOrderRoutes = require ('./app/routers/order');
 //let systemOpRoutes=require('./app/routers/sysOptions');
+let discountRoutes = require('./app/routers/discount');
+let paymenttimeRoutes = require('./app/routers/paymenttime');
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -44,12 +46,14 @@ app.use('/api',profileRoutes);
 app.use('/api', companyRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
-app.use('/api', catproductRoutes);
-app.use('./api', ProductRoutes );
+app.use('/api', catproductRoutes); 
+app.use('/api', ProductRoutes );
 //app.use('/api',systemOpRoutes);
 app.use('/api',orderRoutes)
 app.use('/api', sellOrderRoutes);
-app.use('./api', authCustomerRoutes);
+app.use('/api', authCustomerRoutes);
+app.use('/api', discountRoutes);
+app.use('/api', paymenttimeRoutes);
 // Create a Server
 const server = app.listen(3050, function () {
  
