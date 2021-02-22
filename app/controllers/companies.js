@@ -213,6 +213,7 @@ async function deleteCompany(req, res){
 
 function getCompaniesId(req, res){
     // Buscamos informacion para llenar el modelo de 
+    
     try{
         Company.findAll({attributes:['ID_Company', 'Name']})
         .then(companies => {
@@ -286,7 +287,7 @@ module.exports={
     uploadLogo,
     getLogo,
     updateCompany,
-    deleteCompany,
+    deleteCompany,  
     getCompaniesId,
     desactivateCompany
 

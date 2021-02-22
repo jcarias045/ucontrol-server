@@ -39,8 +39,7 @@ function createNote(req, res){
         // Save to MySQL database
        Note.create(note)
       .then(result => {    
-        res.status(200).json(result);
-    
+        res.status(200).json(result);    
       });  
     }catch(error){
         res.status(500).json({

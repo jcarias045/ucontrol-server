@@ -30,6 +30,8 @@ function createCustomer(req, res){
     let customer = {};
      console.log(req.body);
     const pass=req.body.Password;
+    const id = req.body.ID_User;
+    console.log(id);
     try{
         // Construimos el modelo del objeto Customer para enviarlo como body del request
         customer.Name = req.body.Name;
@@ -48,7 +50,13 @@ function createCustomer(req, res){
         customer.Access=req.body.Access;
         customer.AccountsReceivable=req.body.AccountsReceivable;
         customer.ID_PaymentTime =req.body.ID_PaymentTime;
+<<<<<<< HEAD
         customer.ID_User=req.body.ID_User;
+=======
+        customer.ID_User = req.body.ID_User;
+        customer.ID_Discount = req.body.ID_Discount;
+        
+>>>>>>> origin/master
         Customer.findOne({where:{[Op.or]: [
             { Email: customer.Email},
             { User: customer.User }
@@ -267,9 +275,9 @@ async function signInCustomer(req, res) {
             const infoCustomer= customer.get();
             console.log(infoCustomer.Password);
             console.log(infoCustomer.Access);
-            // if( bcrypt.compareSync(Password, infoCustomer.Password) || Password == infoCustomer.Password){
+            if( bcrypt.compareSync(Password, infoCustomer.Password) || Password == infoCustomer.Password){
                 //Se deja documentada linea superior por error con hash.
-                if( Password == infoCustomer.Password){
+                // if( Password == infoCustomer.Password){
                     if (infoCustomer.Access == true){
                         res.status(200).send({
                             accessToken:jwt.createAccessTokenCustomer(infoCustomer),
