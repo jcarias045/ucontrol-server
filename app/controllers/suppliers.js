@@ -2,8 +2,10 @@
 const db = require('../config/db.config.js');
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
-const Supplier = db.Supplier;
 const { Op } = require("sequelize");
+
+const Supplier = db.Supplier;
+const PaymentTime=db.PaymentTime;
 
 
 function createSupplier(req, res){
@@ -216,7 +218,36 @@ function getSuppliersInfo(req, res){
     }
 }
 
+function getSuppliersDetails(req, res){
+ 
+    let supplierId = req.params.id;
+    try{
+        Supplier.findAll({
+            include: [
+                {
+                    model: PaymentTime,
+                    attributes: ['Name','Description']
+                }
+            ],
+            where: {
+                ID_Supplier:supplierId
+            }
+        
+        })
+        .then(suppliers => {
+            res.status(200).send({suppliers});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
 
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
 
 module.exports={
     createSupplier,
@@ -224,6 +255,7 @@ module.exports={
     updateSupplier,
     deleteSupplier,
     desactivateSupplier,
-    getSuppliersInfo
+    getSuppliersInfo,
+    getSuppliersDetails
 
 };

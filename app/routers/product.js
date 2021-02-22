@@ -12,6 +12,10 @@ const products = require('../controllers/products');
 // router.delete('/product-delete/:id', products.deleteProduct);
 // router.get('/get-product', products.getPoductsId);
 // router.put('/desactive-product/:id', products.desactiveProduct);
-router.get('/get-productsall', products.getProducts);
+router.get('/get-productsall', products.getPoducts);
+
+
+
+router.get('/get-recommended-products/:id/:supplier',products.getRecommendedProducts);
 
 module.exports = router;

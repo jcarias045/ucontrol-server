@@ -1,11 +1,11 @@
 module.exports = (sequelize, Sequelize) => {
-	const OrderDetails = sequelize.define('ec_purchasedetail', {	
-        ID_PurchaseDetail : {
+	const purchaseInvoiceD = sequelize.define('ec_purchaseinvoicedetails', {	
+        ID_PurchaseInvoiceDetail  : {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true
     },
-    ID_PurchaseOrder: {
+    ID_PurchaseInvoice : {
         type: Sequelize.INTEGER,
         foreign_key:true,
       },
@@ -21,7 +21,9 @@ module.exports = (sequelize, Sequelize) => {
     ProductName:{
         type: Sequelize.STRING
         },
-
+    SubTotal:{
+    type: Sequelize.DECIMAL
+    },
  
     ID_Inventory:{
         type: Sequelize.INTEGER,
@@ -34,5 +36,5 @@ module.exports = (sequelize, Sequelize) => {
         timestamps: false,
 	  });
 	
-	return OrderDetails;
+	return purchaseInvoiceD;
 }

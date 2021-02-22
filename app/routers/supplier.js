@@ -14,5 +14,5 @@ router.put('/desactivate-supplier/:id',suppliers.desactivateSupplier);
 
 //para obtener nada más el id y nombre 
 router.get('/get-infosuplier/:id',suppliers.getSuppliersInfo);
-
+router.get('/get-supplierdetails/:id',suppliers.getSuppliersDetails)
 module.exports = router;

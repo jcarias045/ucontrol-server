@@ -1,9 +1,12 @@
 const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
+const sequelize = require('sequelize');
+const { Op } = require("sequelize");
+
 const Product = db.Product;
-<<<<<<< HEAD
 const Inventory = db.Inventory;
+const Measure = db.Measure;
 
 function getPoducts(req, res){
     // Buscamos informacion para llenar el modelo de 
@@ -294,13 +297,37 @@ async function desactiveProduct(req, res){
 
 function getRecommendedProducts(req,res){
    // Buscamos informacion para llenar el modelo de 
+   let companyId = req.params.id;
+   let supplierId=req.params.supplier;
    try{
-    Product.findAll({
-        where:{
-            MinStack:{
-
-            }
-        }
+    Inventory.findAll({
+        include: [
+            {
+                 model: Product ,
+                 on: {
+                     MinStock: sequelize.where(sequelize.col("crm_product.MinStock"), ">", sequelize.col("ec_inventory.Stock")),
+                     ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_product.ID_Products"))
+                    
+                  },
+                    attributes: ['Name','MinStock','MaxStock','BuyPrice','ID_Measure','codproducts'] ,
+                    where:{
+           
+                        ID_Company:companyId,
+                        ID_Supplier:supplierId
+                    },
+                    include: [
+                        {
+                            model:Measure,
+                            attributes: ['Name'],
+                            on: {
+                               ID_Measure: sequelize.where(sequelize.col("crm_product.ID_Measure"), "=", sequelize.col("crm_product->crm_measures.ID_Measure")),
+                           }
+                        }
+                    ]
+             }
+            ],
+       
+       attributes: ['Stock','ID_Inventory']
     })
     .then(products => {
         res.status(200).send({products});
@@ -317,13 +344,7 @@ function getRecommendedProducts(req,res){
 }
 
 }
-=======
-
-function getProducts(req, res) {
-    console.log("Probando");
-}
-
->>>>>>> origin/master
 module.exports={
-    getProducts
+    getPoducts,
+    getRecommendedProducts
 }

@@ -1,10 +1,11 @@
 const db = require('../config/db.config.js');
 const { Op } = require("sequelize");
-
+const sequelize = require('sequelize');
 
 const Inventory = db.Inventory;
 const Product=db.Product;
 const Supplier = db.Supplier;
+const Measure = db.Measure;
 
 
 function getInventories(req, res){
@@ -148,7 +149,7 @@ function getNameProduct(req,res){
              include: [
             {
                  model: Product,
-                 attributes: ['ID_Products','Name','MinStack','MaxStock'],
+                 attributes: ['ID_Products','Name','MinStock','MaxStock','ID_Measure','BuyPrice','codproducts'],
                  where:{[Op.and]: [
                     { ID_Supplier:supplierId },
                     { ID_Company:companyId }
@@ -174,6 +175,44 @@ function getNameProduct(req,res){
     
 }
 
+function getProductInfoxInventary(req,res){
+    let inventoryId = req.params.id; 
+    try{
+        Inventory.findAll({    
+             include: [
+                {
+                 model: Product,
+                 attributes: ['ID_Products','Name','MinStock','MaxStock','ID_Measure','BuyPrice','codproducts'],  
+                 include: [
+                     {
+                         model:Measure,
+                         attributes: ['Name'],
+                         on: {
+                            ID_Measure: sequelize.where(sequelize.col("crm_product.ID_Measure"), "=", sequelize.col("crm_product->crm_measures.ID_Measure")),
+                        }
+                     }
+                 ]    
+                }  
+            ],
+            attributes: ['ID_Inventory','Stock'],
+            where:{ID_Inventory:inventoryId}
+          })
+        .then(inventories => {
+            res.status(200).send({inventories});
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+    
+}
+
 
 module.exports={
     getInventories,
@@ -181,5 +220,6 @@ module.exports={
     updateInventory,
     deleteInventory,
     getInventoriesID,
-    getNameProduct
+    getNameProduct,
+    getProductInfoxInventary
 };

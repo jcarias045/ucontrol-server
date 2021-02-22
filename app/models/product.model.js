@@ -31,12 +31,11 @@ module.exports = (sequelize, Sequelize) => {
           foreignKey: true,
           null: true,
       },
-      Measure:{
-        type: Sequelize.INTEGER
+      ID_Measure:{
+        type: Sequelize.INTEGER,
+        foreignKey: true
       },
-      ExpirationTime:{
-          type: Sequelize.DATE
-      },
+      
       Logo:{
         type: Sequelize.STRING
       },
@@ -48,6 +47,12 @@ module.exports = (sequelize, Sequelize) => {
       },
       Active:{
         type: Sequelize.BOOLEAN
+      },
+      BuyPrice:{
+        type: Sequelize.DECIMAL
+      },
+      codproducts:{
+        type: Sequelize.STRING
       }
  
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural

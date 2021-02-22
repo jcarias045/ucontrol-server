@@ -62,17 +62,11 @@ module.exports = (sequelize, Sequelize) => {
 	  ID_User:{
 		type: Sequelize.INTEGER,
 		foreign_key:true,
-<<<<<<< HEAD
-	  }
-	  
-   
-=======
 	  },
 	  ID_Discount:{
 		type: Sequelize.INTEGER,
 		foreign_key:true
 	  }	    
->>>>>>> origin/master
 	},{
 		freezeTableName: true,
 		timestamps: false,

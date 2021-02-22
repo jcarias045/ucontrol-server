@@ -30,12 +30,16 @@ db.Note = require('../models/note.model')(sequelize, Sequelize);
 db.Product = require('../models/product.model')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
+db.PaymentTime = require('../models/paymentTimes.model')(sequelize, Sequelize);
 
 
-
-
+db.Measure= require('../models/measure.model')(sequelize, Sequelize);
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
+db.Taxes=require('../models/taxes.model')(sequelize, Sequelize);
+db.PurchaseInvoice=require('../models/purchaseInvoice.model')(sequelize, Sequelize);
+db.PurchaseInvoiceDetails=require('../models/purchaseInvoiceDetails.model')(sequelize, Sequelize);
+
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
@@ -95,7 +99,8 @@ db.PurchaseOrder.hasMany(db.User, {
 
 //Relaciones purchase order y inventario 
 db.Inventory.belongsTo(db.Product,{   
-  foreignKey: 'ID_Products' 
+  foreignKey: 'ID_Products' ,
+
 });
 
 db.Product.hasMany(db.Inventory, { 
@@ -116,7 +121,6 @@ db.PurchaseOrder.belongsTo(db.PurchaseDetails, {
   }
 });
 
-<<<<<<< HEAD
 
 db.Supplier.belongsTo(db.Product,{   
   foreignKey: 'ID_Supplier' 
@@ -128,7 +132,6 @@ db.Product.hasMany(db.Supplier, {
   }
 });
 
-=======
 //Relaciones entre order y customers
 db.Customer.hasMany(db.Order,{   
   foreignKey: 'ID_Customer' 
@@ -191,6 +194,61 @@ db.Product.belongsTo(db.Company, {
     name: 'ID_Company'
   }
 });
->>>>>>> origin/master
+
+
+db.PaymentTime.belongsTo(db.Supplier,{
+  foreignKey: {
+    name: 'ID_PaymentTime'
+  }
+});
+
+db.Supplier.hasMany(db.PaymentTime,{
+  foreignKey: {
+    name: 'ID_PaymentTime'
+  }
+});
+
+
+db.PurchaseDetails.hasMany(db.Inventory,{
+  foreignKey: {
+    name: 'ID_Inventory'
+  }
+});
+
+db.Inventory.belongsTo(db.PurchaseDetails,{
+  foreignKey: {
+    name: 'ID_Inventory'
+  }
+});
+
+db.Product.hasMany(db.Measure,{   
+  foreignKey: 'ID_Measure' 
+});
+
+db.Measure.belongsTo(db.Product, { 
+  foreignKey: {
+    name: 'ID_Measure'
+  }
+});
+
+db.PurchaseOrder.hasMany(db.PurchaseInvoice,{   
+  foreignKey: 'ID_PurchaseOrder' 
+});
+
+db.PurchaseInvoice.belongsTo(db.PurchaseOrder, { 
+  foreignKey: {
+    name: 'ID_PurchaseOrder'
+  }
+});
+
+db.PurchaseInvoice.hasMany(db.PurchaseInvoiceDetails,{   
+  foreignKey: 'ID_PurchaseInvoice ' 
+});
+
+db.PurchaseInvoiceDetails.belongsTo(db.PurchaseInvoice, { 
+  foreignKey: {
+    name: 'ID_PurchaseInvoice'
+  }
+});
 
 module.exports = db;

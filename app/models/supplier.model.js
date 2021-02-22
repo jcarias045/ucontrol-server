@@ -37,6 +37,9 @@ module.exports = (sequelize, Sequelize) => {
         ID_PaymentTime:{
             type: Sequelize.INTEGER,
             foreign_key:true,
+        },
+        deliveryDays:{
+          type: Sequelize.INTEGER,
         }
       
    

@@ -22,18 +22,18 @@ let inventoryRoutes = require('./app/routers/inventory');
 let noteRoutes = require('./app/routers/note');
 let catproductRoutes = require('./app/routers/catproduct');
 let ProductRoutes = require('./app/routers/product');
-<<<<<<< HEAD
 
 let purchaseOrdersRoutes= require('./app/routers/purchaseOrder');
 let systemOpRoutes=require('./app/routers/sysOptions');
 
 let PurchaseDetails=require('./app/routers/purchaseDetail');
-=======
 let orderRoutes= require('./app/routers/purchaseOrder');
-let systemOpRoutes=require('./app/routers/sysOptions');
+
 let sellOrderRoutes = require ('./app/routers/order');
+let taxesRoutes = require ('./app/routers/tax');
+let measureRoutes = require ('./app/routers/measure');
+let suppliersInvoicesRoutes = require ('./app/routers/purchaseInvoice');  //suppliers invoices para hacer referencia a facturas de los proveedores
 //let systemOpRoutes=require('./app/routers/sysOptions');
->>>>>>> origin/master
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -54,26 +54,23 @@ app.use('/api', companyRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
 app.use('/api', catproductRoutes);
-app.use('./api', ProductRoutes );
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> origin/master
+app.use('/api', ProductRoutes );
+
 
 app.use('/api',systemOpRoutes);
 
-<<<<<<< HEAD
 app.use('/api',PurchaseDetails);
 app.use('/api',purchaseOrdersRoutes);
-=======
-=======
+
 //app.use('/api',systemOpRoutes);
->>>>>>> manuel1
 app.use('/api',orderRoutes)
 app.use('/api', sellOrderRoutes);
-app.use('./api', authCustomerRoutes);
->>>>>>> origin/master
+app.use('/api', authCustomerRoutes);
+app.use('/api',taxesRoutes);
+app.use('/api',measureRoutes);
+app.use('/api',suppliersInvoicesRoutes);
+
+
 // Create a Server
 const server = app.listen(3050, function () {
  

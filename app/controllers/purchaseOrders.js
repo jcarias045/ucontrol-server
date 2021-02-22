@@ -1,10 +1,13 @@
 const db = require('../config/db.config.js');
 const { Op } = require("sequelize");
-const Sequelize = require('sequelize');
 
+const sequelize = require('sequelize');
 const PurchaseOrder = db.PurchaseOrder;
 const PurchaseDetails= db.PurchaseDetails;
 const Supplier = db.Supplier;
+const Inventory = db.Inventory;
+const Product = db.Product;
+const Measure = db.Measure;
 const User=db.User;
 
 function getPurchaseOrders(req, res){
@@ -24,7 +27,7 @@ function getPurchaseOrders(req, res){
             ],
             where: {ID_User:userId},
             attributes: ['ID_PurchaseOrder','ID_Supplier','InvoiceNumber','Image','Total','Active','DeliverDate',
-        'CreationDate','State','Description']
+        'CreationDate','State','Description','codpurchase']
           })
         .then(orders => {
             res.status(200).send({orders});
@@ -84,10 +87,10 @@ async function createPurchaseOrder(req, res){
         orden.ID_Inventory=req.body.ID_Inventory;
         orden.DeliverDate=req.body.DeliverDate;
         orden.CreationDate= creacion;
-        orden.State='Pendiente'; 
+        orden.State='Abierta'; 
         orden.Description=req.body.Description; 
         orden.codpurchase=codigo;
-        
+        console.log(orden);
         // Save to MySQL database
      PurchaseOrder.create(orden)
       .then(result => {    
@@ -132,8 +135,36 @@ async function createPurchaseOrder(req, res){
 function getPurchaseDetails(req, res){
     let purchaseId = req.params.id; 
     try{
-        PurchaseDetails.findAll({
-            where: {ID_PurchaseOrder : purchaseId}
+        Inventory.findAll({
+            include: [
+                {
+                    model: PurchaseDetails,
+                    attributes: ['ID_PurchaseDetail','ID_PurchaseOrder','Quantity','Discount','ProductName'],
+                    on:{
+                   
+                       ID_Inventory: sequelize.where(sequelize.col("ec_purchasedetail.ID_Inventory"), "=", sequelize.col("ec_inventory.ID_Inventory")),
+                    
+                    }
+                },
+                {
+                    model: Product,
+                    attributes: ['codproducts','ID_Measure','BuyPrice'],
+                    include: [
+                        {
+                            model:Measure,
+                            attributes: ['Name'],
+                            on: {
+                               ID_Measure: sequelize.where(sequelize.col("crm_product.ID_Measure"), "=", sequelize.col("crm_product->crm_measures.ID_Measure")),
+                           }
+                        }
+                    ]
+                    
+                }
+            ],
+            attributes: ['ID_Inventory'],
+            where:{
+                ID_PurchaseOrder: sequelize.where(sequelize.col("ec_purchasedetail.ID_PurchaseOrder"), "=", purchaseId),
+            }
         })
         .then(details => {
             res.status(200).send({details});
@@ -199,24 +230,19 @@ async function updatePurchaseOrder(req, res){
             if (result) {
                 console.log(purchaseDetalle);
                 if(detailsAnt.length > 0) {
-                    console.log("HHOLAAAA");
+                   
                     for(const item of detailsAnt ){
                         let update={
-                           Quantity: item.Quantity,
-                           Discount:item.Discount,
-                           Price: item.Price,
-                           ProductName: item.ProductName,
-                           Measures: item.Measures,
-                           ExperiationTime: item.ExperiationTime,
-                           ID_Inventory: item.ID_Inventory,
+                           Quantity: item.ec_purchasedetail.Quantity,
+                           Discount:item.ec_purchasedetail.Discount,
                         }
                         console.log(update);
                         let resultUpdateD = await PurchaseDetails.update(update,
                             { 
                               returning: true,                
                               where: {[Op.and]: [
-                                { ID_PurchaseDetail : item.ID_PurchaseDetail },
-                                { ID_PurchaseOrder: item.ID_PurchaseOrder }
+                                { ID_PurchaseDetail : item.ec_purchasedetail.ID_PurchaseDetail },
+                                { ID_PurchaseOrder: item.ec_purchasedetail.ID_PurchaseOrder }
                               ]},
                               attributes: ['ID_PurchaseDetail']
                             }
@@ -224,7 +250,7 @@ async function updatePurchaseOrder(req, res){
                     }
                 }    
                  if(purchaseDetalle.length>0){  //agregando nuevo detalle a la orden ya existente
-                    console.log("HOLAAAAAAAAAA");
+                    
                     for(const item of purchaseDetalle ){
                         let detalleNuevo={
                            Quantity: item.Quantity,
@@ -294,12 +320,150 @@ async function deletePurchase(req, res){
 }
 
 
+async function changePurchaseState(req, res){
+   
+    let purchaseId = req.params.id; 
+    console.log(purchaseId);
+    const {estado} = req.body;  //
+  
+    try{
+        let purchase = await PurchaseOrder.findByPk(purchaseId,{
+            attributes: ['ID_PurchaseOrder','ID_Supplier','InvoiceNumber','Image','Total','Active','DeliverDate',
+        'CreationDate','State','Description']});
+        console.log(purchase.State);
+        if(!purchase){
+           // retornamos el resultado al cliente
+            res.status(404).json({
+                message: "No se encuentra el cliente con ID = " + purchaseId,
+                error: "404"
+            });
+        } else {    
+            
+            // actualizamos nuevo cambio en la base de datos, definición de
+            let updatedObject = { 
+               
+                State:estado          
+            }
+            console.log(updatedObject);    //agregar proceso de encriptacion
+            let result = await purchase.update(updatedObject,
+                              { 
+                                returning: true,                
+                                where: {ID_PurchaseOrder : purchaseId},
+                                attributes:['Description' ]
+                              }
+                            );
+
+            // retornamos el resultado al cliente
+            if(!result) {
+                res.status(500).json({
+                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+                    error: "No se puede actualizar",
+                });
+            }
+
+            res.status(200).json(result);
+        }
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
+
+function getLastMonthPurchase(req,res){
+   
+
+    let userId = req.params.id; 
+    
+    try{
+
+        let now= new Date();
+        let fecha=now.getTime();
+        var date = new Date(fecha);
+     
+        date.setMonth(date.getMonth() - 1);
+        let compare=date.toISOString().substring(0, 7);
+        console.log(date.toISOString().substring(0, 7)); 
+        let purchase=null;
+        purchase= PurchaseOrder.findAll({    
+             
+            where: {ID_User:userId},
+            attributes: ['ID_PurchaseOrder',
+            [sequelize.fn('sum', sequelize.col('Total')), 'total_amount']],
+            where: {
+                CreationDate: {[Op.substring]: compare}
+            }
+          })
+        .then(total => {
+            res.status(200).send({total});
+            
+        });
+        console.log(purchase);
+    }
+    catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+
+}
+
+function getThisMonthPurchase(req,res){
+   
+
+    let userId = req.params.id; 
+    
+    try{
+
+        let now= new Date();
+        let fecha=now.getTime();
+        var date = new Date(fecha);
+        let compare=date.toISOString().substring(0, 7);
+        console.log(date.toISOString().substring(0, 7)); 
+        let purchase=null;
+        purchase= PurchaseOrder.findAll({    
+             
+            where: {ID_User:userId},
+            attributes: ['ID_PurchaseOrder',
+            [sequelize.fn('sum', sequelize.col('Total')), 'total_amount']],
+            where: {
+                CreationDate: {[Op.substring]: compare}
+            }
+          })
+        .then(total => {
+            res.status(200).send({total});
+            
+        });
+        console.log(purchase);
+    }
+    catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+
+}
+
+
 module.exports={
     getPurchaseOrders,
     createPurchaseOrder,
     getPurchaseDetails,
     updatePurchaseOrder,
-    deletePurchase
+    deletePurchase,
+    changePurchaseState,
+    getLastMonthPurchase,
+    getThisMonthPurchase
 }
 
 
