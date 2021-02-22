@@ -29,7 +29,6 @@ db.Note = require('../models/note.model')(sequelize, Sequelize);
 db.Product = require('../models/product.model.js')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
-<<<<<<< HEAD
 db.PaymentTime = require('../models/paymentTimes.model')(sequelize, Sequelize);
 
 
@@ -39,17 +38,14 @@ db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize
 db.Taxes=require('../models/taxes.model')(sequelize, Sequelize);
 db.PurchaseInvoice=require('../models/purchaseInvoice.model')(sequelize, Sequelize);
 db.PurchaseInvoiceDetails=require('../models/purchaseInvoiceDetails.model')(sequelize, Sequelize);
-=======
-<<<<<<< HEAD
+
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
-=======
 // db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 // db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 db.Discount = require('../models/discount.model')(sequelize, Sequelize);
 db.PaymentTime = require('../models/paymenttime.model')(sequelize, Sequelize);
->>>>>>> manuel1
->>>>>>> origin/master
+
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
@@ -62,7 +58,6 @@ db.User.belongsTo(db.Profile, {
   }
 });
 
-<<<<<<< HEAD
 // estableciendo relacion entre las tablas customer y user
 db.User.hasMany(db.Customer,{
   foreignkey: 'ID_User'
@@ -73,7 +68,6 @@ db.Customer.belongsTo(db.User,{
     name:'ID_User'
   }
 })
-=======
 //estableciendo relacion entre las tablas customer y user
 db.Customer.hasMany(db.User,{
   foreignkey: 'ID_User'
@@ -107,7 +101,6 @@ db.PaymentTime.belongsTo(db.Company,{
     name: 'ID_Company'
   }
 });
->>>>>>> manuel1
 
 //estableciendo relaciones entre las tablas sys_user y sys_company
 db.User.belongsTo(db.Company, {   
