@@ -271,9 +271,9 @@ async function signInCustomer(req, res) {
             const infoCustomer= customer.get();
             console.log(infoCustomer.Password);
             console.log(infoCustomer.Access);
-            // if( bcrypt.compareSync(Password, infoCustomer.Password) || Password == infoCustomer.Password){
+            if( bcrypt.compareSync(Password, infoCustomer.Password) || Password == infoCustomer.Password){
                 //Se deja documentada linea superior por error con hash.
-                if( Password == infoCustomer.Password){
+                // if( Password == infoCustomer.Password){
                     if (infoCustomer.Access == true){
                         res.status(200).send({
                             accessToken:jwt.createAccessTokenCustomer(infoCustomer),

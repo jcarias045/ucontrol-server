@@ -4,8 +4,7 @@ const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
   port: 3306,
   dialect: env.dialect,
-  operatorsAliases: 0,
- 
+  operatorsAliases: 0, 
   pool: {
     max: env.max,
     min: env.pool.min,
@@ -27,11 +26,18 @@ db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
 db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
 db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequelize);
 db.Note = require('../models/note.model')(sequelize, Sequelize);
-db.Product = require('../models/product.model')(sequelize, Sequelize);
+db.Product = require('../models/product.model.js')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
+<<<<<<< HEAD
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
+=======
+// db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
+// db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
+db.Discount = require('../models/discount.model')(sequelize, Sequelize);
+db.PaymentTime = require('../models/paymenttime.model')(sequelize, Sequelize);
+>>>>>>> manuel1
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
@@ -44,6 +50,7 @@ db.User.belongsTo(db.Profile, {
   }
 });
 
+<<<<<<< HEAD
 // estableciendo relacion entre las tablas customer y user
 db.User.hasMany(db.Customer,{
   foreignkey: 'ID_User'
@@ -54,6 +61,41 @@ db.Customer.belongsTo(db.User,{
     name:'ID_User'
   }
 })
+=======
+//estableciendo relacion entre las tablas customer y user
+db.Customer.hasMany(db.User,{
+  foreignkey: 'ID_User'
+});
+
+db.User.belongsTo(db.Customer,{
+  foreignKey:{
+    name:'ID_User'
+  }
+});
+
+//estableciendo relacion entre compañia y descuento
+
+db.Company.hasMany(db.Discount, {
+  foreignKey: 'ID_Company'
+});
+
+db.Discount.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+});
+
+//estableciendo relacion entre company y paymenttime
+db.Company.hasMany(db.PaymentTime, {
+  foreignKey: 'ID_Company'
+});
+
+db.PaymentTime.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+});
+>>>>>>> manuel1
 
 //estableciendo relaciones entre las tablas sys_user y sys_company
 db.User.belongsTo(db.Company, {   
