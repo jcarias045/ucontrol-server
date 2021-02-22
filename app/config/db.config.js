@@ -59,11 +59,11 @@ db.User.belongsTo(db.Profile, {
 });
 
 // estableciendo relacion entre las tablas customer y user
-db.User.belongsTo(db.Customer,{
+db.User.hasMany(db.Customer,{
   foreignkey: 'ID_User'
 });
 
-db.Customer.hasMany(db.User,{
+db.Customer.belongsTo(db.User,{
   foreignKey:{
     name:'ID_User'
   }
@@ -155,12 +155,12 @@ db.Product.hasMany(db.Inventory, {
 
 //Relaciones purchase order y detalle
 db.PurchaseDetails.hasMany(db.PurchaseOrder,{   
-  foreignKey: 'ID_PurchaseOrder ' 
+  foreignKey: 'ID_PurchaseOrder' 
 });
 
 db.PurchaseOrder.belongsTo(db.PurchaseDetails, { 
   foreignKey: {
-    name: 'ID_PurchaseOrder '
+    name: 'ID_PurchaseOrder'
   }
 });
 

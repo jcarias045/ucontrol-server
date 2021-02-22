@@ -110,7 +110,11 @@ function getCustomerInfo(req, res){
 function customers(req, res){
     let companyId = req.params.id; 
     try{
-        Customer.findAll({where: {ID_Company: companyId}})
+        Customer.findAll({
+            where: {ID_Company: companyId},
+            attributes:['ID_Customer','Name','LasName','User','Email','Country',
+        'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
+    'ID_PaymentTime','ID_Discount ']})
         .then(customers => {
             res.status(200).send({customers});
           

@@ -454,6 +454,81 @@ function getThisMonthPurchase(req,res){
 
 }
 
+function getPurchaseOrdersClosed(req, res){
+    let userId = req.params.id; 
+    let companyId = req.params.company;
+    let antCod=0;
+    
+    try{
+        PurchaseOrder.findAll({    
+             include: [
+            {
+                 model: Supplier,
+                 attributes: ['ID_Supplier','Name'],
+                 where: {ID_Company:companyId},
+                 
+             }
+            ],
+            where: {
+                ID_User:userId,
+                State:"Cerrada"
+            },
+            attributes: ['ID_PurchaseOrder','ID_Supplier','InvoiceNumber','Image','Total','Active','DeliverDate',
+        'CreationDate','State','Description','codpurchase']
+          })
+        .then(orders => {
+            res.status(200).send({orders});
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
+function getClosedPurchaseDetails(req, res){
+    
+    let id=req.params.id;
+    let antCod=0;
+    
+    try{
+        PurchaseOrder.findAll({    
+             include: [
+            {
+                 model: Supplier,
+                 attributes: ['ID_Supplier','Name'],
+                 
+                 
+             },
+             { 
+                model: PurchaseDetails
+                
+             }
+            ],
+            where: {
+            ID_PurchaseOrder:id},
+            attributes: ['ID_PurchaseOrder','ID_Supplier','InvoiceNumber','Image','Total','Active','DeliverDate',
+             'CreationDate','State','Description','codpurchase']
+          })
+        .then(orders => {
+            res.status(200).send({orders});
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
 
 module.exports={
     getPurchaseOrders,
@@ -463,7 +538,9 @@ module.exports={
     deletePurchase,
     changePurchaseState,
     getLastMonthPurchase,
-    getThisMonthPurchase
+    getThisMonthPurchase,
+    getPurchaseOrdersClosed,
+    getClosedPurchaseDetails
 }
 
 

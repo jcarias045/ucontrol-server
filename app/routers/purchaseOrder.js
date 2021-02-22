@@ -15,4 +15,8 @@ router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
 
 
+router.get('/get-closedorders/:id/:company', purchase.getPurchaseOrdersClosed);
+router.get('/get-closedordersdetails/:id', purchase.getClosedPurchaseDetails);
+
+
 module.exports = router;
