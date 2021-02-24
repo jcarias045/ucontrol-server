@@ -6,6 +6,8 @@ const { Op } = require("sequelize");
 const Customer = db.Customer;
 const Company = db.Company;
 const User = db.User; 
+const PaymentTime =db.PaymentTime;
+const Discount = db.Discount;
 
 /* //Crear
 
@@ -31,6 +33,7 @@ function createCustomer(req, res){
      console.log(req.body);
     const pass=req.body.Password;
     const id = req.body.ID_User;
+    const companyId = req.params.ID_Company;
     console.log(id);
     try{
         // Construimos el modelo del objeto Customer para enviarlo como body del request
@@ -51,7 +54,6 @@ function createCustomer(req, res){
         customer.AccountsReceivable=req.body.AccountsReceivable;
         customer.ID_PaymentTime =req.body.ID_PaymentTime;
         customer.ID_User=req.body.ID_User;
-        customer.ID_User = req.body.ID_User;
         customer.ID_Discount = req.body.ID_Discount;
         
         Customer.findOne({where:{[Op.or]: [
@@ -112,9 +114,15 @@ function customers(req, res){
     try{
         Customer.findAll({
             where: {ID_Company: companyId},
+<<<<<<< HEAD
             attributes:['ID_Customer','Name','LasName','User','Email','Country',
                 'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
             'ID_PaymentTime','ID_Discount ']})
+=======
+            attributes:['ID_Customer','Name','LastName','User','Email','Country',
+        'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
+    'ID_PaymentTime','ID_Discount']})
+>>>>>>> origin/master
         .then(customers => {
             res.status(200).send({customers});
           
