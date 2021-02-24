@@ -11,8 +11,6 @@ module.exports = (sequelize, Sequelize) => {
       Description:{
         type: Sequelize.STRING
       }
-      
-   
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,

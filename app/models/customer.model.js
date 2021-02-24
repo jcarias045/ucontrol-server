@@ -52,8 +52,7 @@ module.exports = (sequelize, Sequelize) => {
 	  },
 	  AccountsReceivable:{
 		type: Sequelize.DECIMAL,
-		null: true
-		
+		null: true		
 	  },
 	  ID_PaymentTime:{
 		type: Sequelize.INTEGER,

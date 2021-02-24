@@ -33,7 +33,6 @@ function getDiscounts(req, res) {
 }
 
 function createDiscount(req, res){
-
     let discount = {};
     try{
         // Construimos el modelo del objeto company para enviarlo como body del reques
@@ -60,7 +59,7 @@ async function updateDiscount(req, res){
    
     let discountID = req.params.id; 
     console.log(discountID);
-    const { Name, Discount} = req.body;  //
+    const { Name, Discount, ID_Company} = req.body;  //
     console.log(Name);
     console.log(Discount);
     try{
@@ -76,7 +75,8 @@ async function updateDiscount(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Name: Name,
-                Discount: Discount     
+                Discount: Discount,
+                ID_Company: ID_Company     
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await discount.update(updatedObject,
@@ -128,9 +128,32 @@ async function deleteDiscount(req, res){
     }
 }
 
+function getDiscountId (req, res){
+    
+    let companyId = req.params.id;
+
+    try{
+        DiscountObj.findAll({
+            where:{ID_Company: companyId},
+            attributes: ['ID_Discount', 'Name']
+        })
+        .then(discounts =>{
+            res.status(200).send({discounts});
+        })
+    }catch(error){
+        console.log(error);
+        res.status(500).json({
+            message: "Error en el query!",
+            error: error
+        })
+    }
+}
+
+
 module.exports={
     getDiscounts,
     createDiscount,
     updateDiscount,
-    deleteDiscount
+    deleteDiscount,
+    getDiscountId
 }

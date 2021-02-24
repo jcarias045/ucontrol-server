@@ -53,7 +53,7 @@ function createPaymentTime(req, res) {
  async function updatePaymentTime(req, res) {
 
     let paymenttimeID = req.params.id; 
-    const { Name, Description} = req.body;  //
+    const { Name, Description, ID_Company} = req.body;  //
     try{
         let paymenttime = await PaymentTime.findByPk(paymenttimeID);
         if(!paymenttime){
@@ -66,7 +66,8 @@ function createPaymentTime(req, res) {
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Name: Name,
-                Description: Description     
+                Description: Description,
+                ID_Company: ID_Company     
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await paymenttime.update(updatedObject,
@@ -118,9 +119,33 @@ async function deletePaymentTime(req, res) {
     }
 }
 
+function getPaymentTimeId (req, res){
+    
+    let companyId = req.params.id;
+    
+
+    try{
+        PaymentTime.findAll({
+            where:{ID_Company: companyId},
+            attributes: ['ID_PaymentTime', 'Name', 'Description']
+        })
+        .then(paymentTime =>{
+            res.status(200).send({paymentTime});
+        })
+
+    }catch(error){
+        console.log(error);
+        res.status(500).json({
+            message: "Error en el query!",
+            error: error
+        })
+    }
+}
+
 module.exports={
     getPaymentTime,
     createPaymentTime,
     updatePaymentTime,
-    deletePaymentTime
+    deletePaymentTime,
+    getPaymentTimeId
 };

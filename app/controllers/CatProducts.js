@@ -20,7 +20,8 @@ function getCatProducts(req,res){
                  });
              }
     }
-    function creatCatProduct(req, res){
+
+function creatCatProduct(req, res){
             let catproduct = {};
         
             try{
@@ -42,7 +43,7 @@ function getCatProducts(req,res){
             }
         }
 
-        async function deleteCatProduct(req, res){
+async function deleteCatProduct(req, res){
             console.log(req.params.id);
             try{
                 let catproductID = req.params.id;
@@ -66,7 +67,7 @@ function getCatProducts(req,res){
                 });
             }
         }
-        async function updateCatProduct(req, res){
+async function updateCatProduct(req, res){
             let catproductID = req.params.id; 
             console.log(catproductID); 
             const { Name,Description} = req.body;  //
