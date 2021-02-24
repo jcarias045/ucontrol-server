@@ -235,7 +235,7 @@ function getSuppliersDetails(req, res){
         
         })
         .then(suppliers => {
-            res.status(200).send({suppliers});
+            res.status(200).send(suppliers);
           
         })
     }catch(error) {

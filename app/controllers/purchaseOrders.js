@@ -499,15 +499,15 @@ function getClosedPurchaseDetails(req, res){
     try{
         PurchaseOrder.findAll({    
              include: [
-            {
+             {
                  model: Supplier,
-                 attributes: ['ID_Supplier','Name'],
+                 attributes: ['ID_Supplier','Name','deliveryDays'],
                  
                  
              },
              { 
-                model: PurchaseDetails
-                
+                model: PurchaseDetails,
+               
              }
             ],
             where: {

@@ -6,9 +6,10 @@ const purchaseInvoice = require('../controllers/purchaseInvoice');
 
 
 router.get('/get-suppliersinvoices/:id/:company', purchaseInvoice.getSuppliersInvoices);
-// router.post('/create-order/:id/:company', purchase.createPurchaseOrder);
+router.post('/create-invoicesupplier/:id/:company', purchaseInvoice.createSupplierInvoice);
+router.post('/createnew-invoicesupplier/:id/:company', purchaseInvoice.createNewSupplierInvoice);
 // router.get('/get-purchaseorder-details/:id', purchase.getPurchaseDetails);
-// router.put('/update-purchaseorder/:id', purchase.updatePurchaseOrder);
+router.put('/update-invoicesupplier/:id', purchaseInvoice.updateInvoicePurchase);
 // router.delete('/delete-purchaseorder/:id', purchase.deletePurchase);
 // router.put('/change-purchasestate/:id', purchase.changePurchaseState);
 // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);

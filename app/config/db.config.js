@@ -294,4 +294,14 @@ db.PurchaseInvoiceDetails.belongsTo(db.PurchaseInvoice, {
   }
 });
 
+db.PurchaseInvoice.hasMany(db.Supplier,{   
+  foreignKey: 'ID_Supplier' 
+});
+
+db.Supplier.belongsTo(db.PurchaseInvoice, { 
+  foreignKey: {
+    name: 'ID_Supplier'
+  }
+});
+
 module.exports = db;
