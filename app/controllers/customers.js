@@ -114,15 +114,9 @@ function customers(req, res){
     try{
         Customer.findAll({
             where: {ID_Company: companyId},
-<<<<<<< HEAD
-            attributes:['ID_Customer','Name','LasName','User','Email','Country',
-                'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
-            'ID_PaymentTime','ID_Discount ']})
-=======
             attributes:['ID_Customer','Name','LastName','User','Email','Country',
         'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
     'ID_PaymentTime','ID_Discount']})
->>>>>>> origin/master
         .then(customers => {
             res.status(200).send({customers});
           
