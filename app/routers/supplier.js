@@ -11,7 +11,7 @@ router.put('/update-supplier/:id', suppliers.updateSupplier);
 router.delete('/delete-supplier/:id',suppliers.deleteSupplier);
 router.put('/desactivate-supplier/:id',suppliers.desactivateSupplier);
 
-
+router.get('/suppliers',suppliers.Suppliers);
 //para obtener nada más el id y nombre 
 router.get('/get-infosuplier/:id',suppliers.getSuppliersInfo);
 router.get('/get-supplierdetails/:id',suppliers.getSuppliersDetails)

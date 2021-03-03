@@ -25,26 +25,25 @@ db.Inventory = require('../models/inventory.model.js')(sequelize, Sequelize);
 db.Supplier= require('../models/supplier.model')(sequelize, Sequelize);
 db.PurchaseOrder= require('../models/purchaseOrder.model')(sequelize, Sequelize);
 db.PurchaseDetails= require('../models/purchaseDetail.model')(sequelize, Sequelize);
-db.Note = require('../models/note.model')(sequelize, Sequelize);
+db.NoteUser = require('../models/noteuser.model')(sequelize, Sequelize);
 db.Product = require('../models/product.model.js')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
-db.PaymentTime = require('../models/paymentTimes.model')(sequelize, Sequelize);
-
-
 db.Measure= require('../models/measure.model')(sequelize, Sequelize);
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 db.Taxes=require('../models/taxes.model')(sequelize, Sequelize);
 db.PurchaseInvoice=require('../models/purchaseInvoice.model')(sequelize, Sequelize);
 db.PurchaseInvoiceDetails=require('../models/purchaseInvoiceDetails.model')(sequelize, Sequelize);
-
+db.NoteCustomer= require('../models/notecustomer.model')(sequelize,Sequelize);
+db.NoteProduct= require('../models/noteproduct.model')(sequelize,Sequelize);
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 // db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 // db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 db.Discount = require('../models/discount.model')(sequelize, Sequelize);
-db.PaymentTime = require('../models/paymenttime.model')(sequelize, Sequelize);
+db.NoteSupplier = require('../models/notesupplier.model')(sequelize,Sequelize);
+
 
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
@@ -68,9 +67,16 @@ db.Customer.belongsTo(db.User,{
     name:'ID_User'
   }
 })
-//estableciendo relacion entre las tablas customer y user
+//estableciendo relacion entre las tablas supplier y company
+db.Company.hasMany(db.Supplier,{
+  foreignKey: 'ID_Company'
+});
 
-
+db.Supplier.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+});
 //estableciendo relacion entre compañia y descuento
 
 db.Company.hasMany(db.Discount, {
@@ -83,14 +89,80 @@ db.Discount.belongsTo(db.Company,{
   }
 });
 
-//estableciendo relacion entre company y paymenttime
-db.Company.hasMany(db.PaymentTime, {
-  foreignKey: 'ID_Company'
+//estableciendo relacion entre usuario y notas.
+db.User.hasMany(db.NoteUser,{
+  foreignKey: 'ID_User'
 });
 
-db.PaymentTime.belongsTo(db.Company,{
+db.NoteUser.belongsTo(db.User,{
   foreignKey:{
-    name: 'ID_Company'
+    name: 'ID_User'
+  }
+})
+//Cliente-Nota
+db.Customer.hasMany(db.NoteCustomer,{
+  foreignKey: 'ID_Customer'
+});
+
+db.NoteCustomer.belongsTo(db.Customer,{
+  foreignKey:{
+    name: 'ID_Customer'
+  }
+})
+
+//NoteCustomer - User
+db.User.hasMany(db.NoteCustomer,{
+  foreignKey: 'ID_User'
+});
+
+db.NoteCustomer.belongsTo(db.User,{
+  foreignKey:{
+    name: 'ID_User'
+  }
+})
+
+//producto-nota
+
+db.Product.hasMany(db.NoteProduct,{
+  foreignKey: 'ID_Products'
+});
+
+db.NoteProduct.belongsTo(db.Product,{
+  foreignKey:{
+    name: 'ID_Products'
+  }
+})
+
+//NoteProduct-User
+
+db.User.hasMany(db.NoteProduct,{
+  foreignKey: 'ID_User'
+});
+
+db.NoteProduct.belongsTo(db.User,{
+  foreignKey:{
+    name: 'ID_User'
+  }
+});
+
+//NoteSupplier-Supplier
+db.Supplier.hasMany(db.NoteSupplier,{
+  foreignKey: 'ID_Supplier'
+});
+
+db.NoteSupplier.belongsTo(db.Supplier,{
+  foreignKey:{
+    name: 'ID_Supplier'
+  }
+});
+
+db.User.hasMany(db.NoteSupplier,{
+  foreignKey: 'ID_User'
+});
+
+db.NoteSupplier.belongsTo(db.User,{
+  foreignKey:{
+    name: 'ID_User'
   }
 });
 
@@ -235,19 +307,6 @@ db.Company.hasMany(db.Product,{
 db.Product.belongsTo(db.Company, { 
   foreignKey: {
     name: 'ID_Company'
-  }
-});
-
-
-db.PaymentTime.belongsTo(db.Supplier,{
-  foreignKey: {
-    name: 'ID_PaymentTime'
-  }
-});
-
-db.Supplier.hasMany(db.PaymentTime,{
-  foreignKey: {
-    name: 'ID_PaymentTime'
   }
 });
 

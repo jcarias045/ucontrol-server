@@ -242,7 +242,7 @@ async function desactivateUser(req, res){
                 Active:Active          
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await user.update(updatedObject,
+            let result = await User.update(updatedObject,
                               { 
                                 returning: true,                
                                 where: {ID_User: userId},

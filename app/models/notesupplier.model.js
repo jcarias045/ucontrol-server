@@ -1,24 +1,31 @@
 module.exports = (sequelize, Sequelize) => {
-	const CatProduct = sequelize.define('crm_catproduct', {	
-	  ID_CatProduct: {
+	const NoteSupplier = sequelize.define('crm_notesupplier', {	
+	  ID_NoteSupplier: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
     },
-	  Name: {
+	  Subject: {
 			type: Sequelize.STRING
       },
-      Description:{
+      Text:{
         type: Sequelize.STRING
       },
-    ID_Company:{
-      type: Sequelize.INTEGER,
-      foreign_key:true,
-    }
+      CreationDate:{
+        type: Sequelize.DATE
+      },
+      ID_User:{
+        type: Sequelize.INTEGER,
+        foreign_key:true,
+      },
+      ID_Suppliers:{
+        type: Sequelize.INTEGER,
+        foreign_key:true,
+      }      
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
 	  });
 	
-	return CatProduct;
+	return NoteSupplier;
 }

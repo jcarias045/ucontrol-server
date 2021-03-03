@@ -134,10 +134,30 @@ async function deleteMeasure(req, res){
     }
 }
 
+function getMeasuresInfo(req,res){
+    let companyId = req.params.id;
+    try{
+        Measures.findAll({where: {ID_Company: companyId},
+            attributes:['ID_Measure','Name']})
+        .then(measure => {
+            res.status(200).send({measure});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
 
 module.exports={
     getMeasures,
     createMeasure,
     updateMeasure,
-    deleteMeasure
+    deleteMeasure,
+    getMeasuresInfo
 }

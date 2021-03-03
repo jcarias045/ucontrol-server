@@ -3,28 +3,35 @@ const db = require('../config/db.config.js');
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
 const { Op } = require("sequelize");
+const { Company } = require('../config/db.config.js');
 
 const Supplier = db.Supplier;
-const PaymentTime=db.PaymentTime;
 
 
 function createSupplier(req, res){
     let supplier = {};
-
+    console.log(req);
+     const idCompany = req.body.ID_Company
     try{
         // Construimos el modelo del objeto supplier para enviarlo como body del request
-        supplier.ID_supplier = req.body.ID_supplier;
+        // supplier.ID_supplier = req.body.ID_supplier;
         supplier.Name=req.body.Name;
         supplier.Web= req.body.Web;
         supplier.Email=req.body.Email;
         supplier.Phone=req.body.Phone;
         supplier.Adress=req.body.Adress;
+        supplier.DebsToPay=req.body.DebsToPay;
         supplier.Active=true;
-        supplier.codsupplier=req.body.UserName;
-        supplier.ID_PaymentTime=req.body.ID_PaymentTime;
-        supplier.ID_Company=req.body.ID_Company;
+        supplier.codsupplier=req.body.codsupplier;
+        supplier.PaymentTime=req.body.PaymentTime;
+        supplier.ID_Company=idCompany;
+        supplier.ID_User = req.body.ID_User;
+        supplier.deliveryDays=req.body.deliveryDays;
         
-        Supplier.findOne({where:{[Op.or]: [
+        Supplier.findOne({ attributes:['ID_supplier','Name','Web','Email',
+        'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
+        'deliveryDays'],
+            where:{[Op.or]: [
             { Email: supplier.Email},
             { Name: supplier.Name}
           ]}}).then(function(exist){
@@ -40,9 +47,6 @@ function createSupplier(req, res){
 
               }
             });
-    
-        // Save to MySQL database
-      
     }catch(error){
         res.status(500).json({
             message: "Fail!",
@@ -56,7 +60,16 @@ function getSuppliers(req, res){
  
     let companyId = req.params.id;
     try{
-        Supplier.findAll({where: {ID_Company: companyId}})
+        Supplier.findAll({
+            include:[{
+                model:Company,
+                attributes: ['ID_Company','Name','ShortName']
+            }
+            ],
+            attributes:['ID_supplier','Name','Web','Email',
+        'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
+        'deliveryDays','Phone','DebsToPay'],
+        where: {ID_Company: companyId}})
         .then(suppliers => {
             res.status(200).send({suppliers});
           
@@ -77,7 +90,7 @@ async function updateSupplier(req, res){
     let supplierId = req.params.id;
   
     
-    const { Name,Web,Email,Phone,Adress,Active,UserName,ID_PaymentTime} = req.body;  //
+    const { Name,Web,Email,Phone,Adress, DebsToPay, Active,codsupplier,UserName,PaymentTime,deliveryDays} = req.body;  //
    
     try{
         let supplier = await Supplier.findByPk(supplierId);
@@ -97,10 +110,12 @@ async function updateSupplier(req, res){
                 Phone:Phone,
                 Adress:Adress,
                 Active: Active,
-                UserName: UserName,
-                ID_PaymentTime: ID_PaymentTime
-
+                PaymentTime: PaymentTime,
+                DebsToPay:DebsToPay,
+                codsupplier:codsupplier,
+                deliveryDays:deliveryDays
             }
+            
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await supplier.update(updatedObject,
                               { 
@@ -223,12 +238,7 @@ function getSuppliersDetails(req, res){
     let supplierId = req.params.id;
     try{
         Supplier.findAll({
-            include: [
-                {
-                    model: PaymentTime,
-                    attributes: ['Name','Description']
-                }
-            ],
+
             where: {
                 ID_Supplier:supplierId
             }
@@ -249,6 +259,106 @@ function getSuppliersDetails(req, res){
     }
 }
 
+function Suppliers(req, res){
+ 
+    try{
+        Supplier.findAll({
+            include:[{
+                model:Company,
+                attributes: ['ID_Company','Name','ShortName']
+            },
+           ],
+            attributes:['ID_supplier','Name','Web','Email',
+        'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
+        'deliveryDays']
+        })
+        .then(suppliers => {
+            res.status(200).send({suppliers});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+// function getImages(req,res){
+//     const logoName=req.params.logoName;
+//     const filePath="./app/uploads/avatar/"+logoName;
+//     console.log(filePath);
+//     fs.exists(filePath,exists=>{
+//         if(!exists){
+//             res.status(404)
+//             .send({message:"el avatar que buscas no existe"});
+//         }
+//         else{
+//             res.sendFile(path.resolve(filePath));
+//         }
+       
+//     });
+// }
+
+// function uploadImages(req, res) {
+//     const params= req.params;
+//     const id=params.id;
+//     console.log(req.files);
+//     Product.findByPk(id).then((productData)=>{        
+//           if(!productData){
+//             res.status(404)
+//             .send({message:"no se encontro usuario"});
+//           }
+//           else{
+//             let product =productData;
+//             console.log(productData);
+//             if(req.files){
+//                 let filePath=req.files.avatar.path;
+                
+//                 let fileSplit=filePath.split("\\");
+//                 let fileName=fileSplit[3];
+//                 let extSplit=fileName.split(".");
+//                 let fileExt=extSplit[1];
+//                 console.log(fileName);
+//                 if(fileExt !== "png" && fileExt!=="jpg"){
+//                     res.status(400)
+//                     .send({message: "la extesion no es valida"});
+//                 }    
+//             else{          
+//                 console.log();
+//                 let updatedObject = {                   
+//                     Logo: fileName,
+//                   }
+//                 let result =  Product.update(updatedObject,
+//                     { 
+//                       returning: true,                
+//                       where: {ID_Products: id},
+//                       attributes: [ 'Logo']
+//                     }
+//                   );
+//                   if(!result) {
+//                     res.status(500).json({
+//                         message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+//                         error: "No se puede actualizar",
+//                     });
+//                 }
+    
+//                 res.status(200).json(result);
+//             }
+            
+//         }
+//         else{
+//             console.log("no reconoce ");
+//         }
+//           }
+//        });
+    
+// }
+
+
 module.exports={
     createSupplier,
     getSuppliers,
@@ -256,6 +366,6 @@ module.exports={
     deleteSupplier,
     desactivateSupplier,
     getSuppliersInfo,
-    getSuppliersDetails
-
-};
+    getSuppliersDetails,
+    Suppliers
+}

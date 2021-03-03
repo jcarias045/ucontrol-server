@@ -138,7 +138,7 @@ function getDiscountId (req, res){
             attributes: ['ID_Discount', 'Name']
         })
         .then(discounts =>{
-            res.status(200).send({discounts});
+            res.status(200).json({discounts});
         })
     }catch(error){
         console.log(error);

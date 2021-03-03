@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-	const Profile = sequelize.define('crm_supplier', {	
+	const Supplier = sequelize.define('crm_supplier', {	
 	  ID_Supplier: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
@@ -25,7 +25,7 @@ module.exports = (sequelize, Sequelize) => {
         Adress:{
             type: Sequelize.STRING
         },
-        DebtsToPay:{
+        DebsToPay:{
             type: Sequelize.DECIMAL
         },
         Active:{
@@ -34,19 +34,17 @@ module.exports = (sequelize, Sequelize) => {
         codsupplier:{
             type: Sequelize.STRING
         },
-        ID_PaymentTime:{
+        PaymentTime:{
             type: Sequelize.INTEGER,
-            foreign_key:true,
         },
         deliveryDays:{
           type: Sequelize.INTEGER,
         }
-      
-   
+
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
 	  });
 	
-	return Profile;
+	return Supplier;
 }
