@@ -221,18 +221,14 @@ function getSuppliersInfo(req, res){
 function getSuppliersDetails(req, res){
  
     let supplierId = req.params.id;
+    let companyId = req.params.company;
     try{
         Supplier.findAll({
-            include: [
-                {
-                    model: PaymentTime,
-                    attributes: ['Name','Description']
-                }
-            ],
-            where: {
-                ID_Supplier:supplierId
-            }
         
+            where: {
+                ID_Supplier:supplierId,
+                ID_Company: companyId
+            }
         })
         .then(suppliers => {
             res.status(200).send(suppliers);

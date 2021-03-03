@@ -136,6 +136,11 @@ function getPurchaseDetails(req, res){
     let purchaseId = req.params.id; 
     try{
         Inventory.findAll({
+            attributes: ['ID_Inventory'],
+            where:{
+                ID_PurchaseOrder: sequelize.where(sequelize.col("ec_purchasedetail.ID_PurchaseOrder"), "=", purchaseId),
+                ID_Bodega:8
+            },
             include: [
                 {
                     model: PurchaseDetails,
@@ -149,25 +154,29 @@ function getPurchaseDetails(req, res){
                 {
                     model: Product,
                     attributes: ['codproducts','ID_Measure','BuyPrice'],
+                    on:{
+                        ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products")),
+                    },
                     include: [
                         {
                             model:Measure,
                             attributes: ['Name'],
                             on: {
-                               ID_Measure: sequelize.where(sequelize.col("crm_product.ID_Measure"), "=", sequelize.col("crm_product->crm_measures.ID_Measure")),
+                               ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_products->crm_measures.ID_Measure")),
+                               
                            }
                         }
-                    ]
+                    ],
+                    on:{
+                        ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products")),
+                    }
                     
                 }
-            ],
-            attributes: ['ID_Inventory'],
-            where:{
-                ID_PurchaseOrder: sequelize.where(sequelize.col("ec_purchasedetail.ID_PurchaseOrder"), "=", purchaseId),
-            }
+            ], 
+           
         })
         .then(details => {
-            res.status(200).send({details});
+            res.status(200).json({details});
             
         })
     }catch(error) {

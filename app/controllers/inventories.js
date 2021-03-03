@@ -149,15 +149,18 @@ function getNameProduct(req,res){
              include: [
             {
                  model: Product,
-                 attributes: ['ID_Products','Name','MinStock','MaxStock','ID_Measure','BuyPrice','codproducts'],
+                 attributes: ['ID_Products','Name',],
                  where:{[Op.and]: [
                     { ID_Supplier:supplierId },
-                    { ID_Company:companyId }
+                    { ID_Company:companyId}
                   ]},
-        
+                  on:{
+                    ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
+                 }  
                 }  
             ],
-            attributes: ['ID_Inventory','Stock']
+            attributes: ['ID_Inventory','Stock'],
+            where: {ID_Bodega:8}
           })
         .then(inventories => {
             res.status(200).send({inventories});
@@ -182,20 +185,24 @@ function getProductInfoxInventary(req,res){
              include: [
                 {
                  model: Product,
-                 attributes: ['ID_Products','Name','MinStock','MaxStock','ID_Measure','BuyPrice','codproducts'],  
+                 attributes: ['ID_Products','Name','MinStock','MaxStock','BuyPrice','codproducts'],  
+                 on:{
+                    ID_Products: sequelize.where(sequelize.col("crm_products.ID_Products"), "=", sequelize.col("ec_inventory.ID_Products")),
+                 },
                  include: [
                      {
                          model:Measure,
                          attributes: ['Name'],
                          on: {
-                            ID_Measure: sequelize.where(sequelize.col("crm_product.ID_Measure"), "=", sequelize.col("crm_product->crm_measures.ID_Measure")),
+                            ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_products->crm_measures.ID_Measure")),
                         }
                      }
                  ]    
                 }  
             ],
             attributes: ['ID_Inventory','Stock'],
-            where:{ID_Inventory:inventoryId}
+            where:{ID_Inventory:inventoryId,
+                ID_Bodega:8}  //8 ES DE BODEGA PRINCIPAL
           })
         .then(inventories => {
             res.status(200).send({inventories});

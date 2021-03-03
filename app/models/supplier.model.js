@@ -25,7 +25,7 @@ module.exports = (sequelize, Sequelize) => {
         Adress:{
             type: Sequelize.STRING
         },
-        DebtsToPay:{
+        DebsToPay:{
             type: Sequelize.DECIMAL
         },
         Active:{
@@ -34,12 +34,16 @@ module.exports = (sequelize, Sequelize) => {
         codsupplier:{
             type: Sequelize.STRING
         },
-        ID_PaymentTime:{
+        PaymentTime:{
             type: Sequelize.INTEGER,
-            foreign_key:true,
+            
         },
         deliveryDays:{
           type: Sequelize.INTEGER,
+        },
+        ID_SupplierType:{
+          type: Sequelize.INTEGER,
+          foreign_key:true,
         }
       
    

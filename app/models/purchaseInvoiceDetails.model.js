@@ -28,6 +28,12 @@ module.exports = (sequelize, Sequelize) => {
     ID_Inventory:{
         type: Sequelize.INTEGER,
         foreign_key:true,
+    },
+    Ingresados:{
+        type: Sequelize.DECIMAL
+    },
+    State:{
+        type: Sequelize.BOOLEAN,
     }
       
    
