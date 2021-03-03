@@ -110,6 +110,7 @@ async function updateCatProduct(req, res){
                 });
         }
 }
+
 function getCatProductsId(req, res){
     // Buscamos informacion para llenar el modelo de 
     try{

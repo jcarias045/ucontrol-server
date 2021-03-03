@@ -36,7 +36,7 @@ module.exports = (sequelize, Sequelize) => {
 	  MobilPhone:{
 		type: Sequelize.STRING
 	  },
-	  IdNumber:{
+	  idNumber:{
 		type: Sequelize.STRING
 	  },
 	  Images:{
@@ -54,9 +54,8 @@ module.exports = (sequelize, Sequelize) => {
 		type: Sequelize.DECIMAL,
 		null: true		
 	  },
-	  ID_PaymentTime:{
+	  PaymentTime:{
 		type: Sequelize.INTEGER,
-		foreign_key:true,
 	  },
 	  ID_User:{
 		type: Sequelize.INTEGER,
@@ -65,7 +64,10 @@ module.exports = (sequelize, Sequelize) => {
 	  ID_Discount:{
 		type: Sequelize.INTEGER,
 		foreign_key:true
-	  }	    
+	  },
+		Active:{
+			  type: Sequelize.BOOLEAN,
+		},	    
 	},{
 		freezeTableName: true,
 		timestamps: false,

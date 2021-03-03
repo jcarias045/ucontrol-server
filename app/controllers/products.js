@@ -5,13 +5,18 @@ const sequelize = require('sequelize');
 const { Op, where } = require("sequelize");
 
 const Product = db.Product;
-const Inventory = db.Inventory;
 const Measure = db.Measure;
+const Company = db.Company;
 
 function getPoducts(req, res){
     // Buscamos informacion para llenar el modelo de 
+    let companyId = req.params.id;
     try{
-        Product.findAll()
+        Product.findAll({
+            where: {ID_Company: companyId},
+            attributes: ['ID_Products','Name','Brand','SellPrice','ShortName','ID_Company','ID_CatProduct',
+            'ID_Supplier', 'Logo' ,  'MinStock' , 'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure'  ]
+        })
         .then(products => {
             res.status(200).send({products});
           
@@ -38,21 +43,26 @@ function createProduct(req, res){
         product.ShortName=req.body.ShortName;
         product.ID_CatProduct=req.body.ID_CatProduct;
         product.ID_Supplier=req.body.ID_Supplier;
-        product.Measure=req.body.Measure;
-        product.ExpirationTime=req.body.ExpirationTime;
+        product.ID_Measure=req.body.ID_Measure;
         product.ID_Company=req.body.ID_Company;
         product.Logo= req.body.Logo;
         product.MinStock= req.body.MinStock;
         product.MaxStock= req.body.MaxStock;
         product.Active=true;
+        product.BuyPrice= req.body.BuyPrice;
+        product.codproducts = req.body.codproducts;
 
         
-        Product.findOne({where:{[Op.or]: [
+        Product.findOne({
+            attributes: ['ID_Products','Name','Brand','SellPrice','ShortName',
+            'ID_Company','ID_CatProduct','ID_Supplier', 'Logo' ,  'MinStock' , 
+            'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure'],
+            where:{[Op.or]: [
             { Name: product.Name},
-            { ShortName: product.ShortName}
+            { codproducts: product.codproducts}
           ]}}).then(function(exist){
               if(!exist){
-                product.create(product)
+                Product.create(product)
                 .then(result => {    
                   res.status(200).json(result);
               
@@ -148,10 +158,14 @@ function getLogo(req,res){
 async function updateProduct(req, res){
    
     let productId = req.params.id; 
-    console.log(productId); 
-    const { Name, Brand, SellPrice, ShortName, ID_Company, ID_CatProduct, ID_Supplier, Measure, ExpirationTime,Logo, MinStock, MaxStock, Active} = req.body;  //
+     
+    const { Name, Brand, SellPrice, ShortName, ID_Company, ID_CatProduct, ID_Supplier, 
+        ID_Measure, Logo, MinStock, MaxStock, Active, BuyPrice, codproducts} = req.body;  //
     try{
-        let product = await Product.findByPk(productId);
+        let product = await Product.findByPk(productId,{
+            attributes: ['ID_Products','Name','Brand','SellPrice','ShortName',
+        'ID_Company','ID_CatProduct','ID_Supplier', 'Logo' ,  'MinStock' , 
+        'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure']});
         console.log(product);
         if(!product){
            // retornamos el resultado al cliente
@@ -169,12 +183,13 @@ async function updateProduct(req, res){
                 ID_Company: ID_Company,
                 ID_CatProduct: ID_CatProduct,
                 ID_Supplier: ID_Supplier,
-                Measure: Measure,
-                ExpirationTime: ExpirationTime,
+                ID_Measure: ID_Measure,
                 Logo: Logo,
                 MinStock: MinStock,
                 MaxStock: MaxStock,
-                Active:Active               
+                Active:Active,
+                BuyPrice: BuyPrice,
+                codproducts: codproducts               
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await product.update(updatedObject,
@@ -249,12 +264,15 @@ function getPoductsId(req, res){
 
 
 async function desactiveProduct(req, res){
-   
+   //RevisarSino desactiva
     let productId = req.params.id; 
+    console.log(req.body);
   
     const {Active} = req.body;  //
     try{
-        let product = await Product.findByPk(productId);
+        let product = await Product.findByPk(productId,{
+        attributes:['Name']
+        });
         
         if(!product){
            // retornamos el resultado al cliente
@@ -269,7 +287,7 @@ async function desactiveProduct(req, res){
                 Active:Active          
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await product.update(updatedObject,
+            let result = await Product.update(updatedObject,
                               { 
                                 returning: true,                
                                 where: {ID_Products: productId},
@@ -345,6 +363,90 @@ function getRecommendedProducts(req,res){
 
 }
 
+<<<<<<< HEAD
+// function getImages(req,res){
+//     const logoName=req.params.logoName;
+//     const filePath="./app/uploads/avatar/"+logoName;
+//     console.log(filePath);
+//     fs.exists(filePath,exists=>{
+//         if(!exists){
+//             res.status(404)
+//             .send({message:"el avatar que buscas no existe"});
+//         }
+//         else{
+//             res.sendFile(path.resolve(filePath));
+//         }
+       
+//     });
+// }
+
+// function uploadImages(req, res) {
+//     const params= req.params;
+//     const id=params.id;
+//     console.log(req.files);
+//     Product.findByPk(id).then((productData)=>{        
+//           if(!productData){
+//             res.status(404)
+//             .send({message:"no se encontro usuario"});
+//           }
+//           else{
+//             let product =productData;
+//             console.log(productData);
+//             if(req.files){
+//                 let filePath=req.files.avatar.path;
+                
+//                 let fileSplit=filePath.split("\\");
+//                 let fileName=fileSplit[3];
+//                 let extSplit=fileName.split(".");
+//                 let fileExt=extSplit[1];
+//                 console.log(fileName);
+//                 if(fileExt !== "png" && fileExt!=="jpg"){
+//                     res.status(400)
+//                     .send({message: "la extesion no es valida"});
+//                 }    
+//             else{          
+//                 console.log();
+//                 let updatedObject = {                   
+//                     Logo: fileName,
+//                   }
+//                 let result =  Product.update(updatedObject,
+//                     { 
+//                       returning: true,                
+//                       where: {ID_Products: id},
+//                       attributes: [ 'Logo']
+//                     }
+//                   );
+//                   if(!result) {
+//                     res.status(500).json({
+//                         message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+//                         error: "No se puede actualizar",
+//                     });
+//                 }
+    
+//                 res.status(200).json(result);
+//             }
+            
+//         }
+//         else{
+//             console.log("no reconoce ");
+//         }
+//           }
+//        });
+    
+// }
+
+module.exports={
+    getPoducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getPoductsId,
+    desactiveProduct,
+    uploadLogo,
+    getLogo,
+    getRecommendedProducts,
+    // getImages
+=======
 
 
 function getRecommendedProductsInventory(req,res){
@@ -394,4 +496,5 @@ module.exports={
     getPoducts,
     getRecommendedProducts,
     getRecommendedProductsInventory
+>>>>>>> 0e2a8e3610e2bb6fbec41638b39ad1df3db4cbdd
 }

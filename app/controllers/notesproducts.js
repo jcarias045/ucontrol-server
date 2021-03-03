@@ -1,15 +1,28 @@
 const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
-const Note = db.Note;
+const NoteProduct = db.NoteProduct;
+const User = db.User;
+const Product = db.Product;
 const moment=require("moment");
 const jwt= require('../services/jwt');
 
-
-function getNotes(req, res){
-    // Buscamos informacion para llenar el modelo de 
+function getNotesProduct(req, res) {
+    let userId = req.params.id;
+    let productId = req.params.product;
     try{
-        Note.findAll()
+        NoteProduct.findAll({
+            include:[
+                {
+                    model: Product,
+                    attributes: ['ID_Products', 'Name' , 'Brand', 'ShortName'],
+                    where: {ID_Products: productId},
+                }
+            ],
+            where: {ID_User: userId,
+            },
+            attributes:['ID_NoteProduct','Subject','Text']
+        })
         .then(notes => {
             res.status(200).send({notes});          
         })
@@ -24,8 +37,7 @@ function getNotes(req, res){
     }
 }
 
-function createNote(req, res){
-
+function createNoteProduct(req,res){
     let note = {};
     let CreationDate = moment().unix();
 
@@ -34,10 +46,11 @@ function createNote(req, res){
         note.Subject = req.body.Subject;
         note.Text=req.body.Text;
         note.CreationDate= CreationDate;
-        note.UserName=req.body.UserName;
+        note.ID_User=req.body.ID_User;
+        note.ID_Products= req.body.ID_Products;
  
         // Save to MySQL database
-       Note.create(note)
+       NoteProduct.create(note)
       .then(result => {    
         res.status(200).json(result);    
       });  
@@ -55,12 +68,14 @@ async function updateNote(req, res){
     console.log(noteID); 
     const { Subject, Text} = req.body;  //
     try{
-        let note = await Note.findByPk(noteID);
+        let note = await NoteProduct.findByPk(noteID,{
+            attributes: ['Subject','Text','ID_User']
+        });
         console.log(note);
         if(!note){
            // retornamos el resultado al cliente
             res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + noteID,
+                message: "No se encuentra la nota con ID = " + noteID,
                 error: "404"
             });
         } else {    
@@ -70,10 +85,10 @@ async function updateNote(req, res){
                 Text: Text       
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await note.update(updatedObject,
+            let result = await NoteProduct.update(updatedObject,
                               { 
                                 returning: true,                
-                                where: {ID_Note: noteID}
+                                where: {ID_NoteProduct: noteID}
                               }
                             );
 
@@ -99,17 +114,17 @@ async function deleteNote(req, res){
     console.log(req.params.id);
     try{
         let noteID = req.params.id;
-        let note = await Note.findByPk(noteID);
+        let note = await NoteProduct.findByPk(noteID);
        
         if(!note){
             res.status(404).json({
-                message: "La compañia con este ID no existe = " + noteID,
+                message: "La Nota con este ID no existe = " + noteID,
                 error: "404",
             });
         } else {
             await note.destroy();
             res.status(200).send({
-                message:"Compañia eliminada con exito"
+                message:"Nota eliminada con exito"
             });
         }
     } catch(errr) {
@@ -120,29 +135,9 @@ async function deleteNote(req, res){
     }
 }
 
-function getNotesID(req, res){
-    // Buscamos informacion para llenar el modelo de 
-    try{
-        Note.findAll({attributes:['ID_Note', 'Subject']})
-        .then(notes => {
-            res.status(200).send({notes});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
-}
-
-module.exports={
-    getNotes,
-    createNote,
+module.exports = {
+    createNoteProduct,
+    getNotesProduct,
     updateNote,
-    deleteNote,
-    getNotesID
-};
+    deleteNote
+}

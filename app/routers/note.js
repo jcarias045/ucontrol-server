@@ -1,8 +1,8 @@
 let express = require('express');
 let router = express.Router();
-const notes = require('../controllers/notes');
+const notes = require('../controllers/notesusers');
 
-router.get('/get-notes', notes.getNotes);
+router.get('/get-notes/:id', notes.getNotes);
 router.post('/note-create', notes.createNote);
 router.put('/note-update/:id', notes.updateNote);
 router.delete('/note-delete/:id', notes.deleteNote);
