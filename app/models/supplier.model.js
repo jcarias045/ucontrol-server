@@ -36,9 +36,14 @@ module.exports = (sequelize, Sequelize) => {
         },
         PaymentTime:{
             type: Sequelize.INTEGER,
+            
         },
         deliveryDays:{
           type: Sequelize.INTEGER,
+        },
+        ID_SupplierType:{
+          type: Sequelize.INTEGER,
+          foreign_key:true,
         }
 
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural

@@ -17,5 +17,6 @@ router.get('/get-productsall/:id', products.getPoducts);
 
 
 router.get('/get-recommended-products/:id/:supplier',products.getRecommendedProducts);
+router.get('/get-recommended-productsinventary/:id/:supplier',products.getRecommendedProductsInventory);
 
 module.exports = router;

@@ -1,27 +1,26 @@
 module.exports = (sequelize, Sequelize) => {
-	const Inventory = sequelize.define('ec_inventory', {	
-	  ID_Inventory: {
+	const taxesinvoice = sequelize.define('ec_invoicetaxes', {	
+	  id: {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
     },
-	  
-      Stock:{
-        type: Sequelize.INTEGER,
+    ID_PurchaseInvoice: {
+			type: Sequelize.STRING
       },
-      Description:{
+      ID_Taxes :{
         type: Sequelize.STRING
       },
-      ID_Bodega:{
+      Monto	:{
         type: Sequelize.INTEGER,
-
+	  	foreignKey: true
       }
+      
+   
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
-        
-        
 	  });
 	
-	return Inventory;
+	return taxesinvoice;
 }

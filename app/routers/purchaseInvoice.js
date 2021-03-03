@@ -8,12 +8,13 @@ const purchaseInvoice = require('../controllers/purchaseInvoice');
 router.get('/get-suppliersinvoices/:id/:company', purchaseInvoice.getSuppliersInvoices);
 router.post('/create-invoicesupplier/:id/:company', purchaseInvoice.createSupplierInvoice);
 router.post('/createnew-invoicesupplier/:id/:company', purchaseInvoice.createNewSupplierInvoice);
-// router.get('/get-purchaseorder-details/:id', purchase.getPurchaseDetails);
+router.get('/get-invoicesupplier-details/:id', purchaseInvoice.getInvoiceDetails);
 router.put('/update-invoicesupplier/:id', purchaseInvoice.updateInvoicePurchase);
-// router.delete('/delete-purchaseorder/:id', purchase.deletePurchase);
-// router.put('/change-purchasestate/:id', purchase.changePurchaseState);
+router.delete('/delete-invoicedetail/:id', purchaseInvoice.deleteInvoiceDetail);
+router.put('/change-invoicestate/:id', purchaseInvoice.changeInvoiceState);
 // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 // router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
 
+router.get('/get-suppliersinvoicespendientes/:id/:company', purchaseInvoice.getSuppliersInvoicesPendientes);
 
 module.exports = router;

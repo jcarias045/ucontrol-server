@@ -51,7 +51,7 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER
     },
     InvoiceNumber:{ //numero del PO que es invoice nmber en la orden de compra
-      type: Sequelize.INTEGER
+      type: Sequelize.STRING
     },
     Recibida:{
       type: Sequelize.BOOLEAN

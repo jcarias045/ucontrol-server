@@ -2,7 +2,7 @@ const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
 const sequelize = require('sequelize');
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 const Product = db.Product;
 const Measure = db.Measure;
@@ -363,6 +363,7 @@ function getRecommendedProducts(req,res){
 
 }
 
+<<<<<<< HEAD
 // function getImages(req,res){
 //     const logoName=req.params.logoName;
 //     const filePath="./app/uploads/avatar/"+logoName;
@@ -445,4 +446,55 @@ module.exports={
     getLogo,
     getRecommendedProducts,
     // getImages
+=======
+
+
+function getRecommendedProductsInventory(req,res){
+    // Buscamos informacion para llenar el modelo de 
+    let companyId = req.params.id;
+    let supplierId=req.params.supplier;
+    try{
+     Product.findAll({
+         attributes:['Name','MinStock','MaxStock','ID_Products','Inventary','BuyPrice','codproducts'],
+        
+         include:[{
+             model:Measure,
+             attributes: ['Name'],
+             on:{
+                ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_measures.ID_Measure"))
+             }  
+         },
+         {
+             model: Inventory,
+             attributes: ['ID_Inventory','Stock'],
+
+             on:{
+                ID_Products: sequelize.where(sequelize.col("crm_products.ID_Products"), "=", sequelize.col("ec_inventory.ID_Products")),
+                Stock:sequelize.where(sequelize.col("crm_products.MinStock"), ">", sequelize.col("ec_inventory.Stock"))
+             } ,
+             where: {ID_Bodega:8}
+         }
+        ], 
+         
+        })
+     .then(products => {
+         res.status(200).send({products});
+         
+     })
+ }catch(error) {
+     // imprimimos a consola
+     console.log(error);
+ 
+     res.status(500).json({
+         message: "Error en query!",
+         error: error
+     });
+ }
+ 
+ }
+module.exports={
+    getPoducts,
+    getRecommendedProducts,
+    getRecommendedProductsInventory
+>>>>>>> 0e2a8e3610e2bb6fbec41638b39ad1df3db4cbdd
 }

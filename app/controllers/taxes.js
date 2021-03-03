@@ -7,10 +7,12 @@ const Taxes=db.Taxes;
 function getTaxes(req, res){
     // Buscamos informacion para llenar el modelo de 
     let doc=req.params.doc;
+    let companyId=req.params.company;
     try{
         Taxes.findAll({
             where: {
-                document: doc
+                document: doc,
+                ID_Company:companyId
             }
         })
         .then(taxes => {

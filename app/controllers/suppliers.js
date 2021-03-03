@@ -236,13 +236,18 @@ function getSuppliersInfo(req, res){
 function getSuppliersDetails(req, res){
  
     let supplierId = req.params.id;
+    let companyId = req.params.company;
     try{
         Supplier.findAll({
+<<<<<<< HEAD
 
-            where: {
-                ID_Supplier:supplierId
-            }
+=======
         
+>>>>>>> 0e2a8e3610e2bb6fbec41638b39ad1df3db4cbdd
+            where: {
+                ID_Supplier:supplierId,
+                ID_Company: companyId
+            }
         })
         .then(suppliers => {
             res.status(200).send(suppliers);
