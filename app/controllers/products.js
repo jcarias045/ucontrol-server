@@ -363,7 +363,6 @@ function getRecommendedProducts(req,res){
 
 }
 
-<<<<<<< HEAD
 // function getImages(req,res){
 //     const logoName=req.params.logoName;
 //     const filePath="./app/uploads/avatar/"+logoName;
@@ -434,21 +433,6 @@ function getRecommendedProducts(req,res){
 //        });
     
 // }
-
-module.exports={
-    getPoducts,
-    createProduct,
-    updateProduct,
-    deleteProduct,
-    getPoductsId,
-    desactiveProduct,
-    uploadLogo,
-    getLogo,
-    getRecommendedProducts,
-    // getImages
-=======
-
-
 function getRecommendedProductsInventory(req,res){
     // Buscamos informacion para llenar el modelo de 
     let companyId = req.params.id;
@@ -494,7 +478,18 @@ function getRecommendedProductsInventory(req,res){
  }
 module.exports={
     getPoducts,
+    createProduct,
+    updateProduct,
+    deleteProduct,
+    getPoductsId,
+    desactiveProduct,
+    uploadLogo,
+    getLogo,
+    getRecommendedProducts,
+    // getImages
+    getPoducts,
     getRecommendedProducts,
     getRecommendedProductsInventory
->>>>>>> 0e2a8e3610e2bb6fbec41638b39ad1df3db4cbdd
+
+
 }
