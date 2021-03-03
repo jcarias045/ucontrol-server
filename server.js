@@ -37,10 +37,11 @@ let measureRoutes = require ('./app/routers/measure');
 let suppliersInvoicesRoutes = require ('./app/routers/purchaseInvoice');  //suppliers invoices para hacer referencia a facturas de los proveedores
 //let systemOpRoutes=require('./app/routers/sysOptions');
 let discountRoutes = require('./app/routers/discount');
-let paymenttimeRoutes = require('./app/routers/paymenttime');
+// let paymenttimeRoutes = require('./app/routers/paymenttime');
 
 let productEntries= require('./app/routers/productEntries');
 let invoiceEntriesDetails=require('./app/routers/invoiceEntriesDetails');
+let paymentsToSuppliersRoutes= require('./app/routers/paymentsToSuppliers');
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -85,10 +86,11 @@ app.use('/api', discountRoutes);
 app.use('/api', noteCustomerRoutes);
 app.use('/api', ProductNoteRoutes);
 app.use('/api', SupplierNoteRoutes);
-app.use('/api', paymenttimeRoutes);
-app.use('/api', paymenttimeRoutes);
+// // app.use('/api', paymenttimeRoutes);
+// app.use('/api', paymenttimeRoutes);
 app.use('/api', invoiceEntriesDetails);
 app.use('/api', productEntries);
+app.use('/api', paymentsToSuppliersRoutes);
 
 // Create a Server
 const server = app.listen(3050, function () {
