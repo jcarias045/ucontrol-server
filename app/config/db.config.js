@@ -49,7 +49,8 @@ db.InvoiceTaxes= require('../models/invoiceTaxes.model')(sequelize, Sequelize);
 db.ProductEntries= require('../models/productEntries.model')(sequelize, Sequelize);
 db.InvoiceEntriesDetails= require('../models/invoiceEntriesDetails.model')(sequelize, Sequelize); //detalle de la entrada respecto a detalle de factura
 db.PaymentMethods= require('../models/paymentMethods.model')(sequelize, Sequelize);
-
+db.PaymentToSupplier= require('../models/paymentstoSuppliers.model')(sequelize, Sequelize);
+db.PaymentToSupplierDetails= require('../models/paymenttoSupplierDetail.model')(sequelize, Sequelize);
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
@@ -334,5 +335,30 @@ db.InvoiceEntriesDetails.hasMany(db.PurchaseInvoiceDetails,{
     name: 'ID_PurchaseInvoiceDetail'
   }
 });
+
+
+db.PaymentMethods.belongsTo(db.PaymentToSupplier,{
+  foreignKey: {
+    name: 'ID_PaymentMethods'
+  }
+});
+
+db.PaymentToSupplier.hasMany(db.PaymentMethods,{
+  foreignKey: {
+    name: 'ID_PaymentMethods'
+  }
+});
+
+db.PaymentToSupplierDetails.hasMany(db.PaymentToSupplier,{
+  foreignKey: {
+    name: 'ID_Payments'
+  }
+});
+
+db.PaymentToSupplier.belongsTo(db.PaymentToSupplierDetails,{
+  foreignKey: {
+    name: 'ID_Payments'
+  }
+})
 
 module.exports = db;
