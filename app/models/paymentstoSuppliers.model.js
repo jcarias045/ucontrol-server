@@ -9,16 +9,20 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
             foreignKey: true
         },
-        ID_PaymentMethods 	:{
-            type: Sequelize.INTEGER,
-            foreignKey: true
-        },
+       
         DatePayment	:{
             type: Sequelize.DATE
         },
         Saldo:{
             type: Sequelize.DECIMAL
             
+        },
+        codpayment: {
+            type: Sequelize.INTEGER,
+        },
+        ID_User: {
+            type: Sequelize.INTEGER,
+
         }
     },{
 		freezeTableName: true,

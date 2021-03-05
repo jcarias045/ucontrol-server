@@ -64,7 +64,7 @@ async function createSupplierInvoice(req, res){
     let userId = req.params.id; 
     let codigo=0;      //correlativo de la factura
     let codIngreso=0; //correlativo del ingreso
-    
+    let deuda=0;
     let requiredIncome=await Company.findAll({attributes:['RequiredIncome'], where:{RequiredIncome:false,ID_Company:companyId}}).then(function(result){return result});
      console.log(requiredIncome);
     if(requiredIncome.length > 0){
@@ -104,7 +104,16 @@ async function createSupplierInvoice(req, res){
     if(!codigoPurchase){
         codigo =1;
     }else {codigo=codigoPurchase+1}
-    
+
+    let supplierId=req.body.ID_Supplier
+    let deudaProveedor=await Supplier.findAll({ 
+        where:{	ID_Supplier:supplierId},
+        attributes: ['DebsToPay']
+    });
+    console.log(deudaProveedor);
+    for(let i=0; i<deudaProveedor.length;i++){
+       deuda=deudaProveedor[i].dataValues.DebsToPay;
+    }
     
     
     try{
@@ -132,9 +141,20 @@ async function createSupplierInvoice(req, res){
         console.log(orden);
         // Save to MySQL database
     PurchaseInvoice.create(orden)  //Creacion de factura #1
-      .then(result => {    
+      .then(async result => {    
         res.status(200).json(result);
         let idPurchase=result.ID_PurchaseInvoice;
+        //agregando deuda a proveedor de
+        let updateDeuda={
+            DebsToPay: parseFloat(deuda)+parseFloat(req.body.Total)
+        };
+        
+        let updateDeudaProveedor = await Supplier.update(updateDeuda,
+            {             
+              where: {ID_Supplier:supplierId},
+              attributes: ['DebsToPay']
+            }
+          );
           //id de la factura recien creada
         if(idPurchase){
             if(addTaxes.length > 0){
@@ -338,7 +358,7 @@ async function createNewSupplierInvoice(req, res){
     let userId = req.params.id; 
     let codigo=0;      //correlativo de la factura
     let codIngreso=0; //correlativo del ingreso
-    
+    let deuda=0;
     let requiredIncome=await Company.findByPk(companyId,{attributes:['RequiredIncome'], where:{RequiredIncome:false}}).then(function(result){return result});
     console.log(requiredIncome);
    
@@ -384,7 +404,15 @@ async function createNewSupplierInvoice(req, res){
         codigo =1;
     }else {codigo=codigoPurchase+1}
     
-    
+    let supplierId=req.body.ID_Supplier
+    let deudaProveedor=await Supplier.findAll({ 
+        where:{	ID_Supplier:supplierId},
+        attributes: ['DebsToPay']
+    });
+    console.log(deudaProveedor);
+    for(let i=0; i<deudaProveedor.length;i++){
+       deuda=deudaProveedor[i].dataValues.DebsToPay;
+    }
     
     try{
         let details={};
@@ -409,10 +437,19 @@ async function createNewSupplierInvoice(req, res){
         console.log(orden);
         // Save to MySQL database
     PurchaseInvoice.create(orden)
-      .then(result => {    
+      .then(async result => {    
         res.status(200).json(result);
         let idPurchase=result.ID_PurchaseInvoice;
+        let updateDeuda={
+            DebsToPay: parseFloat(deuda)+parseFloat(req.body.Total)
+        };
         
+        let updateDeudaProveedor = await Supplier.update(updateDeuda,
+            {             
+              where: {ID_Supplier:supplierId},
+              attributes: ['DebsToPay']
+            }
+          );
         if(idPurchase){
             if(addTaxes.length > 0){
                 for(const item of addTaxes){
@@ -764,7 +801,7 @@ async function changeInvoiceState(req, res){
         });
     }
 }
-
+//no recibidas
 function getSuppliersInvoicesPendientes(req, res){
     let userId = req.params.id; 
     let companyId = req.params.company;
@@ -802,6 +839,87 @@ function getSuppliersInvoicesPendientes(req, res){
         });
     }
 }
+
+function getSuppliersInvoicesNoPagada(req, res){
+    let userId = req.params.id; 
+    let companyId = req.params.company;
+    let antCod=0;
+    console.log(userId);
+    console.log(companyId);
+    try{
+        PurchaseInvoice.findAll({    
+             include: [
+            {
+                    model: Supplier,
+                    attributes: ['ID_Supplier','Name'],
+                    where: {ID_Company:companyId},
+                    on:{
+                   
+                        ID_Supplier: sequelize.where(sequelize.col("ec_purchaseinvoice.ID_Supplier"), "=", sequelize.col("crm_suppliers.ID_Supplier")),
+                    
+                     }
+                }
+            ]  
+            ,
+            where: {ID_User:userId,
+            Pagada:false},
+           
+          })
+        .then(invoices => {
+            res.status(200).send({invoices});
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
+
+function getInfoInvoice(req, res){
+    let userId = req.params.id; 
+    let invoiceid = req.params.invoice;
+    let companyId = req.params.company
+    let antCod=0;
+    
+    try{
+        PurchaseInvoice.findAll({    
+             include: [
+            {
+                    model: Supplier,
+                    attributes: ['ID_Supplier','Name'],
+                    where: {ID_Company:companyId},
+                    on:{
+                   
+                        ID_Supplier: sequelize.where(sequelize.col("ec_purchaseinvoice.ID_Supplier"), "=", sequelize.col("crm_suppliers.ID_Supplier")),
+                     
+                     }
+                }]
+                 
+            ,
+            where: {ID_User:userId, ID_PurchaseInvoice:invoiceid},
+           
+          })
+        .then(invoices => {
+            res.status(200).send({invoices});
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
 module.exports={
     getSuppliersInvoices,
     createSupplierInvoice,
@@ -810,5 +928,7 @@ module.exports={
     getInvoiceDetails,
     deleteInvoiceDetail,
     changeInvoiceState,
-    getSuppliersInvoicesPendientes
+    getSuppliersInvoicesPendientes,
+    getSuppliersInvoicesNoPagada,
+    getInfoInvoice
 }

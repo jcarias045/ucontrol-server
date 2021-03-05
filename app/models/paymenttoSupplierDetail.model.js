@@ -7,13 +7,13 @@ module.exports = (sequelize, Sequelize) => {
         },
         Number : {
             type: Sequelize.INTEGER,
-            foreignKey: true
+           
         },
         BankName 	:{
             type: Sequelize.STRING,
            
         },
-        Date	:{
+        CreationDate:{
             type: Sequelize.DATE
         },
         Amount:{
@@ -31,6 +31,13 @@ module.exports = (sequelize, Sequelize) => {
         NoTransaction:{
             type: Sequelize.INTEGER,
 
+        },
+        ID_PaymentMethods:{
+            type: Sequelize.INTEGER,
+            foreignKey: true
+        },
+        Cancelled:{
+            type: Sequelize.BOOLEAN,
         }
     },{
 		freezeTableName: true,

@@ -412,13 +412,13 @@ db.InvoiceEntriesDetails.hasMany(db.PurchaseInvoiceDetails,{
 });
 
 
-db.PaymentMethods.belongsTo(db.PaymentToSupplier,{
+db.PaymentMethods.belongsTo(db.PaymentToSupplierDetails,{
   foreignKey: {
     name: 'ID_PaymentMethods'
   }
 });
 
-db.PaymentToSupplier.hasMany(db.PaymentMethods,{
+db.PaymentToSupplierDetails.hasMany(db.PaymentMethods,{
   foreignKey: {
     name: 'ID_PaymentMethods'
   }
@@ -434,6 +434,31 @@ db.PaymentToSupplier.belongsTo(db.PaymentToSupplierDetails,{
   foreignKey: {
     name: 'ID_Payments'
   }
-})
+});
+
+//RELACION SOLO PARA PAGOS
+
+db.PaymentToSupplier.hasMany(db.User, {
+  foreignKey: {
+    name: 'ID_User'
+  }
+});
+db.User.belongsTo(db.PaymentToSupplier, {
+  foreignKey: {
+    name: 'ID_User'
+  }
+});
+
+db.PurchaseInvoice.belongsTo(db.PaymentToSupplier, {
+  foreignKey: {
+    name: 'ID_PurchaseInvoice'
+  }
+});
+db.PaymentToSupplier.hasMany(db.PurchaseInvoice, {
+  foreignKey: {
+    name: 'ID_PurchaseInvoice'
+  }
+});
+
 
 module.exports = db;
