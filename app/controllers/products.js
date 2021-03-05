@@ -476,6 +476,29 @@ function getRecommendedProductsInventory(req,res){
  }
  
  }
+
+function getProduct(req,res){
+    console.log(req.params.id);
+    Product.findByPk(req.params.id,
+        {attributes:[
+            'ID_Products','Name','Brand','SellPrice',
+            'ShortName', 'ID_Company','ID_CatProduct',
+            'ID_Supplier', 'ID_Measure', 'Logo', 'MinStock',
+            'MaxStock', 'Active', 'BuyPrice', 'codproducts'
+        ]})
+        .then(products => {
+          res.status(200).json(products);
+        }).catch(error => {
+        // imprimimos a consola
+          console.log(error);
+
+          res.status(500).json({
+              message: "Error!",
+              error: error
+          });
+        })
+}
+ 
 module.exports={
     getPoducts,
     createProduct,
@@ -487,9 +510,7 @@ module.exports={
     getLogo,
     getRecommendedProducts,
     // getImages
-    getPoducts,
-    getRecommendedProducts,
-    getRecommendedProductsInventory
-
+    getRecommendedProductsInventory,
+    getProduct
 
 }

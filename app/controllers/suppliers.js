@@ -360,6 +360,26 @@ function Suppliers(req, res){
     
 // }
 
+function getSupplierInfo(req, res){
+    console.log("gola");
+    Supplier.findByPk(req.params.id,{
+        attributes:['ID_supplier','Name','Web','Email',
+        'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
+        'deliveryDays','Phone','DebsToPay']})
+        .then(supplier => {
+          res.status(200).json(supplier);
+        }).catch(error => {
+        // imprimimos a consola
+          console.log(error);
+
+          res.status(500).json({
+              message: "Error!",
+              error: error
+          });
+        })
+}
+
+
 
 module.exports={
     createSupplier,
@@ -369,5 +389,6 @@ module.exports={
     desactivateSupplier,
     getSuppliersInfo,
     getSuppliersDetails,
-    Suppliers
+    Suppliers,
+    getSupplierInfo
 }

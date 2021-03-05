@@ -27,7 +27,7 @@ function getCompanies(req, res){
 
 function createCompany(req, res){
     let company = {};
-
+    console.log(req);
     try{
         // Construimos el modelo del objeto company para enviarlo como body del request
         company.Name = req.body.Name;
@@ -35,6 +35,12 @@ function createCompany(req, res){
         company.Web= req.body.Web;
         company.ShortName=req.body.ShortName;
         company.Active=true;
+        company.AccessToCustomers=req.body.AccessToCustomers;
+        company.AccessToSuppliers=req.body.AccessToSuppliers;
+        company.RequieredIncome=req.body.RequieredIncome;
+        company.RequieredOutput= req.body.RequieredOutput;
+        company.CompanyRecords=req.body.CompanyRecords;
+        company.AverageCost=req.body.AverageCost;
         
         Company.findOne({where:{[Op.or]: [
             { Name: company.Name},
@@ -139,7 +145,8 @@ async function updateCompany(req, res){
    
     let companyId = req.params.id; 
     console.log(companyId); 
-    const { Name,Logo,ShortName,Web,Active} = req.body;  //
+    const { Name,Logo,ShortName,Web,Active, AccessToCustomers,AccessToSuppliers,
+        RequieredIncome, RequieredOutput,CompanyRecords,AverageCost} = req.body;  //
     try{
         let company = await Company.findByPk(companyId);
         console.log(company);
@@ -156,8 +163,13 @@ async function updateCompany(req, res){
                 Logo: Logo,
                 ShortName:ShortName,
                 Web:Web,
-                Active:Active
-               
+                Active:Active,
+                AccessToCustomers:AccessToCustomers, 
+                AccessToSuppliers:AccessToSuppliers,
+                RequieredIncome:RequieredIncome,
+                RequieredOutput: RequieredOutput,
+                CompanyRecords:CompanyRecords,
+                AverageCost:AverageCost               
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await company.update(updatedObject,

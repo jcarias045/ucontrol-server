@@ -53,10 +53,10 @@ module.exports = (sequelize, Sequelize) => {
       },
       codproducts:{
         type: Sequelize.STRING
-      },
-      Inventary:{
-        type: Sequelize.DECIMAL
       }
+      // Inventary:{
+      //   type: Sequelize.DECIMAL
+      // }
  
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
