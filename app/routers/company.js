@@ -18,3 +18,7 @@ router.get('/get-company', companies.getCompaniesId);
 router.put('/desactive-company/:id', companies.desactivateCompany);
 
 module.exports = router;
+
+// /get-companies
+// /company-create
+// /company-update/

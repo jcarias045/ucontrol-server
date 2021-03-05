@@ -6,7 +6,9 @@ const CatProduct = db.CatProduct;
 function getCatProducts(req,res){
     console.log("Categorias");
     try{
-                 CatProduct.findAll()
+                 CatProduct.findAll({
+                    where:{ID_Company: companyId}
+                 })
                  .then(catproducts => {
                      res.status(200).send({catproducts});
                   
@@ -114,7 +116,9 @@ async function updateCatProduct(req, res){
 function getCatProductsId(req, res){
     // Buscamos informacion para llenar el modelo de 
     try{
-        CatProduct.findAll({attributes:['ID_CatProduct', 'Name']})
+        CatProduct.findAll({
+            where:{ID_Company: companyId},
+            attributes:['ID_CatProduct', 'Name']})
         .then(CatProducts => {
             res.status(200).send({CatProducts});
           

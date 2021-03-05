@@ -20,8 +20,25 @@ module.exports = (sequelize, Sequelize) => {
       },
       Active:{
           type: Sequelize.BOOLEAN
-      }
-   
+      },
+      AccessToCustomers:{
+        type: Sequelize.BOOLEAN
+      },
+      AccessToSuppliers:{
+        type: Sequelize.BOOLEAN
+      },
+      RequieredIncome:{
+        type: Sequelize.BOOLEAN
+      },
+      RequieredOutput:{
+        type: Sequelize.BOOLEAN
+      },
+      CompanyRecords:{
+        type: Sequelize.BOOLEAN
+      },
+      AverageCost:{
+        type: Sequelize.BOOLEAN
+      }   
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,

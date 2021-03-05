@@ -53,6 +53,10 @@ db.InvoiceEntriesDetails= require('../models/invoiceEntriesDetails.model')(seque
 db.PaymentMethods= require('../models/paymentMethods.model')(sequelize, Sequelize);
 db.PaymentToSupplier= require('../models/paymentstoSuppliers.model')(sequelize, Sequelize);
 db.PaymentToSupplierDetails= require('../models/paymenttoSupplierDetail.model')(sequelize, Sequelize);
+db.Personal = require('../models/personal.modal')(sequelize,Sequelize);
+db.Bank = require('../models/bank.model')(sequelize,Sequelize);
+db.Job = require('../models/job.model')(sequelize,Sequelize);
+
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
@@ -75,6 +79,20 @@ db.Customer.belongsTo(db.User,{
     name:'ID_User'
   }
 })
+
+//Relacion entre bank y company
+
+db.Company.hasMany(db.Bank, {
+  foreignKey: 'ID_Company'
+});
+
+db.Bank.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+});
+
+
 //estableciendo relacion entre las tablas supplier y company
 db.Company.hasMany(db.Supplier,{
   foreignKey: 'ID_Company'
@@ -92,6 +110,17 @@ db.Company.hasMany(db.Discount, {
 });
 
 db.Discount.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+});
+//estableciendorelacion entre job y compañia
+
+db.Company.hasMany(db.Job, {
+  foreignKey: 'ID_Company'
+});
+
+db.Job.belongsTo(db.Company,{
   foreignKey:{
     name: 'ID_Company'
   }
@@ -185,6 +214,7 @@ db.Company.hasMany(db.User,{
   foreignKey: 'ID_Company'
 });
 
+//
 
 //relaciones PurchaseOrder y Supplier
 db.Supplier.hasMany(db.PurchaseOrder,{   
