@@ -372,6 +372,32 @@ function uploadImages(req, res) {
     
 }
 
+function customersUsers(req,res){
+    let userId = req.params.id
+    console.log(req.body.id);
+    console.log(userId);
+    try{
+        
+        Customer.findAll({
+            where: {ID_User: userId},
+            attributes:['ID_Customer','Name','LastName','User','Email','Country',
+        'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
+    'PaymentTime','ID_Discount', 'Active','ID_User']})
+        .then(customer => {
+            res.status(200).send({customer});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
 
 module.exports={
     createCustomer,
@@ -382,5 +408,6 @@ module.exports={
     signInCustomer,
     desactiveCustomer,
     getImages,
-    uploadImages
+    uploadImages,
+    customersUsers
 };

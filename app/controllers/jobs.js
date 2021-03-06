@@ -7,6 +7,7 @@ const Job = db.Job;
 const Company = db.Company;
 
 function getJobs(req, res) {
+    let companyId = req.params.id;
     try{
         Job.findAll({    
              include: [
@@ -14,7 +15,8 @@ function getJobs(req, res) {
                  model: Company,
                  attributes: ['ID_Company','Name','ShortName']
              }
-            ]
+            ],
+            where: {ID_Company: companyId}
           })
         .then(job => {
             res.status(200).send({job});            

@@ -227,7 +227,7 @@ function getCompaniesId(req, res){
     // Buscamos informacion para llenar el modelo de 
     
     try{
-        Company.findAll({attributes:['ID_Company', 'Name']})
+        Company.findAll({attributes:['ID_Company', 'Name', 'CompanyRecords']})
         .then(companies => {
             res.status(200).send({companies});
           
@@ -243,6 +243,23 @@ function getCompaniesId(req, res){
     }
 }
 
+async function getCompany(req,res){
+
+    console.log("gola");
+    Company.findByPk(req.params.id,{
+        attributes:['ID_Company', 'Name', 'CompanyRecords']})
+        .then(company => {
+          res.status(200).json(company);
+        }).catch(error => {
+        // imprimimos a consola
+          console.log(error);
+
+          res.status(500).json({
+              message: "Error!",
+              error: error
+          });
+        })
+}
 
 
 async function desactivateCompany(req, res){
@@ -301,6 +318,6 @@ module.exports={
     updateCompany,
     deleteCompany,  
     getCompaniesId,
-    desactivateCompany
-
-};
+    desactivateCompany,
+    getCompany
+}

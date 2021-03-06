@@ -9,6 +9,7 @@ const Company = db.Company;
 function getBanks(req, res) {
     console.log("Descuento");
     console.log("Probando endpoint");
+    let companyId = req.params.id; 
     try{
         Bank.findAll({    
              include: [
@@ -16,10 +17,11 @@ function getBanks(req, res) {
                  model: Company,
                  attributes: ['ID_Company','Name','ShortName']
              }
-            ]
+            ],
+            where: {ID_Company: companyId}
           })
         .then(bank => {
-            res.status(200).send({bank});            
+            res.status(200).json({bank});            
         })
     }catch(error) {
         // imprimimos a consola
