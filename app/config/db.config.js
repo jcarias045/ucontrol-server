@@ -53,7 +53,7 @@ db.InvoiceEntriesDetails= require('../models/invoiceEntriesDetails.model')(seque
 db.PaymentMethods= require('../models/paymentMethods.model')(sequelize, Sequelize);
 db.PaymentToSupplier= require('../models/paymentstoSuppliers.model')(sequelize, Sequelize);
 db.PaymentToSupplierDetails= require('../models/paymenttoSupplierDetail.model')(sequelize, Sequelize);
-db.Personal = require('../models/personal.modal')(sequelize,Sequelize);
+db.Personal = require('../models/personal.model')(sequelize,Sequelize);
 db.Bank = require('../models/bank.model')(sequelize,Sequelize);
 db.Job = require('../models/job.model')(sequelize,Sequelize);
 
@@ -442,13 +442,13 @@ db.InvoiceEntriesDetails.hasMany(db.PurchaseInvoiceDetails,{
 });
 
 
-db.PaymentMethods.belongsTo(db.PaymentToSupplier,{
+db.PaymentMethods.belongsTo(db.PaymentToSupplierDetails,{
   foreignKey: {
     name: 'ID_PaymentMethods'
   }
 });
 
-db.PaymentToSupplier.hasMany(db.PaymentMethods,{
+db.PaymentToSupplierDetails.hasMany(db.PaymentMethods,{
   foreignKey: {
     name: 'ID_PaymentMethods'
   }
@@ -464,6 +464,70 @@ db.PaymentToSupplier.belongsTo(db.PaymentToSupplierDetails,{
   foreignKey: {
     name: 'ID_Payments'
   }
-})
+});
+
+//RELACION SOLO PARA PAGOS
+
+db.PaymentToSupplier.hasMany(db.User, {
+  foreignKey: {
+    name: 'ID_User'
+  }
+});
+db.User.belongsTo(db.PaymentToSupplier, {
+  foreignKey: {
+    name: 'ID_User'
+  }
+});
+
+db.PurchaseInvoice.belongsTo(db.PaymentToSupplier, {
+  foreignKey: {
+    name: 'ID_PurchaseInvoice'
+  }
+});
+db.PaymentToSupplier.hasMany(db.PurchaseInvoice, {
+  foreignKey: {
+    name: 'ID_PurchaseInvoice'
+  }
+});
+
+db.Personal.hasMany(db.Company, {
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.Company.belongsTo(db.Personal, {
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+
+db.Personal.hasMany(db.Bank, {
+  foreignKey: {
+    name: 'ID_Bank'
+  }
+});
+
+db.Bank.belongsTo(db.Personal, {
+  foreignKey: {
+    name: 'ID_Bank'
+  }
+});
+
+
+db.Personal.hasMany(db.Job, {
+  foreignKey: {
+    name: 'ID_Job'
+  }
+});
+
+db.Job.belongsTo(db.Personal, {
+  foreignKey: {
+    name: 'ID_Job'
+  }
+});
+
+
 
 module.exports = db;

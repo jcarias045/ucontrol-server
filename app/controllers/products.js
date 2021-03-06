@@ -7,7 +7,7 @@ const { Op, where } = require("sequelize");
 const Product = db.Product;
 const Measure = db.Measure;
 const Company = db.Company;
-
+const Inventory = db.Inventory;
 function getPoducts(req, res){
     // Buscamos informacion para llenar el modelo de 
     let companyId = req.params.id;

@@ -121,11 +121,19 @@ module.exports = (sequelize, Sequelize) => {
     },
     officeWorkplace:{
       type: Sequelize.STRING,
+<<<<<<< HEAD:app/models/personal.modal.js
     },
     ID_User: {
       type: Sequelize.INTEGER,
       foreign_key: true,
     }	    
+=======
+    }	  ,
+    ID_User: {
+      type: Sequelize.INTEGER,
+      foreign_key: true,
+    }  
+>>>>>>> refs/remotes/origin/master:app/models/personal.model.js
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
