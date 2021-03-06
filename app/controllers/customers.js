@@ -91,18 +91,40 @@ function getCustomerInfo(req, res){
         })
 }
 //Seleccionar TODOS
-function customers(req, res){
+async function customers(req, res){
     let companyId = req.params.id; 
+    let userId=req.params.user;
+    let requiredIncome=await Company.findAll({attributes:['CompanyRecords'], where:{RequiredIncome:1,ID_Company:companyId}}).
+    then(function(result){return result});   //obtenes si existe un registro
+    console.log(requiredIncome);
+    let customer={};
     try{
-        Customer.findAll({
+        if(requiredIncome.length>0){
+            console.log("por compania");
+          Customer.findAll({
             where: {ID_Company: companyId},
             attributes:['ID_Customer','Name','LastName','User','Email','Country',
         'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
-    'PaymentTime','ID_Discount', 'Active']})
+          'PaymentTime','ID_Discount']})
         .then(customers => {
             res.status(200).send({customers});
           
         })
+        }
+        else{
+            console.log("usuario");
+             Customer.findAll({
+                where: {ID_Company: companyId, ID_User:userId},
+                attributes:['ID_Customer','Name','LastName','User','Email','Country',
+            'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
+              'PaymentTime','ID_Discount']})
+            .then(customers => {
+                res.status(200).send({customers});
+              
+            })
+        }
+
+        
     }catch(error) {
         // imprimimos a consola
         console.log(error);

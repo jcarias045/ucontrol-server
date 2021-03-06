@@ -65,8 +65,12 @@ async function createSupplierInvoice(req, res){
     let codigo=0;      //correlativo de la factura
     let codIngreso=0; //correlativo del ingreso
     let deuda=0;
-    let requiredIncome=await Company.findAll({attributes:['RequiredIncome'], where:{RequiredIncome:false,ID_Company:companyId}}).then(function(result){return result});
-     console.log(requiredIncome);
+
+    let requiredIncome=await Company.findAll({attributes:['RequiredIncome'], where:{RequiredIncome:false,ID_Company:companyId}}).
+    then(function(result){return result});
+    
+    console.log(requiredIncome);
+
     if(requiredIncome.length > 0){
         let entrycod=await ProductEntries.max('codentry',{ 
        

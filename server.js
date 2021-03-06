@@ -44,6 +44,8 @@ let discountRoutes = require('./app/routers/discount');
 let productEntries= require('./app/routers/productEntries');
 let invoiceEntriesDetails=require('./app/routers/invoiceEntriesDetails');
 let paymentsToSuppliersRoutes= require('./app/routers/paymentsToSuppliers');
+
+let personalRoutes= require('./app/routers/personalroutes');
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -94,7 +96,8 @@ app.use('/api', invoiceEntriesDetails);
 app.use('/api', productEntries);
 app.use('/api', paymentsToSuppliersRoutes);
 app.use('/api', BanksRoutes);
-app.use('/api', JobsRoutes)
+app.use('/api', JobsRoutes);
+app.use('/api', personalRoutes);
 
 // Create a Server
 const server = app.listen(3050, function () {

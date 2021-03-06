@@ -53,7 +53,7 @@ db.InvoiceEntriesDetails= require('../models/invoiceEntriesDetails.model')(seque
 db.PaymentMethods= require('../models/paymentMethods.model')(sequelize, Sequelize);
 db.PaymentToSupplier= require('../models/paymentstoSuppliers.model')(sequelize, Sequelize);
 db.PaymentToSupplierDetails= require('../models/paymenttoSupplierDetail.model')(sequelize, Sequelize);
-db.Personal = require('../models/personal.modal')(sequelize,Sequelize);
+db.Personal = require('../models/personal.model')(sequelize,Sequelize);
 db.Bank = require('../models/bank.model')(sequelize,Sequelize);
 db.Job = require('../models/job.model')(sequelize,Sequelize);
 
@@ -489,6 +489,45 @@ db.PaymentToSupplier.hasMany(db.PurchaseInvoice, {
     name: 'ID_PurchaseInvoice'
   }
 });
+
+db.Personal.hasMany(db.Company, {
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.Company.belongsTo(db.Personal, {
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+
+db.Personal.hasMany(db.Bank, {
+  foreignKey: {
+    name: 'ID_Bank'
+  }
+});
+
+db.Bank.belongsTo(db.Personal, {
+  foreignKey: {
+    name: 'ID_Bank'
+  }
+});
+
+
+db.Personal.hasMany(db.Job, {
+  foreignKey: {
+    name: 'ID_Job'
+  }
+});
+
+db.Job.belongsTo(db.Personal, {
+  foreignKey: {
+    name: 'ID_Job'
+  }
+});
+
 
 
 module.exports = db;

@@ -194,6 +194,27 @@ function getJobId (req, res){
     }
 }
 
+
+function getJobsInfo(req, res) {
+    let companyId = req.params.id;
+    try{
+        Job.findAll({    
+            where: {ID_Company: companyId}
+          })
+        .then(job => {
+            res.status(200).send({job});            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
 module.exports = {
     getJobs,
     createJob,

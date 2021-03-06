@@ -11,6 +11,7 @@ const Inventory = db.Inventory;
 const Product = db.Product;
 const Measure = db.Measure;
 const Company = db.Company;
+
 function getEntries(req, res){
     // Buscamos informacion para llenar el modelo de 
     let userId=req.params.id;
