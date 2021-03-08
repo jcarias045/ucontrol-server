@@ -3,15 +3,13 @@ const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
 const { Op } = require("sequelize");
 //Se utiliza DiscountObj porque el parametro Discount y el nombre del objeto no pueden ser iguales.
-const Bank = db.Bank;
+const Brand = db.Brand;
 const Company = db.Company;
 
-function getBanks(req, res) {
-    console.log("Descuento");
-    console.log("Probando endpoint");
+function getBrands(req,res){
     let companyId = req.params.id; 
     try{
-        Bank.findAll({    
+        Brand.findAll({    
              include: [
             {
                  model: Company,
@@ -20,8 +18,8 @@ function getBanks(req, res) {
             ],
             where: {ID_Company: companyId}
           })
-        .then(bank => {
-            res.status(200).json({bank});            
+        .then(brand => {
+            res.status(200).json({brand});            
         })
     }catch(error) {
         // imprimimos a consola
@@ -34,18 +32,17 @@ function getBanks(req, res) {
     }
 }
 
-function createBank(req, res){
+function createBrands(req,res){
     console.log("hola");
-    let bank = {};
+    let brand = {};
     try{
         // Construimos el modelo del objeto company para enviarlo como body del reques
-        bank.Name = req.body.Name;
-        bank.Phone = req.body.Phone;
-        bank.Address= req.body.Address;
-        bank.ID_Company=req.body.ID_Company
-        console.log(bank);
+        brand.Name = req.body.Name;
+        brand.Description = req.body.Description;
+        brand.ID_Company=req.body.ID_Company;
+        console.log(brand);
         // Save to MySQL database
-        Bank.create(bank)
+        Brand.create(brand)
       .then(result => {    
         res.status(200).json(result);
     
@@ -58,35 +55,32 @@ function createBank(req, res){
     }
 }
 
-
-async function updateBank(req, res){
-   
-    let bankId = req.params.id; 
-    console.log(bankId);
-    const { Name, Phone, Address} = req.body;  //
+async function updateBrand(req,res){
+    let brandId = req.params.id; 
+    console.log(brandId);
+    const { Name, Description} = req.body;  //
     console.log(Name);
-    console.log(Phone);
+    console.log(Description);
     try{
-        let bank = await Bank.findByPk(bankId);
-        console.log(bank);
-        if(!bank){
+        let brand = await Brand.findByPk(brandId);
+        console.log(brand);
+        if(!brand){
            // retornamos el resultado al descuento
             res.status(404).json({
-                message: "No se encuentra el banco con ID = " + bankId,
+                message: "No se encuentra el banco con ID = " + brandId,
                 error: "404"
             });
         } else {    
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Name: Name,
-                Phone: Phone,
-                Address:Address    
+                Description: Description    
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await bank.update(updatedObject,
+            let result = await brand.update(updatedObject,
                               { 
                                 returning: true,                
-                                where: {ID_Bank: bankId}
+                                where: {ID_Brand: brandId}
                               }
                             );
 
@@ -107,21 +101,21 @@ async function updateBank(req, res){
     }
 }
 
-async function deleteBank(req, res){
+async function deleteBrand(req, res){
     console.log(req.params.id);
     try{
-        let bankId = req.params.id;
-        let bank = await Bank.findByPk(bankId);
+        let brandId = req.params.id;
+        let brand = await Brand.findByPk(brandId);
        
-        if(!bank){
+        if(!brand){
             res.status(404).json({
-                message: "El banco con este ID no existe = " + bankId,
+                message: "La Marca con este ID no existe = " + bankId,
                 error: "404",
             });
         } else {
-            await bank.destroy();
+            await brand.destroy();
             res.status(200).send({
-                message:"El Banco fue eliminad con exito"
+                message:"La Marca fue eliminad con exito"
             });
         }
     } catch(errr) {
@@ -132,17 +126,17 @@ async function deleteBank(req, res){
     }
 }
 
-function getBankId (req, res){
+function getBrandId (req, res){
     
     let companyId = req.params.id;
 
     try{
-        Bank.findAll({
+        Brand.findAll({
             where:{ID_Company: companyId},
-            attributes: ['ID_Bank', 'Name']
+            attributes: ['ID_Brand', 'Name']
         })
-        .then(banks =>{
-            res.status(200).json({banks});
+        .then(brand =>{
+            res.status(200).json({brand});
             
         })
     }catch(error){
@@ -154,12 +148,10 @@ function getBankId (req, res){
     }
 }
 
-
 module.exports={
-    getBanks,
-    createBank,
-    updateBank,
-    deleteBank,
-    getBankId
-
+    getBrands,
+    getBrandId,
+    createBrands,
+    deleteBrand,
+    updateBrand
 }

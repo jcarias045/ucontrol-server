@@ -29,7 +29,7 @@ db.NoteUser = require('../models/noteuser.model')(sequelize, Sequelize);
 db.Product = require('../models/product.model.js')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
-
+db.Brand = require('../models/brand.model')(sequelize, Sequelize);
 
 
 db.Measure= require('../models/measure.model')(sequelize, Sequelize);
@@ -114,6 +114,19 @@ db.Discount.belongsTo(db.Company,{
     name: 'ID_Company'
   }
 });
+
+//estableciendo MarcaCompañia
+
+db.Company.hasMany(db.Brand,{
+  foreignKey: 'ID_Company'
+});
+
+db.Brand.belongsTo(db.Company,{
+  foreignKey:{
+    name:'ID_Company'
+  }
+});
+
 //estableciendorelacion entre job y compañia
 
 db.Company.hasMany(db.Job, {
@@ -328,6 +341,17 @@ db.Product.belongsTo(db.CatProduct, {
   }
 });
 
+db.Brand.hasMany(db.Product,{
+  foreignKey: 'ID_Brand'
+});
+
+db.Product.belongsTo(db.Brand,{
+  foreignKey:{
+    name:'ID_Brand'
+  }
+})
+
+
 db.Company.hasMany(db.Product,{   
   foreignKey: 'ID_Company' 
 });
@@ -348,7 +372,15 @@ db.Product.belongsTo(db.Company, {
   }
 });
 
+db.Company.hasMany(db.CatProduct,{
+  foreignKey: 'ID_Company' 
+});
 
+db.CatProduct.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+})
 
 
 

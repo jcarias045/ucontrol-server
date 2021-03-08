@@ -9,6 +9,7 @@ const Company = db.Company;
 function getDiscounts(req, res) {
     console.log("Descuento");
     console.log("Probando endpoint");
+    let companyId = req.params.id; 
     try{
         DiscountObj.findAll({    
              include: [
@@ -16,7 +17,8 @@ function getDiscounts(req, res) {
                  model: Company,
                  attributes: ['ID_Company','Name','ShortName']
              }
-            ]
+            ],
+            where: {ID_Company: companyId}
           })
         .then(discount => {
             res.status(200).send({discount});            

@@ -8,13 +8,19 @@ const Product = db.Product;
 const Measure = db.Measure;
 const Company = db.Company;
 const Inventory = db.Inventory;
+const Brand = db.Brand;
+
 function getPoducts(req, res){
     // Buscamos informacion para llenar el modelo de 
     let companyId = req.params.id;
     try{
         Product.findAll({
+            include:[{
+                model: Brand,
+                attributes: ['ID_Brand', 'Name']
+            }],
             where: {ID_Company: companyId},
-            attributes: ['ID_Products','Name','Brand','SellPrice','ShortName','ID_Company','ID_CatProduct',
+            attributes: ['ID_Products','Name','ID_Brand','SellPrice','ShortName','ID_Company','ID_CatProduct',
             'ID_Supplier', 'Logo' ,  'MinStock' , 'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure'  ]
         })
         .then(products => {
@@ -38,7 +44,7 @@ function createProduct(req, res){
     try{
         // Construimos el modelo del objeto product para enviarlo como body del request
         product.Name = req.body.Name;
-        product.Brand=req.body.Brand;
+        product.ID_Brand=req.body.ID_Brand;
         product.SellPrice= req.body.SellPrice;
         product.ShortName=req.body.ShortName;
         product.ID_CatProduct=req.body.ID_CatProduct;
@@ -54,14 +60,14 @@ function createProduct(req, res){
 
         
         Product.findOne({
-            attributes: ['ID_Products','Name','Brand','SellPrice','ShortName',
-            'ID_Company','ID_CatProduct','ID_Supplier', 'Logo' ,  'MinStock' , 
-            'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure'],
+            attributes: [   
+            'Name' , 'Active' ,  'codproducts' ],
             where:{[Op.or]: [
             { Name: product.Name},
             { codproducts: product.codproducts}
           ]}}).then(function(exist){
               if(!exist){
+                  console.log(product);
                 Product.create(product)
                 .then(result => {    
                   res.status(200).json(result);
@@ -70,10 +76,8 @@ function createProduct(req, res){
               }
               else{
                 res.status(505).send({message:"El producto ya existe"})
-
               }
             });
-
         // Save to MySQL database
        
     }catch(error){
@@ -159,11 +163,11 @@ async function updateProduct(req, res){
    
     let productId = req.params.id; 
      
-    const { Name, Brand, SellPrice, ShortName, ID_Company, ID_CatProduct, ID_Supplier, 
+    const { Name, ID_Brand, SellPrice, ShortName, ID_Company, ID_CatProduct, ID_Supplier, 
         ID_Measure, Logo, MinStock, MaxStock, Active, BuyPrice, codproducts} = req.body;  //
     try{
         let product = await Product.findByPk(productId,{
-            attributes: ['ID_Products','Name','Brand','SellPrice','ShortName',
+            attributes: ['ID_Products','Name','ID_Brand','SellPrice','ShortName',
         'ID_Company','ID_CatProduct','ID_Supplier', 'Logo' ,  'MinStock' , 
         'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure']});
         console.log(product);
@@ -177,7 +181,7 @@ async function updateProduct(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Name:Name,
-                Brand: Brand,
+                ID_Brand: ID_Brand,
                 SellPrice: SellPrice,
                 ShortName: ShortName,
                 ID_Company: ID_Company,
@@ -433,6 +437,7 @@ function getRecommendedProducts(req,res){
 //        });
     
 // }
+
 function getRecommendedProductsInventory(req,res){
     // Buscamos informacion para llenar el modelo de 
     let companyId = req.params.id;
@@ -481,7 +486,7 @@ function getProduct(req,res){
     console.log(req.params.id);
     Product.findByPk(req.params.id,
         {attributes:[
-            'ID_Products','Name','Brand','SellPrice',
+            'ID_Products','Name','ID_Brand','SellPrice',
             'ShortName', 'ID_Company','ID_CatProduct',
             'ID_Supplier', 'ID_Measure', 'Logo', 'MinStock',
             'MaxStock', 'Active', 'BuyPrice', 'codproducts'

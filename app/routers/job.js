@@ -2,7 +2,7 @@ let express = require('express');
 let router = express.Router();
 const jobs = require('../controllers/jobs');
 
-router.get('/get-jobs', jobs.getJobs);
+router.get('/get-jobs/:id', jobs.getJobs);
 router.post('/create-job', jobs.createJob);
 router.put('/job-update/:id', jobs.updateJob);
 router.delete('/delete-job/:id', jobs.deleteJob);
