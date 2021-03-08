@@ -11,12 +11,15 @@ module.exports = (sequelize, Sequelize) => {
       Text:{
         type: Sequelize.STRING
       },
-      CreationDate:{
-        type: Sequelize.DATE
+      Date:{
+        type: Sequelize.STRING
       },
       ID_User:{
         type: Sequelize.INTEGER,
         foreign_key:true,
+      },
+      Time:{
+        type: Sequelize.STRING
       },
       ID_Products:{
         type: Sequelize.INTEGER,

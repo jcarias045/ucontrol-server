@@ -21,7 +21,7 @@ function getNotesSupplier(req, res) {
             ],
             where: {ID_User: userId,
             },
-            attributes:['ID_NoteSupplier','Subject','Text']
+            attributes:['ID_NoteSupplier','Subject','Text','Date','Time']
         })
         .then(notes => {
             res.status(200).send({notes});          
@@ -39,15 +39,17 @@ function getNotesSupplier(req, res) {
 
 function createNoteSupplier(req,res){
     let note = {};
-    let CreationDate = moment().unix();
+    let CreationDate = moment().format('LT');
+    let date = moment().format('L');
 
     try{
         // Construimos el modelo del objeto company para enviarlo como body del reques
         note.Subject = req.body.Subject;
         note.Text=req.body.Text;
-        note.CreationDate= CreationDate;
+        note.Date= date;
         note.ID_User=req.body.ID_User;
         note.ID_Supplier= req.body.ID_Supplier;
+        note.Time = CreationDate;
  
         // Save to MySQL database
         NoteSupplier.create(note)
@@ -66,10 +68,12 @@ async function updateNote(req, res){
    
     let noteID = req.params.id; 
     console.log(noteID); 
-    const { Subject, Text} = req.body;  //
+    const { Subject, Text, Date, Time} = req.body;
     try{
+        let date = moment().format('L');
+        let CreationDate = moment().format('LT');
         let note = await NoteSupplier.findByPk(noteID,{
-            attributes: ['Subject','Text','ID_User']
+            attributes: ['Subject','Text']
         });
         console.log(note);
         if(!note){
@@ -82,7 +86,9 @@ async function updateNote(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Subject: Subject,
-                Text: Text       
+                Text: Text,
+                Date: date,
+                Time: CreationDate       
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await NoteSupplier.update(updatedObject,

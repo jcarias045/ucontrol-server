@@ -9,8 +9,9 @@ module.exports = (sequelize, Sequelize) => {
 			type: Sequelize.STRING,
       
       },
-      Brand:{
-        type: Sequelize.STRING
+      ID_Brand:{
+        type: Sequelize.INTEGER,
+        foreignKey: true
       },
       SellPrice:{
         type: Sequelize.DECIMAL

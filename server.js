@@ -28,7 +28,8 @@ let systemOpRoutes=require('./app/routers/sysOptions');
 let ProductNoteRoutes = require('./app/routers/noteproduct');
 let SupplierNoteRoutes = require('./app/routers/notesupplier');
 let BanksRoutes= require('./app/routers/bank');
-let JobsRoutes = require('./app/routers/job')
+let JobsRoutes = require('./app/routers/job');
+let BrandsRoutes = require('./app/routers/brand');
 
 let PurchaseDetails=require('./app/routers/purchaseDetail');
 let orderRoutes= require('./app/routers/purchaseOrder');
@@ -98,6 +99,7 @@ app.use('/api', paymentsToSuppliersRoutes);
 app.use('/api', BanksRoutes);
 app.use('/api', JobsRoutes);
 app.use('/api', personalRoutes);
+app.use('/api', BrandsRoutes);
 
 // Create a Server
 const server = app.listen(3050, function () {

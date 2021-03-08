@@ -3,15 +3,13 @@ const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
 const { Op } = require("sequelize");
 //Se utiliza DiscountObj porque el parametro Discount y el nombre del objeto no pueden ser iguales.
-const DiscountObj = db.Discount;
+const Brand = db.Brand;
 const Company = db.Company;
 
-function getDiscounts(req, res) {
-    console.log("Descuento");
-    console.log("Probando endpoint");
+function getBrands(req,res){
     let companyId = req.params.id; 
     try{
-        DiscountObj.findAll({    
+        Brand.findAll({    
              include: [
             {
                  model: Company,
@@ -20,8 +18,8 @@ function getDiscounts(req, res) {
             ],
             where: {ID_Company: companyId}
           })
-        .then(discount => {
-            res.status(200).send({discount});            
+        .then(brand => {
+            res.status(200).json({brand});            
         })
     }catch(error) {
         // imprimimos a consola
@@ -34,16 +32,17 @@ function getDiscounts(req, res) {
     }
 }
 
-function createDiscount(req, res){
-    let discount = {};
+function createBrands(req,res){
+    console.log("hola");
+    let brand = {};
     try{
         // Construimos el modelo del objeto company para enviarlo como body del reques
-        discount.Name = req.body.Name;
-        discount.Discount=req.body.Discount;
-        discount.ID_Company = req.body.ID_Company;
- 
+        brand.Name = req.body.Name;
+        brand.Description = req.body.Description;
+        brand.ID_Company=req.body.ID_Company;
+        console.log(brand);
         // Save to MySQL database
-        DiscountObj.create(discount)
+        Brand.create(brand)
       .then(result => {    
         res.status(200).json(result);
     
@@ -56,35 +55,32 @@ function createDiscount(req, res){
     }
 }
 
-
-async function updateDiscount(req, res){
-   
-    let discountID = req.params.id; 
-    console.log(discountID);
-    const { Name, Discount, ID_Company} = req.body;  //
+async function updateBrand(req,res){
+    let brandId = req.params.id; 
+    console.log(brandId);
+    const { Name, Description} = req.body;  //
     console.log(Name);
-    console.log(Discount);
+    console.log(Description);
     try{
-        let discount = await DiscountObj.findByPk(discountID);
-        console.log(discount);
-        if(!discount){
+        let brand = await Brand.findByPk(brandId);
+        console.log(brand);
+        if(!brand){
            // retornamos el resultado al descuento
             res.status(404).json({
-                message: "No se encuentra el descuento con ID = " + discountID,
+                message: "No se encuentra el banco con ID = " + brandId,
                 error: "404"
             });
         } else {    
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Name: Name,
-                Discount: Discount,
-                ID_Company: ID_Company     
+                Description: Description    
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await discount.update(updatedObject,
+            let result = await brand.update(updatedObject,
                               { 
                                 returning: true,                
-                                where: {ID_Discount: discountID}
+                                where: {ID_Brand: brandId}
                               }
                             );
 
@@ -105,42 +101,42 @@ async function updateDiscount(req, res){
     }
 }
 
-async function deleteDiscount(req, res){
+async function deleteBrand(req, res){
     console.log(req.params.id);
     try{
-        let discountID = req.params.id;
-        let discount = await DiscountObj.findByPk(discountID);
+        let brandId = req.params.id;
+        let brand = await Brand.findByPk(brandId);
        
-        if(!discount){
+        if(!brand){
             res.status(404).json({
-                message: "El Descuento fue con este ID no existe = " + discountID,
+                message: "La Marca con este ID no existe = " + bankId,
                 error: "404",
             });
         } else {
-            await discount.destroy();
+            await brand.destroy();
             res.status(200).send({
-                message:"El Descuento fue eliminad con exito"
+                message:"La Marca fue eliminad con exito"
             });
         }
     } catch(errr) {
         res.status(500).json({
-            mesage: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
+            mesage: "Error -> No se puede eliminar el banco con el ID = " + req.params.id,
             error: error.message
         });
     }
 }
 
-function getDiscountId (req, res){
+function getBrandId (req, res){
     
     let companyId = req.params.id;
 
     try{
-        DiscountObj.findAll({
+        Brand.findAll({
             where:{ID_Company: companyId},
-            attributes: ['ID_Discount', 'Name']
+            attributes: ['ID_Brand', 'Name']
         })
-        .then(discounts =>{
-            res.status(200).json({discounts});
+        .then(brand =>{
+            res.status(200).json({brand});
             
         })
     }catch(error){
@@ -152,11 +148,10 @@ function getDiscountId (req, res){
     }
 }
 
-
 module.exports={
-    getDiscounts,
-    createDiscount,
-    updateDiscount,
-    deleteDiscount,
-    getDiscountId
+    getBrands,
+    getBrandId,
+    createBrands,
+    deleteBrand,
+    updateBrand
 }

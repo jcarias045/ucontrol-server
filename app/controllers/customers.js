@@ -39,7 +39,8 @@ function createCustomer(req, res){
         Customer.findOne({attributes:['ID_Customer','Email','User'],
             where:{[Op.or]: [
             { Email: customer.Email},
-            { User: customer.User }
+            { User: customer.User },
+            {ID_Company: customer.ID_Company}
           ]}}).then(function(exist){
               if(!exist){
                   console.log(customer.Password);
@@ -77,7 +78,7 @@ function getCustomerInfo(req, res){
     Customer.findByPk(req.params.id,{
         attributes:['ID_Customer','Name','LastName','User','Email','Country',
         'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
-    'PaymentTime','ID_Discount', 'Active']})
+        'PaymentTime','ID_Discount', 'Active']})
         .then(customer => {
           res.status(200).json(customer);
         }).catch(error => {
@@ -94,34 +95,35 @@ function getCustomerInfo(req, res){
 async function customers(req, res){
     let companyId = req.params.id; 
     let userId=req.params.user;
-    let requiredIncome=await Company.findAll({attributes:['CompanyRecords'], where:{RequiredIncome:1,ID_Company:companyId}}).
+    let requiredIncome= await Company.findAll({attributes:['CompanyRecords'], where:{CompanyRecords:0,ID_Company:companyId}}).
     then(function(result){return result});   //obtenes si existe un registro
     console.log(requiredIncome);
     let customer={};
     try{
         if(requiredIncome.length>0){
-            console.log("por compania");
-          Customer.findAll({
-            where: {ID_Company: companyId},
-            attributes:['ID_Customer','Name','LastName','User','Email','Country',
-        'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
-          'PaymentTime','ID_Discount']})
-        .then(customers => {
-            res.status(200).send({customers});
-          
-        })
+           
+            console.log("usuario");
+            Customer.findAll({
+               where: {ID_Company: companyId, ID_User:userId},
+               attributes:['ID_Customer','Name','LastName','User','Email','Country',
+           'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
+             'PaymentTime','ID_Discount', 'Active']})
+           .then(customers => {
+               res.status(200).send({customers});
+             
+            })
         }
         else{
-            console.log("usuario");
-             Customer.findAll({
-                where: {ID_Company: companyId, ID_User:userId},
-                attributes:['ID_Customer','Name','LastName','User','Email','Country',
-            'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
-              'PaymentTime','ID_Discount']})
-            .then(customers => {
-                res.status(200).send({customers});
-              
-            })
+            console.log("por compania");
+            Customer.findAll({
+              where: {ID_Company: companyId},
+              attributes:['ID_Customer','Name','LastName','User','Email','Country',
+              'City','ZipCode','Phone','MobilPhone','idNumber','Images','Active','ID_Company','Access','AccountsReceivable',
+              'PaymentTime','ID_Discount','Active']})
+          .then(customers => {
+              res.status(200).send({customers});
+            
+          })
         }
 
         

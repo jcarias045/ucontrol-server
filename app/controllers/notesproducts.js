@@ -10,18 +10,19 @@ const jwt= require('../services/jwt');
 function getNotesProduct(req, res) {
     let userId = req.params.id;
     let productId = req.params.product;
+    console.log(userId);
+    console.log(productId);
     try{
         NoteProduct.findAll({
             include:[
                 {
                     model: Product,
-                    attributes: ['ID_Products', 'Name' , 'Brand', 'ShortName'],
+                    attributes: ['ID_Products', 'Name' ,  'ShortName'],
                     where: {ID_Products: productId},
                 }
             ],
-            where: {ID_User: userId,
-            },
-            attributes:['ID_NoteProduct','Subject','Text']
+            where: {ID_User: userId},
+            attributes:['ID_NoteProduct','Subject','Text','Date','Time']
         })
         .then(notes => {
             res.status(200).send({notes});          
@@ -39,15 +40,27 @@ function getNotesProduct(req, res) {
 
 function createNoteProduct(req,res){
     let note = {};
-    let CreationDate = moment().unix();
+    let CreationDate = moment().format('LT');
+    console.log(CreationDate);
+    let date = moment().format('L');
+    // let time = new Date();
+    // let dateActual = date.getDate;
+    // let HoraActual = date.getTime;
+    // console.log(dateActual);
+    console.log(date);
+    // console.log(HoraActual);
+    // console.log(time);
+    // console.log('La fecha actual es',date);
+    // console.log('UNIX time:',date.getTime(date));
 
     try{
         // Construimos el modelo del objeto company para enviarlo como body del reques
         note.Subject = req.body.Subject;
         note.Text=req.body.Text;
-        note.CreationDate= CreationDate;
+        note.Date= date;
         note.ID_User=req.body.ID_User;
         note.ID_Products= req.body.ID_Products;
+        note.Time = CreationDate;
  
         // Save to MySQL database
        NoteProduct.create(note)
@@ -66,10 +79,12 @@ async function updateNote(req, res){
    
     let noteID = req.params.id; 
     console.log(noteID); 
-    const { Subject, Text} = req.body;  //
+    const { Subject, Text, Date, Time} = req.body;  //
     try{
+        let date = moment().format('L');
+        let CreationDate = moment().format('LT');
         let note = await NoteProduct.findByPk(noteID,{
-            attributes: ['Subject','Text','ID_User']
+            attributes: ['Subject','Text','ID_User','Date','Time']
         });
         console.log(note);
         if(!note){
@@ -82,7 +97,9 @@ async function updateNote(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Subject: Subject,
-                Text: Text       
+                Text: Text,
+                Date: date,
+                Time: CreationDate      
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await NoteProduct.update(updatedObject,

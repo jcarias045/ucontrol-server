@@ -32,6 +32,7 @@ function createMeasure(req, res){
         measure.Name = req.body.Name;
         measure.Description =req.body.Description;
         measure.ID_Company = req.body.ID_Company;
+        measure.state = req.body.state;
         console.log(measure);
         Measures.findOne({where:{
              Name: measure.Name}}).then(function(exist){

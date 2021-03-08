@@ -21,7 +21,7 @@ function getNotesCustomer(req, res) {
             ],
             where: {ID_User: userId
             },
-             attributes:['ID_NoteCustomer','Subject','Text']
+             attributes:['ID_NoteCustomer','Subject','Text','Date','Time']
         })
         .then(notes => {
             res.status(200).send({notes});          
@@ -39,15 +39,17 @@ function getNotesCustomer(req, res) {
 
 function createNoteCustomer(req,res){
     let note = {};
-    let CreationDate = moment().unix();
+    let date = moment().format('L');
+    let CreationDate = moment().format('LT');
 
     try{
         // Construimos el modelo del objeto company para enviarlo como body del reques
         note.Subject = req.body.Subject;
         note.Text=req.body.Text;
-        note.CreationDate= CreationDate;
+        note.Date= date;
         note.ID_User=req.body.ID_User;
         note.ID_Customer= req.body.ID_Customer;
+        note.Time= CreationDate;
  
         // Save to MySQL database
        NoteCustomer.create(note)
@@ -66,8 +68,10 @@ async function updateNote(req, res){
    
     let noteID = req.params.id; 
     console.log(noteID); 
-    const { Subject, Text} = req.body;  //
+    const { Subject, Text, Date, Time} = req.body;  //
     try{
+        let date = moment().format('L');
+        let CreationDate = moment().format('LT');
         let note = await NoteCustomer.findByPk(noteID,{
             attributes: ['Subject','Text','ID_User','ID_Customer']
         });
@@ -82,7 +86,9 @@ async function updateNote(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
                 Subject: Subject,
-                Text: Text       
+                Text: Text,
+                Date: date,
+                Time: CreationDate        
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await NoteCustomer.update(updatedObject,

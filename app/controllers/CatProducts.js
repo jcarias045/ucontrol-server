@@ -2,13 +2,23 @@ const db = require('../config/db.config.js');
 const fs =require("fs");
 const path=require("path");
 const CatProduct = db.CatProduct;
+const Company = db.Company;
 
 function getCatProducts(req,res){
     console.log("Categorias");
+    let companyId = req.params.id; 
     try{
-                 CatProduct.findAll({
+                 CatProduct.findAll(
+                     {
+                    include:[
+                        {
+                            model: Company,
+                            attributes: ['ID_Company','Name','ShortName']
+                        }
+                    ],
                     where:{ID_Company: companyId}
-                 })
+                 }
+                 )
                  .then(catproducts => {
                      res.status(200).send({catproducts});
                   
@@ -30,6 +40,7 @@ function creatCatProduct(req, res){
                 // Construimos el modelo del objeto catproduct para enviarlo como body del request
                 catproduct.Name = req.body.Name;
                 catproduct.Description=req.body.Description;
+                catproduct.ID_Company = req.body.ID_Company;
             
                 // Save to MySQL database
                CatProduct.create(catproduct)
@@ -68,7 +79,8 @@ async function deleteCatProduct(req, res){
                     error: error.message
                 });
             }
-        }
+}
+
 async function updateCatProduct(req, res){
             let catproductID = req.params.id; 
             console.log(catproductID); 
@@ -115,6 +127,7 @@ async function updateCatProduct(req, res){
 
 function getCatProductsId(req, res){
     // Buscamos informacion para llenar el modelo de 
+    let companyId = req.params.id;
     try{
         CatProduct.findAll({
             where:{ID_Company: companyId},
