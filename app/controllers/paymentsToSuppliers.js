@@ -78,7 +78,8 @@ async function addPaymentToInvoice(req, res){
 
     console.log(deuda);
     console.log(pagoExiste);
-
+    console.log(saldoActual);
+    console.log(totalFactura)
     try{
         let monto=req.body.Monto;
         paymentinfo.ID_PurchaseInvoice=invoiceId;
@@ -89,6 +90,7 @@ async function addPaymentToInvoice(req, res){
         paymentinfo.ID_User=userId;
      
       if(pagoExiste){
+          console.log("ya existe registro de pago de factura");
           console.log(deuda);
           console.log(totalFactura)
           console.log(saldoActual);
@@ -436,6 +438,8 @@ async function updatePaymentInvoice(req,res){
     let invoiceId= req.body.ID_PurchaseInvoice;
     let cambios=req.body.change;
     
+    console.log(req.body.idpayment);
+
     let deudaProveedor=await Supplier.findAll({ 
         where:{	ID_Supplier:supplierId},
         attributes: ['DebsToPay']

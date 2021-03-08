@@ -8,7 +8,7 @@ const Bank = db.Bank;
 const Company = db.Company;
 
 function getAllPersonal(req, res) {
-    let userId=req.params.id;
+    let personalId=req.params.id;
     let companyId=req.params.company;
     try{
         Personal.findAll({
@@ -43,7 +43,7 @@ function getAllPersonal(req, res) {
         ],
             where:{
                 ID_Company: companyId,
-                ID_User: userId
+                ID_User: personalId
             }
         })
         .then(personal => {
@@ -312,6 +312,52 @@ async function updatePersonal(req, res){
     }
 }
 
+async function desactivePersonal(req, res) {
+    let personalId = req.params.id; 
+    const {active} = req.body;  //
+    console.log(active);
+    try{
+        let user = await Personal.findByPk(personalId);
+        
+        if(!user){
+           // retornamos el resultado al cliente
+            res.status(404).json({
+                message: "No se encuentra el registro con ID = " + personalId,
+                error: "404"
+            });
+        } else {    
+            // actualizamos nuevo cambio en la base de datos, definición de
+            let updatedObject = { 
+               
+                active:active        
+            }
+            console.log(updatedObject);    //agregar proceso de encriptacion
+            let result = await Personal.update(updatedObject,
+                              { 
+                                returning: true,                
+                                where: {ID_Personal: personalId},
+                                attributes:['active' ]
+                              }
+                            );
+
+            // retornamos el resultado al cliente
+            if(!result) {
+                res.status(500).json({
+                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+                    error: "No se puede actualizar",
+                });
+            }
+
+            res.status(200).json(result);
+        }
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
 module.exports={
     getPersonalWorkPlace,
     getPersonalFamily,
@@ -319,5 +365,6 @@ module.exports={
     getPersonalGeneral,
     getAllPersonal,
     createPersonal,
-    updatePersonal
+    updatePersonal,
+    desactivePersonal
 }
