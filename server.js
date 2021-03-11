@@ -30,6 +30,8 @@ let SupplierNoteRoutes = require('./app/routers/notesupplier');
 let BanksRoutes= require('./app/routers/bank');
 let JobsRoutes = require('./app/routers/job');
 let BrandsRoutes = require('./app/routers/brand');
+let BookingCustomerRoutes = require('./app/routers/bookingcustomer');
+let BookingSupplierRoutes = require('./app/routers/bookingsupplier');
 
 let PurchaseDetails=require('./app/routers/purchaseDetail');
 let orderRoutes= require('./app/routers/purchaseOrder');
@@ -100,6 +102,8 @@ app.use('/api', BanksRoutes);
 app.use('/api', JobsRoutes);
 app.use('/api', personalRoutes);
 app.use('/api', BrandsRoutes);
+app.use('/api', BookingCustomerRoutes);
+app.use('/api', BookingSupplierRoutes);
 
 // Create a Server
 const server = app.listen(3050, function () {

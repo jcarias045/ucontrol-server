@@ -56,6 +56,8 @@ db.PaymentToSupplierDetails= require('../models/paymenttoSupplierDetail.model')(
 db.Personal = require('../models/personal.model')(sequelize,Sequelize);
 db.Bank = require('../models/bank.model')(sequelize,Sequelize);
 db.Job = require('../models/job.model')(sequelize,Sequelize);
+db.BookingCustomer = require('../models/appointmentcustomer.modal')(sequelize,Sequelize);
+db.BookingSupplier = require('../models/appointmentsupplier.model')(sequelize,Sequelize);
 
 
 //estableciendo relaciones entre las tablas sys_user y sys_profile
@@ -216,6 +218,46 @@ db.NoteSupplier.belongsTo(db.User,{
   }
 });
 
+//Cita-Supplier
+db.Supplier.hasMany(db.BookingSupplier,{
+  foreignKey: 'ID_Supplier'
+});
+
+db.BookingSupplier.belongsTo(db.Supplier,{
+  foreignKey:{
+    name: 'ID_Supplier'
+  }
+});
+
+db.User.hasMany(db.BookingSupplier,{
+  foreignKey: 'ID_User'
+});
+
+db.BookingSupplier.belongsTo(db.User,{
+  foreignKey:{
+    name: 'ID_User'
+  }
+});
+// cita-customer
+db.Customer.hasMany(db.BookingCustomer,{
+  foreignKey: 'ID_Customer'
+});
+
+db.BookingCustomer.belongsTo(db.Customer,{
+  foreignKey:{
+    name: 'ID_Customer'
+  }
+})
+
+db.User.hasMany(db.BookingCustomer,{
+  foreignKey: 'ID_User'
+});
+
+db.BookingCustomer.belongsTo(db.User,{
+  foreignKey:{
+    name: 'ID_User'
+  }
+});
 //estableciendo relaciones entre las tablas sys_user y sys_company
 db.User.belongsTo(db.Company, {   
   foreignKey: {
@@ -227,7 +269,6 @@ db.Company.hasMany(db.User,{
   foreignKey: 'ID_Company'
 });
 
-//
 
 //relaciones PurchaseOrder y Supplier
 db.Supplier.hasMany(db.PurchaseOrder,{   
@@ -261,6 +302,10 @@ db.PurchaseOrder.hasMany(db.User, {
 //     name: 'ID_Inventory'
 //   }
 // });
+
+//Relacion entre Usuario y Citas
+
+
 
 
 //Relaciones purchase order y inventario 

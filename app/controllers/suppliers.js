@@ -31,15 +31,15 @@ function createSupplier(req, res){
         Supplier.findOne({ attributes:['ID_supplier','Name','Web','Email',
         'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
         'deliveryDays'],
-            where:{[Op.or]: [
-            { Email: supplier.Email},
-            { Name: supplier.Name}
+            where:{[Op.and]: [
+            { codsupplier: supplier.codsupplier},
+            { Name: supplier.Name},
+            {ID_Company: supplier.ID_Company}
           ]}}).then(function(exist){
               if(!exist){
                 Supplier.create(supplier)
                 .then(result => {    
-                  res.status(200).json(result);
-              
+                 res.status(200).json(result);            
                 });  
               }
               else{
@@ -238,9 +238,7 @@ function getSuppliersDetails(req, res){
     let supplierId = req.params.id;
     let companyId = req.params.company;
     try{
-        Supplier.findAll({
-
-        
+        Supplier.findAll({        
             where: {
                 ID_Supplier:supplierId,
                 ID_Company: companyId
