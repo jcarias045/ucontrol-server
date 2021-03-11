@@ -2,6 +2,7 @@ const db = require('../config/db.config.js');
 const { Op } = require("sequelize");
 
 const sequelize = require('sequelize');
+const { PurchaseInvoice, PurchaseInvoiceDetails } = require('../config/db.config.js');
 const PurchaseOrder = db.PurchaseOrder;
 const PurchaseDetails= db.PurchaseDetails;
 const Supplier = db.Supplier;
@@ -539,6 +540,118 @@ function getClosedPurchaseDetails(req, res){
     }
 }
 
+
+function getPurchaseOrdersBySupplier(req, res){
+    let supplierId = req.params.id; 
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    let antCod=0;
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+    console.log(f1);
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() -15);
+    let fecha1=now.toISOString().substring(0, 10);
+    let fecha2=date.toISOString().substring(0, 10);
+    console.log(); 
+    console.log(date.toISOString().substring(0, 10)); 
+    try{
+        PurchaseOrder.findAll({    
+            where: {ID_Supplier:supplierId,
+                CreationDate:{
+                    [Op.lte]: !f1?fecha1:f1,
+                    [Op.gte]: !f2?fecha2:f2,
+                }
+            },
+            attributes: ['ID_PurchaseOrder','ID_Supplier','InvoiceNumber','Image','Total','Active','DeliverDate',
+        'CreationDate','State','Description','codpurchase'],
+           
+             include: [
+            {
+                 model: PurchaseDetails,
+                 on:{
+                   
+                    ID_PurchaseOrder: sequelize.where(sequelize.col("ec_purchasedetails.ID_PurchaseOrder"), "=", sequelize.col("ec_purchaseorder.ID_PurchaseOrder")),
+                 
+                 },
+                 attributes: ['ID_PurchaseDetail','Quantity','Discount','ProductName','Price'],
+                 
+             }
+            ],
+           
+          })
+        .then(orders => {
+            res.status(200).send(orders);
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
+function getInvoicesBySupplier(req, res){
+    let supplierId = req.params.id; 
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    let antCod=0;
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+    console.log(f1);
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() -15);
+    let fecha1=now.toISOString().substring(0, 10);
+    let fecha2=date.toISOString().substring(0, 10);
+    console.log(); 
+    console.log(date.toISOString().substring(0, 10)); 
+    try{
+        PurchaseInvoice.findAll({    
+            where: {ID_Supplier:supplierId,
+                CreationDate:{
+                    [Op.lte]: !f1?fecha1:f1,
+                    [Op.gte]: !f2?fecha2:f2,
+                }
+            },
+           
+             include: [
+            {
+                 model: PurchaseInvoiceDetails,
+                 on:{
+                   
+                    ID_PurchaseInvoice: sequelize.where(sequelize.col("ec_purchaseinvoicedetails.ID_PurchaseInvoice"), "=", sequelize.col("ec_purchaseinvoice.ID_PurchaseInvoice")),
+                   
+                 }
+                 
+             }
+            ],
+           
+           
+          })
+        .then(orders => {
+            res.status(200).send(orders);
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
+
 module.exports={
     getPurchaseOrders,
     createPurchaseOrder,
@@ -549,7 +662,9 @@ module.exports={
     getLastMonthPurchase,
     getThisMonthPurchase,
     getPurchaseOrdersClosed,
-    getClosedPurchaseDetails
+    getClosedPurchaseDetails,
+    getPurchaseOrdersBySupplier,
+    getInvoicesBySupplier
 }
 
 

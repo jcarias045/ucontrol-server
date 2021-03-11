@@ -41,7 +41,7 @@ db.PurchaseInvoiceDetails=require('../models/purchaseInvoiceDetails.model')(sequ
 db.NoteCustomer= require('../models/notecustomer.model')(sequelize,Sequelize);
 db.NoteProduct= require('../models/noteproduct.model')(sequelize,Sequelize);
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
-db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
+
 // db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 // db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 db.Discount = require('../models/discount.model')(sequelize, Sequelize);
@@ -57,7 +57,8 @@ db.Personal = require('../models/personal.model')(sequelize,Sequelize);
 db.Bank = require('../models/bank.model')(sequelize,Sequelize);
 db.Job = require('../models/job.model')(sequelize,Sequelize);
 
-
+db.Roles = require('../models/rol.model')(sequelize,Sequelize);
+db.Grupos= require('../models/grupos')(sequelize,Sequelize);
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
@@ -277,15 +278,16 @@ db.Product.belongsTo(db.Inventory, {
 
 
 //Relaciones purchase order y detalle
-db.PurchaseDetails.hasMany(db.PurchaseOrder,{   
-  foreignKey: 'ID_PurchaseOrder' 
-});
-
-db.PurchaseOrder.belongsTo(db.PurchaseDetails, { 
+db.PurchaseOrder.hasMany(db.PurchaseDetails, { 
   foreignKey: {
     name: 'ID_PurchaseOrder'
   }
 });
+db.PurchaseDetails.belongsTo(db.PurchaseOrder,{   
+  foreignKey: 'ID_PurchaseOrder' 
+});
+
+
 
 
 db.Supplier.belongsTo(db.Product,{   
@@ -560,6 +562,41 @@ db.Job.belongsTo(db.Personal, {
   }
 });
 
+
+db.Roles.belongsTo(db.Company, {
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.Company.hasMany(db.Roles, {
+  foreignKey: {
+    name: 'ID_Company'
+  }
+});
+
+db.ProfileOptions.hasMany(db.SysOptions, {
+  foreignKey: {
+    name: 'ID_OptionMenu'
+  }
+});
+db.SysOptions.belongsTo(db.ProfileOptions, {
+  foreignKey: {
+    name: 'ID_OptionMenu'
+  }
+});
+
+db.Grupos.hasMany(db.SysOptions,{
+  foreignKey: {
+    name: 'ID_Grupo'
+  }
+})
+
+db.SysOptions.belongsTo(db.Grupos,{
+  foreignKey: {
+    name: 'ID_Grupo'
+  }
+})
 
 
 module.exports = db;

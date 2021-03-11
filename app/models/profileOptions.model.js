@@ -5,7 +5,7 @@ module.exports = (sequelize, Sequelize) => {
             autoIncrement: true,
             primaryKey:true
     },
-        ID_Profile  : {
+        ID_Rol  : {
             type: Sequelize.INTEGER,
             
            
@@ -16,7 +16,9 @@ module.exports = (sequelize, Sequelize) => {
         
       
       },
-      
+      Checked:{
+        type: Sequelize.BOOLEAN,
+      }
       
    
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural

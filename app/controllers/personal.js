@@ -203,6 +203,7 @@ function createPersonal(req, res) {
             personal.ID_User=req.body.ID_User;
        
         // Save to MySQL database
+        console.log(personal);
        Personal.create(personal)
       .then( result => {    
         if(result){

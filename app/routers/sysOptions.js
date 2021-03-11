@@ -6,6 +6,7 @@ const sysop = require('../controllers/systemOptions');
 
 
 router.get('/get-options/', sysop.getSystemOptions);
+router.get('/get-useroptions/:id', sysop.getSysUserOptions);
 
 
 

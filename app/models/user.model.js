@@ -47,6 +47,9 @@ module.exports = (sequelize, Sequelize) => {
 	  },
 	  Active:{
 		type: Sequelize.BOOLEAN
+	  },
+	  ID_Rol:{
+		type: Sequelize.INTEGER,
 	  }
    
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural

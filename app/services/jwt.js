@@ -13,6 +13,7 @@ exports.createAccessToken=function(user){
        ID_User:user.ID_User,
        ID_Company:user.ID_Company,
        ID_Profile:user.ID_Profile,
+       ID_Rol:user.ID_Rol,
        createToken: moment().unix(),
        exp: moment().add(1,"hours").unix()
    };
@@ -83,6 +84,7 @@ exports.createRefreshToken=function(user){
        ID_User:user.ID_User,
        ID_Company:user.ID_Company,
        ID_Profile:user.ID_Profile,
+       ID_Rol:user.ID_Rol,
        exp: moment().add(30,"days").unix()
     };
     return jwt.encode(payload,SECRET_KEY);

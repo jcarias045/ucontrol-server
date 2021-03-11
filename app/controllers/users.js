@@ -48,7 +48,7 @@ async function signIn(req, res) {
     
     let user= await User.findOne({attributes: ['Email','Password'],where:{Email:Email}});
     console.log(user.Password);
-     User.findOne({attributes: ['Email','Password','Name','LastName','ID_User','ID_Company','ID_Profile'],where:{Email:Email}})
+     User.findOne({attributes: ['Email','Password','Name','LastName','ID_User','ID_Company','ID_Profile','ID_Rol'],where:{Email:Email}})
         .then(function (user) {
             console.log(Password);
             const infoUser= user.get();
@@ -96,6 +96,7 @@ function createUser(req, res){
         user.UserName=req.body.UserName;
         user.LastLogin=LastLogin;
         user.Active=true;
+        user.ID_Rol=req.body.ID_Rol;
         
         User.findOne({where:{[Op.or]: [
             { Email: user.Email},
@@ -143,7 +144,7 @@ async function updateUser(req, res){
     let userId = req.params.id; 
     console.log(userId);
     const {ID_Company, Name,LastName,Email,Password,Gender,BirthDate,Country,
-        Address, ID_Profile} = req.body;  //
+        Address, ID_Profile,ID_Rol} = req.body;  //
     try{
         let user = await User.findByPk(userId);
         
@@ -165,7 +166,8 @@ async function updateUser(req, res){
                 BirthDate:BirthDate,
                 Country:Country,
                 Address:Address,
-                ID_Profile:ID_Profile       
+                ID_Profile:ID_Profile,
+                ID_Rol:ID_Rol,   
             }
             console.log(updatedObject);    //agregar proceso de encriptacion
             let result = await user.update(updatedObject,

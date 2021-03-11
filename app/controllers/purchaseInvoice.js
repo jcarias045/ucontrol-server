@@ -61,15 +61,24 @@ async function createSupplierInvoice(req, res){
     let dePurchaseOrder=req.body.ordenAnt;
     let addTaxes=req.body.impuestos;
     let companyId = req.params.company;
+    let diasEntrega=req.body.dias;
+    let fechaInvoice=req.body.InvoiceDate;
     let userId = req.params.id; 
     let codigo=0;      //correlativo de la factura
     let codIngreso=0; //correlativo del ingreso
     let deuda=0;
-
+    
+    //calculo fecha 
+    var date = new Date(fechaInvoice);
+   
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() + diasEntrega);
+    console.log("HOLA");
+    
     let requiredIncome=await Company.findAll({attributes:['RequiredIncome'], where:{RequiredIncome:false,ID_Company:companyId}}).
     then(function(result){return result});
     
-    console.log(requiredIncome);
+    
 
     if(requiredIncome.length > 0){
         let entrycod=await ProductEntries.max('codentry',{ 
@@ -134,7 +143,7 @@ async function createSupplierInvoice(req, res){
         orden.CreationDate= creacion;
         orden.Total=req.body.Total;
         orden.ID_User=req.body.ID_User;
-        orden.DeliverDay=req.body.DeliverDay;
+        orden.DeliverDay=date;
         orden.State='Creada'; 
         orden.PurchaseNumber=req.body.PurchaseNumber;
         orden.Comments=req.body.Description; 
@@ -363,6 +372,17 @@ async function createNewSupplierInvoice(req, res){
     let codigo=0;      //correlativo de la factura
     let codIngreso=0; //correlativo del ingreso
     let deuda=0;
+    let diasEntrega=req.body.dias;
+    let fechaInvoice=req.body.InvoiceDate;
+
+    var date = new Date(fechaInvoice);
+    console.log(date);
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() + diasEntrega);
+    console.log("HOLA");
+    console.log(date);
+    console.log(diasEntrega);
+    console.log(companyId);
     let requiredIncome=await Company.findByPk(companyId,{attributes:['RequiredIncome'], where:{RequiredIncome:false}}).then(function(result){return result});
     console.log(requiredIncome);
    
@@ -431,7 +451,7 @@ async function createNewSupplierInvoice(req, res){
         orden.CreationDate= creacion;
         orden.Total=req.body.Total;
         orden.ID_User=req.body.ID_User;
-        orden.DeliverDay=req.body.DeliverDay;
+        orden.DeliverDay=date;
         orden.State='Creada'; 
         orden.InvoiceComments	=req.body.InvoiceComments;
         orden.Pagada=false;

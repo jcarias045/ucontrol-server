@@ -702,6 +702,11 @@ async function getAllPayments(req,res){
 }
 
 
+async function cancelledAllPayments(req, res){
+    
+}
+
+
 module.exports={
     addPaymentToInvoice,
     getPaymentDetails,
