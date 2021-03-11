@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
-	const sysop = sequelize.define('sys_optionmenu', {	
-        ID_OptionMenu : {
+	const rol = sequelize.define('sys_roles', {	
+        ID_Rol : {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
@@ -9,9 +9,15 @@ module.exports = (sequelize, Sequelize) => {
 			type: Sequelize.STRING,
       
       },
-      ID_Grupo:{
+      Description: {
+        type: Sequelize.STRING,
+      },
+      ID_Company:{
         type: Sequelize.INTEGER,
-        foreignKey: true
+        
+      },
+      State:{
+        type: Sequelize.BOOLEAN,
       }
    
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
@@ -19,5 +25,5 @@ module.exports = (sequelize, Sequelize) => {
         timestamps: false,
 	  });
 	
-	return sysop;
+	return rol;
 }

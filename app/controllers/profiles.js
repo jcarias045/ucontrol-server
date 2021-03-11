@@ -186,7 +186,7 @@ function getProfilesId(req, res){
 function getOptions(req,res){
     let perfilId=req.params.id;
     try{
-        ProfileOptions.findAll({where:{ID_Profile:perfilId}})
+        ProfileOptions.findAll({where:{ID_Rol:perfilId}})
         .then(options => {
             res.status(200).send({options});
           

@@ -8,6 +8,7 @@ const { Company } = require('../config/db.config.js');
 const Supplier = db.Supplier;
 
 
+
 function createSupplier(req, res){
     let supplier = {};
     console.log(req);
@@ -376,7 +377,6 @@ function getSupplierInfo(req, res){
           });
         })
 }
-
 
 
 module.exports={
