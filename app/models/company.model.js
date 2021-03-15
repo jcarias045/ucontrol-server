@@ -1,6 +1,5 @@
 const moongose = require('mongoose');
 
-
 const CompanySchema = moongose.Schema({
   Name: String,
   Logo: String,
@@ -17,7 +16,9 @@ const CompanySchema = moongose.Schema({
 
 const Company = moongose.model('Company', CompanySchema)
 
-export default Company
+module.exports= {
+  Company
+}
 
 
 // module.exports = (sequelize, Sequelize) => {

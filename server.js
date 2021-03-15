@@ -1,15 +1,6 @@
 const express = require('express');
-const app=express();
 const bodyParser = require('body-parser');
-
-global.__basedir = __dirname;
-
-// const db= require('./app/config/db.config.js');
-const CONNECTION_URL='mongodb+srv://sa:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrolretryWrites=true&w=majority'
-mongoose.connect(CONNECTION_URL,)
-
-const Customer = db.Customer;
-const User = db.User;
+const mongoose = require('mongoose');
 
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
@@ -47,6 +38,8 @@ let invoiceEntriesDetails=require('./app/routers/invoiceEntriesDetails');
 let paymentsToSuppliersRoutes= require('./app/routers/paymentsToSuppliers');
 let personalRoutes= require('./app/routers/personalroutes');
 let rolesRoutes= require('./app/routers/roles.route');
+
+const app=express();
 
 const cors = require('cors');
 const corsOptions = {
@@ -110,3 +103,12 @@ app.use('/api', Bodega);
 //   console.log("App listening at http://%s:%s", host, port); 
 // })
 
+const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrolretryWrites=true&w=majority'
+mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then( () => app.listen(3050, () => {
+        console.log(`Server Running on Port: http://localhost:3050`)
+    }))
+    .catch((error) => console.log(`${error} did not connect`))
+    
+    
+    mongoose.set('useFindAndModify', false);
