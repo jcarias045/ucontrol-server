@@ -1,11 +1,12 @@
-var express = require('express');
-var app=express();
-
-var bodyParser = require('body-parser');
+const express = require('express');
+const app=express();
+const bodyParser = require('body-parser');
 
 global.__basedir = __dirname;
 
-const db= require('./app/config/db.config.js');
+// const db= require('./app/config/db.config.js');
+const CONNECTION_URL='mongodb+srv://sa:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrolretryWrites=true&w=majority'
+mongoose.connect(CONNECTION_URL,)
 
 const Customer = db.Customer;
 const User = db.User;
@@ -99,11 +100,13 @@ app.use('/api', BookingCustomerRoutes);
 app.use('/api', BookingSupplierRoutes);
 app.use('/api',rolesRoutes);
 app.use('/api', Bodega);
-// Create a Server
-const server = app.listen(3050, function () {
- 
-  let host = server.address().address
-  let port = server.address().port
 
-  console.log("App listening at http://%s:%s", host, port); 
-})
+// Create a Server
+// const server = app.listen(3050, function () {
+ 
+//   let host = server.address().address
+//   let port = server.address().port
+
+//   console.log("App listening at http://%s:%s", host, port); 
+// })
+

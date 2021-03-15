@@ -1,4 +1,5 @@
 //Pruebas directas al servidor
+
 const env = {
     database: 'ucontrol_local',
     username: 'root',
@@ -12,6 +13,7 @@ const env = {
       idle: 10000
     }
   };
+
   //Pruebas locales
 /*   const env = {
     database: 'test',

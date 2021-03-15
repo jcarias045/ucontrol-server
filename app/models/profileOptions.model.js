@@ -1,11 +1,12 @@
 const moongose = require('mongoose');
 import Rol from ('./rol.model');
-// import OptionMenu from('./op')
+import OpMenu from('./systemOp.model');
 
 
 const ProfileOptionSchema = moongose.Schema({
   Checked: Boolean,
-  Rol: Rol, 
+  Rol: Rol,
+  OpMenu: OpMenu 
 })
 
 const ProfileOption = moongose.model('ProfileOption', ProfileOptionSchema)
