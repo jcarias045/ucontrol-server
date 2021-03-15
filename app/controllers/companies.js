@@ -37,7 +37,7 @@ function createCompany(req, res){
         company.Active=true;
         company.AccessToCustomers=req.body.AccessToCustomers;
         company.AccessToSuppliers=req.body.AccessToSuppliers;
-        company.RequieredIncome=req.body.RequieredIncome;
+        company.RequiredIncome=req.body.RequiredIncome;
         company.RequieredOutput= req.body.RequieredOutput;
         company.CompanyRecords=req.body.CompanyRecords;
         company.AverageCost=req.body.AverageCost;

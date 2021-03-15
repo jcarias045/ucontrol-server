@@ -27,10 +27,10 @@ module.exports = (sequelize, Sequelize) => {
       AccessToSuppliers:{
         type: Sequelize.BOOLEAN
       },
-      RequieredIncome:{
+      RequiredIncome:{
         type: Sequelize.BOOLEAN
       },
-      RequieredOutput:{
+      RequiredOutput:{
         type: Sequelize.BOOLEAN
       },
       CompanyRecords:{
