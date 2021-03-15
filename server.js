@@ -10,7 +10,6 @@ const db= require('./app/config/db.config.js');
 const Customer = db.Customer;
 const User = db.User;
 
-
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
 let authRoutes = require('./app/routers/auth');
@@ -32,10 +31,9 @@ let JobsRoutes = require('./app/routers/job');
 let BrandsRoutes = require('./app/routers/brand');
 let BookingCustomerRoutes = require('./app/routers/bookingcustomer');
 let BookingSupplierRoutes = require('./app/routers/bookingsupplier');
-
+let Bodega = require('./app/routers/bodega');
 let PurchaseDetails=require('./app/routers/purchaseDetail');
 let orderRoutes= require('./app/routers/purchaseOrder');
-
 let sellOrderRoutes = require ('./app/routers/order');
 let taxesRoutes = require ('./app/routers/tax');
 let measureRoutes = require ('./app/routers/measure');
@@ -43,13 +41,12 @@ let suppliersInvoicesRoutes = require ('./app/routers/purchaseInvoice');  //supp
 //let systemOpRoutes=require('./app/routers/sysOptions');
 let discountRoutes = require('./app/routers/discount');
 // let paymenttimeRoutes = require('./app/routers/paymenttime');
-
 let productEntries= require('./app/routers/productEntries');
 let invoiceEntriesDetails=require('./app/routers/invoiceEntriesDetails');
 let paymentsToSuppliersRoutes= require('./app/routers/paymentsToSuppliers');
-
 let personalRoutes= require('./app/routers/personalroutes');
 let rolesRoutes= require('./app/routers/roles.route');
+
 const cors = require('cors');
 const corsOptions = {
     origin: 'http://localhost:3000',
@@ -69,14 +66,9 @@ app.use('/api',profileRoutes);
 app.use('/api', companyRoutes);
 app.use('/api', inventoryRoutes);
 app.use('/api', noteRoutes);
-
-
-
 app.use('/api',systemOpRoutes);
-
 app.use('/api',PurchaseDetails);
 app.use('/api',purchaseOrdersRoutes);
-
 app.use('/api', catproductRoutes);
 app.use('./api', ProductRoutes );
 app.use('/api',systemOpRoutes);
@@ -103,13 +95,10 @@ app.use('/api', BanksRoutes);
 app.use('/api', JobsRoutes);
 app.use('/api', personalRoutes);
 app.use('/api', BrandsRoutes);
-<<<<<<< HEAD
 app.use('/api', BookingCustomerRoutes);
 app.use('/api', BookingSupplierRoutes);
-=======
 app.use('/api',rolesRoutes);
->>>>>>> a45dbee9674c8a3d3b46465b740349fc34e74083
-
+app.use('/api', Bodega);
 // Create a Server
 const server = app.listen(3050, function () {
  

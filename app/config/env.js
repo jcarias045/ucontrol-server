@@ -1,6 +1,6 @@
 //Pruebas directas al servidor
 const env = {
-    database: 'local_ucontrol',
+    database: 'ucontrol_local',
     username: 'root',
     password: '',
     host: 'localhost',

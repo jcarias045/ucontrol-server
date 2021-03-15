@@ -7,7 +7,7 @@ const multipart =require('connect-multiparty');
 const inventories = require('../controllers/inventories');
 
 
-router.get('/get-inventories', inventories.getInventories);
+router.get('/get-inventories/:id', inventories.getInventories);
 router.post('/inventory-create', inventories.createInventory);
 router.put('/inventory-update/:id', inventories.updateInventory);
 router.delete('/inventory-delete/:id', inventories.deleteInventory);

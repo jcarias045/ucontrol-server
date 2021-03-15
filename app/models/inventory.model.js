@@ -4,8 +4,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
-    },
-	  
+    },	  
       Stock:{
         type: Sequelize.INTEGER,
       },
@@ -14,13 +13,18 @@ module.exports = (sequelize, Sequelize) => {
       },
       ID_Bodega:{
         type: Sequelize.INTEGER,
-
+      },
+      ID_Company:{
+        type: Sequelize.INTEGER,
+        foreign_key:true,
+      },
+      ID_Products:{
+        type: Sequelize.INTEGER,
+        foreign_key:true,
       }
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
-        timestamps: false,
-        
-        
+        timestamps: false,       
 	  });
 	
 	return Inventory;

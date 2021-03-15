@@ -11,8 +11,6 @@ const Discount = db.Discount;
 
 function createCustomer(req, res){
     let customer = {};
-    let pass = req.body.Password
-    let active = req.body.Active
     console.log(req.body);
     console.log(customer);
     try{
@@ -34,13 +32,13 @@ function createCustomer(req, res){
         customer.PaymentTime =req.body.PaymentTime;
         customer.ID_User=req.body.ID_User;
         customer.ID_Discount = req.body.ID_Discount;
-        customer.Active = active;
+        customer.Active = req.body.Active;
         
         Customer.findOne({attributes:['ID_Customer','Email','User'],
-            where:{[Op.or]: [
+            where:{[Op.and]: [
             { Email: customer.Email},
-            { User: customer.User },
-            {ID_Company: customer.ID_Company}
+            // { User: customer.User },
+            // {ID_Company: customer.ID_Company}
           ]}}).then(function(exist){
               if(!exist){
                   console.log(customer.Password);
@@ -54,8 +52,7 @@ function createCustomer(req, res){
                             console.log(customer.Password);
                             Customer.create(customer)
                             .then(result => {    
-                              res.status(200).json(result);
-                             
+                              res.status(200).json(result);                            
                             });
                         }
                     });
@@ -84,13 +81,13 @@ function getCustomerInfo(req, res){
         }).catch(error => {
         // imprimimos a consola
           console.log(error);
-
           res.status(500).json({
               message: "Error!",
               error: error
           });
         })
 }
+
 //Seleccionar TODOS
 async function customers(req, res){
     let companyId = req.params.id; 
@@ -101,7 +98,6 @@ async function customers(req, res){
     let customer={};
     try{
         if(requiredIncome.length>0){
-           
             console.log("usuario");
             Customer.findAll({
                where: {ID_Company: companyId, ID_User:userId},
@@ -121,16 +117,12 @@ async function customers(req, res){
               'City','ZipCode','Phone','MobilPhone','idNumber','Images','Active','ID_Company','Access','AccountsReceivable',
               'PaymentTime','ID_Discount','Active']})
           .then(customers => {
-              res.status(200).send({customers});
-            
+              res.status(200).send({customers});   
           })
         }
-
-        
     }catch(error) {
         // imprimimos a consola
         console.log(error);
-
         res.status(500).json({
             message: "Error en query!",
             error: error
@@ -198,7 +190,6 @@ async function customers(req, res){
                     error: "No se puede actualizar",
                 });
             }
-
             res.status(200).json(result);
         }
     } catch(error){
@@ -208,7 +199,6 @@ async function customers(req, res){
         });
     }
 }
-
 
 async function deleteCustomer(req, res){
     console.log(req.params.id);
@@ -235,7 +225,6 @@ async function deleteCustomer(req, res){
         });
     }
 }
-
 
 async function signInCustomer(req, res) {
     const params=req.body;
@@ -354,8 +343,7 @@ function uploadImages(req, res) {
             let customer =customerData;
             console.log(customerData);
             if(req.files){
-                let filePath=req.files.avatar.path;
-                
+                let filePath=req.files.avatar.path;                
                 let fileSplit=filePath.split("\\");
                 let fileName=fileSplit[3];
                 let extSplit=fileName.split(".");
@@ -382,39 +370,33 @@ function uploadImages(req, res) {
                         message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
                         error: "No se puede actualizar",
                     });
-                }
-    
+                }   
                 res.status(200).json(result);
-            }
-            
+            }            
         }
         else{
             console.log("no reconoce ");
         }
           }
-       });
-    
+       });   
 }
 
 function customersUsers(req,res){
     let userId = req.params.id
     console.log(req.body.id);
     console.log(userId);
-    try{
-        
+    try{        
         Customer.findAll({
             where: {ID_User: userId},
             attributes:['ID_Customer','Name','LastName','User','Email','Country',
         'City','ZipCode','Phone','MobilPhone','idNumber','Images','ID_Company','Access','AccountsReceivable',
     'PaymentTime','ID_Discount', 'Active','ID_User']})
         .then(customer => {
-            res.status(200).send({customer});
-          
+            res.status(200).send({customer});          
         })
     }catch(error) {
         // imprimimos a consola
         console.log(error);
-
         res.status(500).json({
             message: "Error en query!",
             error: error

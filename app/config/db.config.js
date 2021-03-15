@@ -30,8 +30,6 @@ db.Product = require('../models/product.model.js')(sequelize, Sequelize);
 db.Order = require('../models/order.model')(sequelize, Sequelize);
 db.CatProduct = require('../models/catpoduct.model')(sequelize, Sequelize);
 db.Brand = require('../models/brand.model')(sequelize, Sequelize);
-
-
 db.Measure= require('../models/measure.model')(sequelize, Sequelize);
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
@@ -41,7 +39,6 @@ db.PurchaseInvoiceDetails=require('../models/purchaseInvoiceDetails.model')(sequ
 db.NoteCustomer= require('../models/notecustomer.model')(sequelize,Sequelize);
 db.NoteProduct= require('../models/noteproduct.model')(sequelize,Sequelize);
 db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
-
 // db.SysOptions=require('../models/systemOp.model')(sequelize, Sequelize);
 // db.ProfileOptions=require('../models/profileOptions.model')(sequelize, Sequelize);
 db.Discount = require('../models/discount.model')(sequelize, Sequelize);
@@ -58,14 +55,15 @@ db.Bank = require('../models/bank.model')(sequelize,Sequelize);
 db.Job = require('../models/job.model')(sequelize,Sequelize);
 db.BookingCustomer = require('../models/appointmentcustomer.modal')(sequelize,Sequelize);
 db.BookingSupplier = require('../models/appointmentsupplier.model')(sequelize,Sequelize);
-
+db.Bodega = require('../models/bodega.model')(sequelize,Sequelize);
 db.Roles = require('../models/rol.model')(sequelize,Sequelize);
 db.Grupos= require('../models/grupos')(sequelize,Sequelize);
+
+
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
 });
-
 db.User.belongsTo(db.Profile, { 
   foreignKey: {
     name: 'ID_Profile'
@@ -310,16 +308,16 @@ db.PurchaseOrder.hasMany(db.User, {
 
 
 //Relaciones purchase order y inventario 
-db.Inventory.hasMany(db.Product,{   
-  foreignKey: 'ID_Products' ,
+// db.Inventory.hasMany(db.Product,{   
+//   foreignKey: 'ID_Products' ,
 
-});
+// });
 
-db.Product.belongsTo(db.Inventory, { 
-  foreignKey: {
-    name: 'ID_Products'
-  }
-});
+// db.Product.belongsTo(db.Inventory, { 
+//   foreignKey: {
+//     name: 'ID_Products'
+//   }
+// });
 
 
 //Relaciones purchase order y detalle
@@ -333,17 +331,17 @@ db.PurchaseDetails.belongsTo(db.PurchaseOrder,{
 });
 
 
-
-
-db.Supplier.belongsTo(db.Product,{   
-  foreignKey: 'ID_Supplier' 
+db.Supplier.hasMany(db.Product,{
+  foreignKey: 'ID_Supplier'
 });
 
-db.Product.hasMany(db.Supplier, { 
-  foreignKey: {
-    name: 'ID_Supplier'
-  }
-});
+db.Product.belongsTo(db.Supplier,{
+    foreignKey:{
+      name:'ID_Supplier'
+    }
+  })
+
+
 
 //Relaciones entre order y customers
 db.Customer.hasMany(db.Order,{   
@@ -398,6 +396,46 @@ db.Product.belongsTo(db.Brand,{
   }
 })
 
+db.Product.hasMany(db.Inventory,{
+  foreignKey: 'ID_Products'
+})
+
+db.Inventory.belongsTo(db.Product,{
+  foreignKey:{
+    name: 'ID_Products'
+  }
+})
+
+db.Bodega.hasMany(db.Inventory,{
+  foreignKey: 'ID_Bodega'
+})
+
+db.Inventory.belongsTo(db.Bodega,{
+  foreignKey:{
+    name: 'ID_Bodega'
+  }
+})
+
+db.Company.hasMany(db.Inventory,{
+  foreignKey: 'ID_Company'
+})
+
+db.Inventory.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+})
+
+db.Company.hasMany(db.Bodega,{
+  foreignKey:'ID_Company'
+});
+
+db.Bodega.belongsTo(db.Company,{
+  foreignKey:{
+    name: 'ID_Company'
+  }
+})
+
 
 db.Company.hasMany(db.Product,{   
   foreignKey: 'ID_Company' 
@@ -443,11 +481,11 @@ db.Inventory.belongsTo(db.PurchaseDetails,{
   }
 });
 
-db.Product.hasMany(db.Measure,{   
+db.Measure.hasMany(db.Product,{   
   foreignKey: 'ID_Measure' 
 });
 
-db.Measure.belongsTo(db.Product, { 
+db.Product.belongsTo(db.Measure, { 
   foreignKey: {
     name: 'ID_Measure'
   }

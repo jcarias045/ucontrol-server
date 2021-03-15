@@ -148,10 +148,33 @@ function getBrandId (req, res){
     }
 }
 
+function getBrand (req, res){
+    let brandId = req.params.id;
+
+    try{
+        Brand.findByPk(brandId,{
+            attributes:['ID_Brand','Name','Description'],
+            where: {ID_Brand: brandId}
+        })
+        .then(brand => {
+            res.status(200).json({brand});            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
 module.exports={
     getBrands,
     getBrandId,
     createBrands,
     deleteBrand,
-    updateBrand
+    updateBrand,
+    getBrand
 }
