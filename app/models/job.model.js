@@ -1,16 +1,19 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Company = require('./company.model')
 
 const JobSchema = moongose.Schema({
   Name: String,
   Description: String,
   Estado: Boolean,
-  Company: Company 
+  Company: { type: Schema.ObjectId, 
+             ref: "Company",
+             // autopopulate: true,
+          } 
 })
 
-const Job = moongose.model('Job', JobSchema)
+module.exports = moongose.model('Job', JobSchema)
 
-export default Job
+
 
 
 // module.exports = (sequelize, Sequelize) =>{

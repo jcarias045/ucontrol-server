@@ -1,11 +1,4 @@
-const db = require('../config/db.config.js');
-const { Op } = require("sequelize");
-const sequelize = require('sequelize');
-
-const Personal = db.Personal;
-const Job = db.Job;
-const Bank = db.Bank;
-const Company = db.Company;
+const personal = require('../models/personal.model')
 
 function getAllPersonal(req, res) {
     let personalId=req.params.id;

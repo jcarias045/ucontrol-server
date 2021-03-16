@@ -1,61 +1,14 @@
-const db = require('../config/db.config.js');
+
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
-const { Op } = require("sequelize");
-//Se utiliza DiscountObj porque el parametro Discount y el nombre del objeto no pueden ser iguales.
-const Bank = db.Bank;
-const Company = db.Company;
+
 
 function getBanks(req, res) {
-    console.log("Descuento");
-    console.log("Probando endpoint");
-    let companyId = req.params.id; 
-    try{
-        Bank.findAll({    
-             include: [
-            {
-                 model: Company,
-                 attributes: ['ID_Company','Name','ShortName']
-             }
-            ],
-            where: {ID_Company: companyId}
-          })
-        .then(bank => {
-            res.status(200).json({bank});            
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error!",
-            error: error
-        });
-    }
+    
 }
 
 function createBank(req, res){
-    console.log("hola");
-    let bank = {};
-    try{
-        // Construimos el modelo del objeto company para enviarlo como body del reques
-        bank.Name = req.body.Name;
-        bank.Phone = req.body.Phone;
-        bank.Address= req.body.Address;
-        bank.ID_Company=req.body.ID_Company
-        console.log(bank);
-        // Save to MySQL database
-        Bank.create(bank)
-      .then(result => {    
-        res.status(200).json(result);
-    
-      });  
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
-        });
-    }
+  
 }
 
 

@@ -1,22 +1,47 @@
 import mongoose from 'mongoose';
+const Brand = require('./brand.model')
+const Company = require('./company.model')
+const CatProduct = require('./catpoduct.model')
+const Supplier = require('./supplier.model')
+const Measure = require('./measure.model')
 
 const ProductSchema = mongoose.Schema({
     Name: String,
+    Brand: { type: Schema.ObjectId, 
+             ref: "Brand",
+             // autopopulate: true,
+           },
     SellPrice: Number,
     ShortName: String,
+    Company: { type: Schema.ObjectId, 
+               ref: "Company",
+               // autopopulate: true,
+             },
+    CatProduct: { type: Schema.ObjectId, 
+                  ref: "CatProduct",
+                  // autopopulate: true,
+                },
+    Supplier: { type: Schema.ObjectId, 
+                ref: "Supplier",
+                // autopopulate: true,
+              },
     Logo: Buffer,
     MinStock: Number,
     MaxStock: Number,
     Active: Boolean,
     BuyPrice: Number,
     codproducts: String,
+    Measure: { type: Schema.ObjectId, 
+        ref: "Measure",
+        // autopopulate: true,
+      },
     Inventary: Number,
     AverageCost: Number
 })
 
-const Product = mongoose.model('Product', ProductSchema );
+module.exports = mongoose.model('Product', ProductSchema );
 
-export default Product;
+
 
 
 // module.exports = (sequelize, Sequelize) => {

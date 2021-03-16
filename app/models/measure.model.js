@@ -1,16 +1,18 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Company = require('./company.model')
 
 const MeasuerSchema = moongose.Schema({
   Name: String,
   Description: String,
   State: Boolean,
-  Company: Company 
+  Company: { type: Schema.ObjectId, 
+             ref: "Company",
+             // autopopulate: true,
+           },
 })
 
-const Measure = moongose.model('Measure', MeasureSchema)
+module.exports = moongose.model('Measure', MeasureSchema)
 
-export default Measure
 
 
 
