@@ -1,6 +1,6 @@
-const moongose = require('mongoose');
+const mongoose = require('mongoose');
 const Company = require('./company.model');
-const Schema =  moongose.Schema;
+const Schema =  mongoose.Schema;
 
 const BankSchema =Schema({
   Name: String,
