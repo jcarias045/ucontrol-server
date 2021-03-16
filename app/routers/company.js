@@ -7,7 +7,7 @@ const md_upload_avatar=multipart({uploadDir: "./app/uploads/avatar"});
 const companies = require('../controllers/companies');
 
 
-// router.get('/get-companies', companies.getCompanies);
+router.get('/get-companies', companies.getCompanies);
 // router.get('/get-logo/:logoName', companies.getLogo);
 // router.put('/upload-logo/:id',md_upload_avatar,companies.uploadLogo);
 router.post('/company-create', companies.createCompany);

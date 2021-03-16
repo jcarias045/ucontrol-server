@@ -1,5 +1,21 @@
 const Company = require("../models/company.model");
 
+
+
+function getCompanies(req, res) {
+  
+    Company.find().then(company => {
+      if (!company) {
+        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
+      } else {
+        res.status(200).send({ company });
+      }
+    });
+  }
+  
+
+
+
 function createCompany (req, res){
     
     const company = new Company();
@@ -35,7 +51,8 @@ function createCompany (req, res){
 }
 
 module.exports ={
-    createCompany
+    createCompany,
+    getCompanies
 }
 
 
