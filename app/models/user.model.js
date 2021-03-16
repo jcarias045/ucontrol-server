@@ -1,7 +1,9 @@
-const moongose = require('mongoose');
+const mongoose = require('mongoose');
+const Schema =  mongoose.Schema;
+const Company = require('./company.model');
 
 
-const UserSchema = moongose.Schema({
+const UserSchema = Schema({
   Name: String,
   LastName: String,
   Email: String,
@@ -13,12 +15,16 @@ const UserSchema = moongose.Schema({
   LastLogin: Date,
   Active: Boolean,
   Image: String,
-  UserName: String 
+  UserName: String,
+  Company: {type: Schema.ObjectId, 
+            ref: "Company",
+            // autopopulate: true,
+          }
 })
 
-const User = moongose.model('User', UserSchema)
+module.exports = mongoose.model('User', UserSchema)
 
-export default User
+
 
 
 

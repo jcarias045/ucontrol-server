@@ -11,8 +11,8 @@ router.get('/get-companies', companies.getCompanies);
 // router.get('/get-logo/:logoName', companies.getLogo);
 // router.put('/upload-logo/:id',md_upload_avatar,companies.uploadLogo);
 router.post('/company-create', companies.createCompany);
-// router.put('/company-update/:id', companies.updateCompany);
-// router.delete('/company-delete/:id', companies.deleteCompany);
+router.put('/company-update/:id', companies.updateCompany);
+router.delete('/company-delete/:id', companies.deleteCompany);
 // router.get('/getcompany/:id',companies.getCompany);
 
 // router.get('/get-company', companies.getCompaniesId);

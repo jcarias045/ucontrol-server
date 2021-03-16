@@ -14,8 +14,6 @@ function getCompanies(req, res) {
   }
   
 
-
-
 function createCompany (req, res){
     
     const company = new Company();
@@ -50,36 +48,45 @@ function createCompany (req, res){
     })
 }
 
-module.exports ={
-    createCompany,
-    getCompanies
+function deleteCompany(req, res) {
+    const { id } = req.params;
+  
+    Company.findByIdAndRemove(id, (err, companyDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!companyDeleted) {
+          res.status(404).send({ message: "Compañia no encontrado." });
+        } else {
+          res
+            .status(200)
+            .send({ message: "La compañia ha sido eliminado correctamente." });
+        }
+      }
+    });
+  }
+
+function updateCompany(req, res){
+    let companyData = req.body;
+    const params = req.params;
+
+    Company.findByIdAndUpdate({_id: params.id}, companyData, (err, companyUpdate)=>{
+        if(err){
+            res.status(500).sen({message: "Error del Servidor."});
+        } else {
+            if(!companyUpdate){
+                res.status(404).sen({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Compañia Actualizada"})
+            }
+        }
+    })
 }
 
+module.exports ={
+    createCompany,
+    getCompanies,
+    deleteCompany,
+    updateCompany
+}
 
-
-
-
-// const router = express.Router();
-
-// const createCompany = async (req, res) => {
-    
-//     console.log( "HolaEndPoint" );
-//      const  { Name,Logo,ShortName,Web,Active, AccessToCustomers,AccessToSuppliers,
-//         RequieredIncome, RequieredOutput,CompanyRecords,AverageCost} = req.body;
-        
-//      const newCompany = new Company({Name,Logo,ShortName,Web,Active, AccessToCustomers,AccessToSuppliers,
-//        RequieredIncome, RequieredOutput,CompanyRecords,AverageCost});
-//        console.log(newCompany);
-
-//     try {
-//         await Company.save(newCompany);
-
-//         res.status(201).json(newCompany);
-//     } catch (error) {
-//         res.status(409).json({ message: error.message });
-//     }
-// }
-
-// module.exports ={
-//     createCompany
-// }
