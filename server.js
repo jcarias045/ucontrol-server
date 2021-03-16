@@ -103,7 +103,7 @@ app.use('/api', Bodega);
 //   console.log("App listening at http://%s:%s", host, port); 
 // })
 
-const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrolretryWrites=true&w=majority'
+const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
 mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then( () => app.listen(3050, () => {
         console.log(`Server Running on Port: http://localhost:3050`)

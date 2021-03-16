@@ -1,6 +1,7 @@
-const moongose = require('mongoose');
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema
 
-const CompanySchema = moongose.Schema({
+const CompanySchema = Schema({
   Name: String,
   Logo: String,
   Web: String,
@@ -12,13 +13,15 @@ const CompanySchema = moongose.Schema({
   RequiredOutput: Boolean,
   CompanyRecords: Boolean,
   AverageCost: Boolean,
-})
+  },
+  // { 
+  //       freezeTableName: true,
+  //       timestamps: false,
+  // 	  }
+      )
 
-const Company = moongose.model('Company', CompanySchema)
+module.exports = mongoose.model('Company', CompanySchema)
 
-module.exports= {
-  Company
-}
 
 
 // module.exports = (sequelize, Sequelize) => {
