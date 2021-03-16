@@ -1,4 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+const Bank  = require('./bank.model');
+const Job = require('./job.model')
 
 const PersonalSchema = mongoose.Schema({
     name: String,
@@ -9,7 +11,12 @@ const PersonalSchema = mongoose.Schema({
     email: String,
     address: String,
     birthDate: Date,
+    Bank: {  type: Schema.ObjectId, 
+             ref: "Bank",
+             // autopopulate: true,
+          },
     bankAccount: String,
+    Job: { type: Schema.ObjectId, ref: "Job"},
     salary: Number,
     nit: String,
     gender: String,
@@ -30,9 +37,9 @@ const PersonalSchema = mongoose.Schema({
 
 })
 
-const Personal = mongoose.model('Personal', PersonalSchema );
+ module.exports = mongoose.model('Personal', PersonalSchema );
 
-export default Personal;
+
 
 // module.exports = (sequelize, Sequelize) => {
 // 	const Personal = sequelize.define('crm_personal', {	

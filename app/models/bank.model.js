@@ -1,16 +1,18 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Company = require('./company.model');
 
 const BankSchema = moongose.Schema({
   Name: String,
   Phone: String, 
   Address: String,
-  Company: Company
+  Company: { type: Schema.ObjectId, 
+             ref: "Company",
+            // autopopulate: true,
+           }
 })
 
-const Bank = moongose.model('Bank', BankSchema)
+module.exports = mongoose.model('Bank', BankSchema)
 
-export default Bank
 
 
 

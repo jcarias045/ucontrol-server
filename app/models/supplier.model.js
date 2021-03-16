@@ -1,5 +1,5 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Company = require('./company.model')
 
 const SupplierSchema = moongose.Schema({
   Name: String,
@@ -12,12 +12,15 @@ const SupplierSchema = moongose.Schema({
   Active: Boolean,
   codsupplier: String,
   deliveryDays: Number,
-  Company: Company    
+  Company: { type: Schema.ObjectId, 
+             ref: "Company",
+             // autopopulate: true,
+           },    
 })
 
-const Supplier = moongose.model('Supplier', SupplierSchema)
+module.exports = moongose.model('Supplier', SupplierSchema)
 
-export default Supplier
+
 
 // module.exports = (sequelize, Sequelize) => {
 // 	const Supplier = sequelize.define('crm_supplier', {	

@@ -1,15 +1,13 @@
 const moongose = require('mongoose');
-import Company from './company.model';
 
-const BrandSchema = moongose.Schema({
+const CatProductSchema = moongose.Schema({
   Name: String,
   Description: String,
-  Company: Company 
 })
 
-const Brand = moongose.model('Brand', BrandSchema)
+module.exports = moongose.model('CatProduct', CatProductSchema)
 
-export default Brand
+
 
 
 

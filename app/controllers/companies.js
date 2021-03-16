@@ -1,7 +1,5 @@
 const Company = require("../models/company.model");
 
-
-
 function getCompanies(req, res) {
   
     Company.find().then(company => {

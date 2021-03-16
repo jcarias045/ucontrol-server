@@ -69,10 +69,10 @@ async function updateUser(req,res) {
 
     User.findByIdAndUpdate({_id: params.id}, userData, (err, userUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!userUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Compañia Actualizada"})
             }
