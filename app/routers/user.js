@@ -17,9 +17,9 @@ const users = require('../controllers/users');
 
 
 router.get('/users', users.getUsers);
-router.post('/sign-in',users.signIn);
+router.post('/sign-in', users.signIn);
 // router.get('/get-users',users.getUsers);
-router.post('/create-user',users.createUser);
+router.post('/create-user', users.createUser);
 router.put('/update-user/:id',users.updateUser);
 router.delete('/delete-user/:id',users.deleteUser);
 // router.put('/desactivate-user/:id',users.desactivateUser);
