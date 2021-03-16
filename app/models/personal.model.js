@@ -1,8 +1,9 @@
-import mongoose, { Schema } from 'mongoose';
+const mongoose = require('mongoose');
 const Bank  = require('./bank.model');
 const Job = require('./job.model')
+const Schema =  mongoose.Schema
 
-const PersonalSchema = mongoose.Schema({
+const PersonalSchema = Schema ({
     name: String,
     codPersonal: String,
     lastName: String,
@@ -16,7 +17,8 @@ const PersonalSchema = mongoose.Schema({
              // autopopulate: true,
           },
     bankAccount: String,
-    Job: { type: Schema.ObjectId, ref: "Job"},
+    Job: { type: Schema.ObjectId, 
+            ref: "Job"},
     salary: Number,
     nit: String,
     gender: String,
