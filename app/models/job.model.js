@@ -1,7 +1,8 @@
 const moongose = require('mongoose');
+const Schema = moongose.Schema
 const Company = require('./company.model')
 
-const JobSchema = moongose.Schema({
+const JobSchema = Schema({
   Name: String,
   Description: String,
   Estado: Boolean,

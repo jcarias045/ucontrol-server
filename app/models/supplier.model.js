@@ -1,7 +1,9 @@
 const moongose = require('mongoose');
+const Schema = moongose.Schema
 const Company = require('./company.model')
+const SupplierType = require('./suppliertype.model')
 
-const SupplierSchema = moongose.Schema({
+const SupplierSchema = Schema({
   Name: String,
   Web: String,
   Email: String,
@@ -15,7 +17,8 @@ const SupplierSchema = moongose.Schema({
   Company: { type: Schema.ObjectId, 
              ref: "Company",
              // autopopulate: true,
-           },    
+           },
+  SupplierType: { type: Schema.ObjectId, ref: "SupplierType"}  
 })
 
 module.exports = moongose.model('Supplier', SupplierSchema)

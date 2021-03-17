@@ -1,91 +1,60 @@
-const db = require('../config/db.config.js');
+const product = require('../models/product.model')
 const fs =require("fs");
 const path=require("path");
-const sequelize = require('sequelize');
-const { Op, where } = require("sequelize");
 
-const Product = db.Product;
-const Measure = db.Measure;
-const Company = db.Company;
-const Inventory = db.Inventory;
-const Brand = db.Brand;
+
 
 function getPoducts(req, res){
-    // Buscamos informacion para llenar el modelo de 
-    let companyId = req.params.id;
-    try{
-        Product.findAll({
-            include:[{
-                model: Brand,
-                attributes: ['ID_Brand', 'Name']
-            }],
-            where: {ID_Company: companyId},
-            attributes: ['ID_Products','Name','ID_Brand','SellPrice','ShortName','ID_Company','ID_CatProduct',
-            'ID_Supplier', 'Logo' ,  'MinStock' , 'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure'  ]
-        })
-        .then(products => {
-            res.status(200).send({products});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    product.find().populate({path: 'Company', model: 'Company'}).
+    populate({path: 'Supplier', model: 'Supplier'}).
+    populate({path: 'Brand', model: 'Brand'}).
+    populate({path: 'CatProduct', model: 'CatProduct'}).
+    populate({path: 'Measure', model: 'Measure'})
+    .then(product => {
+        if(!product){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({product})
+        }
+    });
 }
 
 function createProduct(req, res){
-    let product = {};
+    
+    const Product = new product()
 
-    try{
-        // Construimos el modelo del objeto product para enviarlo como body del request
-        product.Name = req.body.Name;
-        product.ID_Brand=req.body.ID_Brand;
-        product.SellPrice= req.body.SellPrice;
-        product.ShortName=req.body.ShortName;
-        product.ID_CatProduct=req.body.ID_CatProduct;
-        product.ID_Supplier=req.body.ID_Supplier;
-        product.ID_Measure=req.body.ID_Measure;
-        product.ID_Company=req.body.ID_Company;
-        product.Logo= req.body.Logo;
-        product.MinStock= req.body.MinStock;
-        product.MaxStock= req.body.MaxStock;
-        product.Active=true;
-        product.BuyPrice= req.body.BuyPrice;
-        product.codproducts = req.body.codproducts;
+    const { Name, Brand, SellPrice, ShortName, Company, CatProduct, Supplier,
+    Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, AverageCost} = req.body
 
-        
-        Product.findOne({
-            attributes: [   
-            'Name' , 'Active' ,  'codproducts' ],
-            where:{[Op.or]: [
-            { Name: product.Name},
-            { codproducts: product.codproducts}
-          ]}}).then(function(exist){
-              if(!exist){
-                  console.log(product);
-                Product.create(product)
-                .then(result => {    
-                  res.status(200).json(result);
-              
-                });  
-              }
-              else{
-                res.status(505).send({message:"El producto ya existe"})
-              }
-            });
-        // Save to MySQL database
-       
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
+        Product.Name = Name;
+        Product.Brand= Brand;
+        Product.SellPrice= SellPrice;
+        Product.ShortName= ShortName;
+        Product.CatProduct= CatProduct;
+        Product.Supplier=Supplier;
+        Product.Measure=Measure;
+        Product.Company=Company;
+        Product.Logo= Logo;
+        Product.MinStock= MinStock;
+        Product.MaxStock= MaxStock;
+        Product.Active=Active;
+        Product.BuyPrice= BuyPrice;
+        Product.codproducts = codproducts;
+        Product.Inventary= Inventary;
+        Product.AverageCost= AverageCost;
+
+        console.log(Product);
+        Product.save((err, ProductStored)=>{
+            if(err){
+                res.status(500).send({message: err});
+            }else{
+                if(!ProductStored){
+                    res.status(500).send({message: "Error"});
+                }else{
+                    res.status(200).send({Product: ProductStored})
+                }
+            }
         });
-    }
 }
 
 
@@ -160,90 +129,38 @@ function getLogo(req,res){
 
 
 async function updateProduct(req, res){
-   
-    let productId = req.params.id; 
-     
-    const { Name, ID_Brand, SellPrice, ShortName, ID_Company, ID_CatProduct, ID_Supplier, 
-        ID_Measure, Logo, MinStock, MaxStock, Active, BuyPrice, codproducts} = req.body;  //
-    try{
-        let product = await Product.findByPk(productId,{
-            attributes: ['ID_Products','Name','ID_Brand','SellPrice','ShortName',
-        'ID_Company','ID_CatProduct','ID_Supplier', 'Logo' ,  'MinStock' , 
-        'MaxStock' , 'Active' , 'BuyPrice' , 'codproducts' , 'ID_Measure']});
-        console.log(product);
-        if(!product){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + productId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name:Name,
-                ID_Brand: ID_Brand,
-                SellPrice: SellPrice,
-                ShortName: ShortName,
-                ID_Company: ID_Company,
-                ID_CatProduct: ID_CatProduct,
-                ID_Supplier: ID_Supplier,
-                ID_Measure: ID_Measure,
-                Logo: Logo,
-                MinStock: MinStock,
-                MaxStock: MaxStock,
-                Active:Active,
-                BuyPrice: BuyPrice,
-                codproducts: codproducts               
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await product.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Products: productId}
-                              }
-                            );
+    let productData = req.body;
+    const params = req.params;
 
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+    product.findByIdAndUpdate({_id: params.id}, productData, (err, productUpdate)=>{
+        if(err){
+            res.status(500).sen({message: "Error del Servidor."});
+        } else {
+            if(!productUpdate){
+                res.status(404).sen({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Producto Actualizado"})
             }
-
-            res.status(200).json(result);
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
 }
 
 async function deleteProduct(req, res){
-    console.log(req.params.id);
-    try{
-        let productId = req.params.id;
-        let product = await Product.findByPk(productId);
-       
-        if(!product){
-            res.status(404).json({
-                message: "El Producto con este ID no existe = " + productId,
-                error: "404",
-            });
+    const { id } = req.params;
+  
+    product.findByIdAndRemove(id, (err, productDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!productDeleted) {
+          res.status(404).send({ message: "Producto no encontrado." });
         } else {
-            await product.destroy();
-            res.status(200).send({
-                message:"Producto eliminada con exito"
-            });
+          res
+            .status(200)
+            .send({ message: "El Producto ha sido eliminado correctamente." });
         }
-    } catch(error) {
-        res.status(500).json({
-            message: "Error -> No se puede eliminar el producto con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+      }
+    });
 }
 
 
@@ -268,47 +185,20 @@ function getPoductsId(req, res){
 
 
 async function desactiveProduct(req, res){
-   //RevisarSino desactiva
     let productId = req.params.id; 
-    console.log(req.body);
   
     const {Active} = req.body;  //
     try{
-        let product = await Product.findByPk(productId,{
-        attributes:['Name']
-        });
         
-        if(!product){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + productId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = { 
-               
-                Active:Active          
+        await product.findByIdAndUpdate(productId, {Active}, (productStored) => {
+            if (!productStored) {
+                res.status(404).send({ message: "No se ha encontrado el producto." });
             }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await Product.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Products: productId},
-                                attributes:['Active' ]
-                              }
-                            );
-
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+            else if (Active === false) {
+                res.status(200).send({ message: "Producto desactivado correctamente." });
             }
-
-            res.status(200).json(result);
-        }
+        })
+        
     } catch(error){
         res.status(500).json({
             message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
@@ -320,7 +210,7 @@ async function desactiveProduct(req, res){
 function getRecommendedProducts(req,res){
    // Buscamos informacion para llenar el modelo de 
    let companyId = req.params.id;
-   let supplierId=req.params.supplier;
+   let ProductId=req.params.Product;
    try{
     Inventory.findAll({
         include: [
@@ -335,7 +225,7 @@ function getRecommendedProducts(req,res){
                     where:{
            
                         ID_Company:companyId,
-                        ID_Supplier:supplierId
+                        ID_Product:ProductId
                     },
                     include: [
                         {
@@ -441,7 +331,7 @@ function getRecommendedProducts(req,res){
 function getRecommendedProductsInventory(req,res){
     // Buscamos informacion para llenar el modelo de 
     let companyId = req.params.id;
-    let supplierId=req.params.supplier;
+    let ProductId=req.params.Product;
     try{
      Product.findAll({
          attributes:['Name','MinStock','MaxStock','ID_Products','Inventary','BuyPrice','codproducts'],
@@ -488,7 +378,7 @@ function getProduct(req,res){
         {attributes:[
             'ID_Products','Name','ID_Brand','SellPrice',
             'ShortName', 'ID_Company','ID_CatProduct',
-            'ID_Supplier', 'ID_Measure', 'Logo', 'MinStock',
+            'ID_Product', 'ID_Measure', 'Logo', 'MinStock',
             'MaxStock', 'Active', 'BuyPrice', 'codproducts'
         ]})
         .then(products => {

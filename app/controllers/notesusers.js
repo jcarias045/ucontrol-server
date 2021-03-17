@@ -1,130 +1,80 @@
-const db = require('../config/db.config.js');
+const noteUser = require('../models/noteuser.model')
 const fs =require("fs");
 const path=require("path");
-const NoteUser = db.NoteUser;
-const User = db.User;
 const moment=require("moment");
 const jwt= require('../services/jwt');
 
 
 function getNotes(req, res){
-    // Buscamos informacion para llenar el modelo de 
-    let userId = req.params.id;
-    try{
-        NoteUser.findAll({
-            where: {ID_User: userId},
-            attributes:['ID_NoteUser','Subject','Text']
-        })
-        .then(notes => {
-            res.status(200).send({notes});          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    noteUser.find().populate({path: 'User', model: 'User'}).
+    populate({path: 'Costumer', model: 'Costumer'})
+    .then(noteUser => {
+        if(!noteUser){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({noteUser})
+        }
+    });
 }
 
 function createNote(req, res){
+    const NoteUser = new noteUser();
 
-    let note = {};
-    let CreationDate = moment().unix();
+    const {Subject, Text, CreationDate, User, Costumer} = req.body
 
-    try{
-        // Construimos el modelo del objeto company para enviarlo como body del reques
-        note.Subject = req.body.Subject;
-        note.Text=req.body.Text;
-        note.CreationDate= CreationDate;
-        note.ID_User=req.body.ID_User;
- 
-        // Save to MySQL database
-       NoteUser.create(note)
-      .then(result => {    
-        res.status(200).json(result);    
-      });  
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
-        });
-    }
+    NoteUser.Subject= Subject
+    NoteUser.Text= Text;
+    NoteUser.CreationDate= CreationDate;
+    NoteUser.User=User;
+    NoteUser.Costumer=Costumer;
+    
+    console.log(NoteUser);
+    NoteUser.save((err, NoteUserStored)=>{
+        if(err){
+            res.status(500).send({message: err});
+        }else{
+            if(!NoteUserStored){
+                res.status(500).send({message: "Error"});
+            }else{
+                res.status(200).send({NoteUser: NoteUserStored})
+            }
+        }
+    });
 }
 
 async function updateNote(req, res){
-   
-    let noteID = req.params.id; 
-    console.log(noteID); 
-    const { Subject, Text} = req.body;  //
-    try{
-        let note = await NoteUser.findByPk(noteID,{
-            attributes: ['Subject','Text','ID_User']
-        });
-        console.log(note);
-        if(!note){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra la nota con ID = " + noteID,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Subject: Subject,
-                Text: Text       
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await NoteUser.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_NoteUser: noteID}
-                              }
-                            );
+    let noteUserData = req.body;
+    const params = req.params;
 
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+    noteUser.findByIdAndUpdate({_id: params.id}, noteUserData, (err, noteUserUpdate)=>{
+        if(err){
+            res.status(500).sen({message: "Error del Servidor."});
+        } else {
+            if(!noteUserUpdate){
+                res.status(404).sen({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Nota Actualizada"})
             }
-
-            res.status(200).json(result);
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
 }
 
 async function deleteNote(req, res){
-    console.log(req.params.id);
-    try{
-        let noteID = req.params.id;
-        let note = await NoteUser.findByPk(noteID);
-       
-        if(!note){
-            res.status(404).json({
-                message: "La Nota con este ID no existe = " + noteID,
-                error: "404",
-            });
+    const { id } = req.params;
+  
+    noteUser.findByIdAndRemove(id, (err, noteUserDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!noteUserDeleted) {
+          res.status(404).send({ message: "Nota no encontrada." });
         } else {
-            await note.destroy();
-            res.status(200).send({
-                message:"Nota eliminada con exito"
-            });
+          res
+            .status(200)
+            .send({ message: "La Nota ha sido eliminada correctamente." });
         }
-    } catch(errr) {
-        res.status(500).json({
-            mesage: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+      }
+    });
 }
 
 function getNotesID(req, res){

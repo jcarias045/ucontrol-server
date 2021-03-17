@@ -1,8 +1,10 @@
-import mongoose, { Schema } from 'mongoose';
+const  moongose = require('mongoose');
+const Schema = moongose.Schema
+const Company = require('../models/company.model')
 const Bank  = require('./bank.model');
 const Job = require('./job.model')
 
-const PersonalSchema = mongoose.Schema({
+const PersonalSchema = Schema({
     name: String,
     codPersonal: String,
     lastName: String,
@@ -18,6 +20,8 @@ const PersonalSchema = mongoose.Schema({
     bankAccount: String,
     Job: { type: Schema.ObjectId, ref: "Job"},
     salary: Number,
+    Company: { type: Schema.ObjectId, ref: "Company"},
+    dui: String,
     nit: String,
     gender: String,
     active: Boolean,
@@ -26,7 +30,7 @@ const PersonalSchema = mongoose.Schema({
     phoneRef: [String],
     companyRef: [String],
     addressRef: [String],
-    spouseName: [String],
+    spouseName: String,
     numberOfChildren: Number,
     dateOfUnion: Date,
     civilStatus: String,
@@ -37,7 +41,7 @@ const PersonalSchema = mongoose.Schema({
 
 })
 
- module.exports = mongoose.model('Personal', PersonalSchema );
+ module.exports = moongose.model('Personal', PersonalSchema );
 
 
 

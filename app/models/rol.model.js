@@ -1,16 +1,17 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Schema = moongose.Schema
+const Company = require('./company.model');
 
-const RolSchema = moongose.Schema({
+const RolSchema = Schema({
   Name: String,
   Description: String,
   State: Boolean,
-  Company: Company, 
+  Company: {type: Schema.ObjectId, ref: "Company"}
 })
+    
 
-const Rol = moongose.model('Rol', RolSchema)
+module.exports =  moongose.model('Rol', RolSchema)
 
-export default Rol
 
 
 
