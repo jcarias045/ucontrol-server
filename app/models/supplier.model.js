@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const Company = require('./company.model')
+const SupplierType = require('./suppliertype.model')
 
 const SupplierSchema = Schema({
   Name: String,
@@ -16,7 +17,8 @@ const SupplierSchema = Schema({
   Company: { type: Schema.ObjectId, 
              ref: "Company",
              // autopopulate: true,
-           },    
+           },
+  SupplierType: { type: Schema.ObjectId, ref: "SupplierType"}  
 })
 
 module.exports =mongoose.model('Supplier', SupplierSchema)

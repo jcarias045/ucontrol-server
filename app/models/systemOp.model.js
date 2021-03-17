@@ -1,15 +1,16 @@
-import mongoose from 'mongoose';
+const moongose = require('mongoose');
+const Schema = moongose.Schema
 
-const OpMenuModelSchema = mongoose.Schema({
+const OpMenuModelSchema = Schema({
     Name: String,
     Grupo: {
       Name: String
     }
 })
 
-const OpMenu = mongoose.model('OpMenu', OpMenuModelSchema );
+module.exports =  moongose.model('OpMenu', OpMenuModelSchema );
 
-export default OpMenu;
+
 
 
 // module.exports = (sequelize, Sequelize) => {

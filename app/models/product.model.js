@@ -1,11 +1,12 @@
-import mongoose from 'mongoose';
+const moongose = require('mongoose')
+const Schema = moongose.Schema
 const Brand = require('./brand.model')
 const Company = require('./company.model')
 const CatProduct = require('./catpoduct.model')
 const Supplier = require('./supplier.model')
 const Measure = require('./measure.model')
 
-const ProductSchema = mongoose.Schema({
+const ProductSchema = Schema({
     Name: String,
     Brand: { type: Schema.ObjectId, 
              ref: "Brand",
@@ -39,7 +40,7 @@ const ProductSchema = mongoose.Schema({
     AverageCost: Number
 })
 
-module.exports = mongoose.model('Product', ProductSchema );
+module.exports = moongose.model('Product', ProductSchema );
 
 
 

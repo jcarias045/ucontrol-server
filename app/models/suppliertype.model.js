@@ -1,12 +1,13 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Schema = moongose.Schema
+const Company = require('./company.model');
 
-const SupplierTypeSchema = moongose.Schema({
+const SupplierTypeSchema = Schema({
   Name: String,
   Description: String,
-  Company: Company 
+  Company: { type: Schema.ObjectId, ref: "Company"} 
 })
 
-const SupplierType = moongose.model('SupplierType', SupplierTypeSchema)
+module.exports = moongose.model('SupplierType', SupplierTypeSchema)
 
-export default SupplierType
+

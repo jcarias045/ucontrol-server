@@ -1,138 +1,79 @@
-const db = require('../config/db.config.js');
+const measure = require('../models/measure.model')
 const fs =require("fs");
 const path=require("path");
-const Measures = db.Measure;
+
 
 function getMeasures(req, res) {
-    let companyId = req.params.id;
-    try{
-        Measures.findAll({
-            where: {ID_Company:companyId}
-        })
-        .then(measures => {
-            res.status(200).send({measures});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    measure.find().populate({path: 'Company', model: 'Company'})
+    .then(measure => {
+        if(!measure){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({measure})
+        }
+    });
 }   
 
 function createMeasure(req, res){
-    let measure = {};
+      
+    const Measure = new measure();
 
-    try{
-        // Construimos el modelo del objeto company para enviarlo como body del request
-        measure.Name = req.body.Name;
-        measure.Description =req.body.Description;
-        measure.ID_Company = req.body.ID_Company;
-        measure.state = req.body.state;
-        console.log(measure);
-        Measures.findOne({where:{
-             Name: measure.Name}}).then(function(exist){
-                 console.log();
-              if(!exist){
-                Measures.create(measure)
-                .then(result => {    
-                  res.status(200).json(result);
-              
-                });  
-              }
-              else{
-                res.status(505).send({message:"La medida ya fue registrada"})
-
-              }
-            });
-
-        // Save to MySQL database
-       
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
+    const { Name, Description, Company, State } = req.body
+        Measure.Name = Name;
+        Measure.Description = Description;
+        Measure.Company = Company;
+        Measure.State =  State;
+        
+        console.log(Measure);
+        Measure.save((err, MeasureStored)=>{
+            if(err){
+                res.status(500).send({message: err});
+            }else{
+                if(!MeasureStored){
+                    res.status(500).send({message: "Error"});
+                }else{
+                    res.status(200).send({Measure: MeasureStored})
+                }
+            }
         });
-    }
+    
 }
 
 
 async function updateMeasure(req, res){
-   
-    let measureId = req.params.id;
-  
-    
-    const { Name,Description} = req.body;  //
-   
-    try{
-        let measure = await Measures.findByPk(measureId);
-        console.log(measure);
-        if(!measure){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + measureId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name:Name,
-               Description:Description
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await Measures.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Measure: measureId},
-                                attributes: [ 'Name','Description']
-                              }
-                            );
+    let measureData = req.body;
+    const params = req.params;
 
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+    measure.findByIdAndUpdate({_id: params.id}, measureData, (err, measureUpdate)=>{
+        if(err){
+            res.status(500).sen({message: "Error del Servidor."});
+        } else {
+            if(!measureUpdate){
+                res.status(404).sen({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Measure Actualizado"})
             }
-
-            res.status(200).json(result);
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
+   
 }
 
 async function deleteMeasure(req, res){
-    console.log(req.params.id);
-    try{
-        let measureId = req.params.id;
-        let measure = await Measures.findByPk(measureId);
-       
-        if(!measure){
-            res.status(404).json({
-                message: "La compañia con este ID no existe = " + measureId,
-                error: "404",
-            });
+    const { id } = req.params;
+  
+    measure.findByIdAndRemove(id, (err, measureDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!measureDeleted) {
+          res.status(404).send({ message: "Medida no encontrado." });
         } else {
-            await measure.destroy();
-            res.status(200).send({
-                message:"Usuario eliminada con exito"
-            });
+          res
+            .status(200)
+            .send({ message: "La Medida ha sido eliminado correctamente." });
         }
-    } catch(error) {
-        res.status(500).json({
-            message: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+      }
+    });
 }
 
 function getMeasuresInfo(req,res){
