@@ -2,7 +2,6 @@ const moongose = require('mongoose');
 const Schema = moongose.Schema
 const Company = require('./company.model');
 
-
 const BankSchema = Schema({
   Name: String,
   Phone: String, 

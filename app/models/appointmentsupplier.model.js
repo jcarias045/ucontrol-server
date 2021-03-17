@@ -5,12 +5,14 @@ const Supplier = require('../models/supplier.model')
   
   const BookingSupplierSchema = Schema({
       Description: String,
-      StartDate: Number,
-      EndDate: Number,
+      StartDate: Date,
+      EndDate: Date,
       State: Boolean,
       User: { type: Schema.ObjectId, ref: "User"},
-      Supplier: { type: Schema.ObjectId, ref: "Supplier"}
-
+      Supplier: { type: Schema.ObjectId, ref: "Supplier"},
+      Name: String,
+      StartTime: Date,
+      EndTime: Date,
     })
     
  module.exports = moongose.model('BookingSupplier', BookingSupplierSchema)
