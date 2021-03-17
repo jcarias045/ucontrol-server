@@ -1,7 +1,8 @@
-const moongose = require('mongoose');
+const mongoose = require('mongoose');
+const Schema =  mongoose.Schema;
 const Company = require('./company.model')
 
-const SupplierSchema = moongose.Schema({
+const SupplierSchema = Schema({
   Name: String,
   Web: String,
   Email: String,
@@ -18,7 +19,7 @@ const SupplierSchema = moongose.Schema({
            },    
 })
 
-module.exports = moongose.model('Supplier', SupplierSchema)
+module.exports =mongoose.model('Supplier', SupplierSchema)
 
 
 
