@@ -41,10 +41,10 @@ module.exports = (sequelize, Sequelize) => {
         deliveryDays:{
           type: Sequelize.INTEGER,
         },
-        // ID_SupplierType:{
-        //   type: Sequelize.INTEGER,
-        //   foreign_key:true,
-        // }
+        ID_SupplierType:{
+          type: Sequelize.INTEGER,
+          foreign_key:true,
+        }
 
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,

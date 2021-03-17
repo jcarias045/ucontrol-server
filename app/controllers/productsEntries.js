@@ -64,15 +64,13 @@ async function createProductEntry(req,res){
     let codigo=0;
     let detalles=req.body.entries;
     let companyId = req.params.id;
-    let entrycod=await ProductEntries.max('codentry',{ 
-            
-            where: {ID_Company:companyId},
-            
-        
-    }).then(function(orden) {
-        
+    let costo=0.0;
+    let entrycod=await ProductEntries.max('codentry',{  where: {ID_Company:companyId} }).then(function(orden) {     
        return orden;
     });
+    let averageCost=await Company.findAll({attributes:['AverageCost'], where:{RequiredIncome:true,ID_Company:companyId}}).
+    then(function(result){return result});
+    console.log(averageCost);
     
     if(!entrycod){
         codigo =1;
@@ -207,6 +205,44 @@ async function createProductEntry(req,res){
                                      }
                                    );
                               }
+                                 
+                              //calculo de costo Promedio
+                              if(averageCost.length > 0){
+                                console.log('COSTO PROMEDIO');
+                                console.log(item.proveedorType);
+                                console.log(item.totalImpuestos);
+                                console.log(item.total);
+                                console.log(item.Price);
+                                console.log(item.Stock);
+                                console.log(item.ID_Products);
+                                
+                                let facturaProveedor=item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total;
+                                console.log();
+                                let fact1=(item.Stock*item.Price)+facturaProveedor;
+                                let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                                console.log(fact2);
+                                console.log(fact1);
+                                costo=parseFloat((fact1)/(fact2));
+                                
+                            console.log('COSTO PROMEDIO');
+                               console.log(costo);
+                              let costoprom={
+                                AverageCost : parseFloat(averageCost.length>0?parseFloat(costo): 
+                                (item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                   
+                            }
+                           
+                             console.log(costoprom);
+                          
+                             let updProduct = await Product.update(costoprom,
+                               {             
+                                 where: {ID_Products : item.ID_Products},
+                                 attributes: ['AverageCost']
+                               }
+                             );
+                             console.log(updProduct);
+                            }
+                               
                         }
                        }).catch(err=>{
                         console.log(err);
@@ -430,6 +466,9 @@ async function createProductEntryWithoutInvoice(req,res){
     let detalles=req.body.entries;
     let companyId = req.body.ID_Company;
     console.log(companyId);
+    let averageCost=await Company.findAll({attributes:['AverageCost'], where:{RequiredIncome:true,ID_Company:companyId}}).
+    then(function(result){return result});
+    console.log(averageCost);
     let entrycod=await ProductEntries.max('codentry',{ 
             
             where: {ID_Company:companyId},
@@ -505,6 +544,43 @@ async function createProductEntryWithoutInvoice(req,res){
                            }
                          );
 
+
+                         if(averageCost.length > 0){
+                            console.log('COSTO PROMEDIO');
+                            console.log(item.proveedorType);
+                            console.log(item.totalImpuestos);
+                            console.log(item.total);
+                            console.log(item.Price);
+                            console.log(item.Stock);
+                            console.log(item.ID_Products);
+                            
+                            let facturaProveedor=item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total;
+                            console.log();
+                            let fact1=(item.Stock*item.Price)+facturaProveedor;
+                            let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                            console.log(fact2);
+                            console.log(fact1);
+                            costo=parseFloat((fact1)/(fact2));
+                            
+                        console.log('COSTO PROMEDIO');
+                           console.log(costo);
+                          let costoprom={
+                            AverageCost : parseFloat(averageCost.length>0?parseFloat(costo): 
+                            (item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                               
+                        }
+                       
+                         console.log(costoprom);
+                      
+                         let updProduct = await Product.update(costoprom,
+                           {             
+                             where: {ID_Products : item.ID_Products},
+                             attributes: ['AverageCost']
+                           }
+                         );
+                         console.log(updProduct);
+                        }
+
                     }
                 }).catch(error=>{console.log(error);})
             }
@@ -517,11 +593,63 @@ async function createProductEntryWithoutInvoice(req,res){
     }
 }
 
+async function getListProductIngresadoSinFactura(req, res){
+     // Buscamos informacion para llenar el modelo de 
+     let emtryId=req.params.id;
+     try{
+        InvoiceEntriesDetails.findAll({
+             where: {
+                ID_ProductEntry: emtryId
+             },
+             include: [{
+                 model: Inventory,
+                 attributes: ['ID_Inventory'],
+                 on:{
+                   
+                    ID_Inventory: sequelize.where(sequelize.col("ec_invoiceentry.ID_Inventory"), "=", sequelize.col("ec_inventories.ID_Inventory")),
+                 },
+                 include:[
+                     {
+                         model:Product,
+                         attributes: ['ID_Products','Name','MinStock','MaxStock','BuyPrice','codproducts'],  
+                         include: [
+                            {
+                                model:Measure,
+                                attributes: ['Name'],
+                                on: {
+                                   ID_Measure: sequelize.where(sequelize.col("ec_inventories.crm_products.crm_measures.ID_Measure"), "=", sequelize.col("ec_inventories.crm_products.ID_Measure")),
+                               }
+                            }
+                        ]   
+                     }
+                 ]
+                 }]
+             }
+         
+ 
+         )
+         .then(entries => {
+             res.status(200).send({entries});
+           
+         })
+     }catch(error) {
+         // imprimimos a consola
+         console.log(error);
+ 
+         res.status(500).json({
+             message: "Error en query!",
+             error: error
+         });
+     }
+}
+
 
 module.exports={
     getEntries,
     createProductEntry,
     getProductEntries,
     anularProductEntry,
-    createProductEntryWithoutInvoice
+    createProductEntryWithoutInvoice,
+    getListProductIngresadoSinFactura
+
 }

@@ -54,6 +54,9 @@ module.exports = (sequelize, Sequelize) => {
       },
       codproducts:{
         type: Sequelize.STRING
+      },
+      AverageCost:{
+        type: Sequelize.DECIMAL
       }
       // Inventary:{
       //   type: Sequelize.DECIMAL

@@ -15,6 +15,7 @@ const InvoiceTaxes=db.InvoiceTaxes;
 const Company = db.Company;
 const ProductEntries=db.ProductEntries;
 const InvoiceEntriesDetails = db.InvoiceEntriesDetails;
+const SupplierType = db.SupplierTypes;
 
 function getSuppliersInvoices(req, res){
     let userId = req.params.id; 
@@ -166,6 +167,16 @@ async function createSupplierInvoice(req, res){
             {             
               where: {ID_Supplier:supplierId},
               attributes: ['DebsToPay']
+            }
+          );
+          let updateOrden={
+            State: 'Facturada'
+        };
+        
+        let updateOrdenaFacturada = await PurchaseOrder.update(updateOrden,
+            {             
+              where: {ID_PurchaseOrder:req.body.PurchaseOrder},
+              attributes: ['ID_PurchaseOrder']
             }
           );
           //id de la factura recien creada
@@ -590,7 +601,7 @@ function getInvoiceDetails(req, res){
             include: [
                 {
                     model: PurchaseInvoiceDetails,
-                    attributes: ['ID_PurchaseInvoiceDetail','ID_PurchaseInvoice','Quantity','Discount','ProductName','SubTotal','ID_Inventory','Ingresados','State'],
+                    attributes: ['ID_PurchaseInvoiceDetail','ID_PurchaseInvoice','Quantity','Discount','ProductName','SubTotal','ID_Inventory','Ingresados','State','Price'],
                     on:{
                    
                        ID_Inventory: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_Inventory"), "=", sequelize.col("ec_inventory.ID_Inventory")),
@@ -611,12 +622,32 @@ function getInvoiceDetails(req, res){
                                ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_products->crm_measures.ID_Measure")),
                               
                            }
+                        },
+                        {
+                            model: Supplier,
+                            attributes: ['ID_Supplier','Name'],
+                           
+                            on:{
+                           
+                                ID_Supplier: sequelize.where(sequelize.col("crm_products.ID_Supplier"), "=", sequelize.col("crm_products->crm_suppliers.ID_Supplier")),
+                             
+                             },
+                             include: [{
+                                 model:SupplierType,
+                                 on:{
+                           
+                                    ID_SupplierType: sequelize.where(sequelize.col("crm_products.crm_suppliers.crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_products.crm_suppliers.ID_SupplierType")),
+                                 
+                                 },
+                                 attributes: ['Name']
+                             }]
+
                         }
                     ]
                     
                 }
             ],
-            attributes: ['ID_Inventory'],
+            attributes: ['ID_Inventory','Stock'],
             where:{
                 ID_PurchaseInvoice: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_PurchaseInvoice"), "=", invoiceId),
                 ID_Bodega:8
@@ -643,8 +674,18 @@ async function updateInvoicePurchase(req, res){
     
     let purchaseDetalle=req.body.details;
     let detailsAnt=req.body.ordenAnt;
+    let diasEntrega=req.body.dias;
+    let fechaInvoice=req.body.InvoiceDate;
     let orden={};
     let details={};
+
+    var date = new Date(fechaInvoice);
+    console.log(date);
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() + diasEntrega);
+    console.log("HOLA");
+    console.log(date);
+    console.log(diasEntrega);    
     //asignando valores 
     const {Comments,DeliverDay,ID_PurchaseInvoice,InvoiceComments,InvoiceDate,Total,State,InvoiceNumber}= req.body;
     console.log(purchaseDetalle);
@@ -662,8 +703,8 @@ async function updateInvoicePurchase(req, res){
             // actualizamos nuevo cambio en la base de datos, definición de
             let updatedObject = {             
               
-               Comments: Comments,
-               DeliverDay: DeliverDay,
+               Comments: Comments?Comments:(''),
+               DeliverDay: date,
                InvoiceComments: InvoiceComments,
                InvoiceDate: InvoiceDate,
                InvoiceNumber: InvoiceNumber,
@@ -676,7 +717,7 @@ async function updateInvoicePurchase(req, res){
                                 where: {ID_PurchaseInvoice : purchaseId},
                                 attributes: ['ID_PurchaseInvoice']
                               }
-                            );
+                            ).catch(err =>{ console.log(err);});
                             
                             
             if (result) {
@@ -780,12 +821,12 @@ async function changeInvoiceState(req, res){
    
     let purchaseId = req.params.id; 
     console.log(purchaseId);
-    const {estado} = req.body;  //
-  
+    const {estado,PurchaseOrderId} = req.body;  //
+   console.log(PurchaseOrderId);
     try{
         let purchase = await PurchaseInvoice.findByPk(purchaseId,{
             attributes: ['ID_PurchaseInvoice','ID_PurchaseOrder']});
-        console.log(purchase.State);
+       
         if(!purchase){
            // retornamos el resultado al cliente
             res.status(404).json({
@@ -799,15 +840,56 @@ async function changeInvoiceState(req, res){
                
                 State:estado          
             }
-            console.log(updatedObject);    //agregar proceso de encriptacion
+           
             let result = await purchase.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_PurchaseInvoice  : purchaseId},
-                                attributes:['ID_PurchaseInvoice' ]
-                              }
-                            );
+                { 
+                returning: true,                
+                where: {ID_PurchaseInvoice  : purchaseId},
+                attributes:['ID_PurchaseInvoice' ]
+                }
+            ).then(async result =>{
+                if(PurchaseOrderId!==null){
+                    console.log("ORDEN");
+                    let purchaseorder = await PurchaseOrder.findByPk(PurchaseOrderId,{
+                       attributes: ['ID_PurchaseOrder']});
+                       console.log(purchaseorder);
+                   let updateOrden = { 
+                  
+                       State:'Cerrada'          
+                   }
+                  
+                   let resultorden = await purchaseorder.update(updateOrden,
+                       { 
+                       returning: true,                
+                       where: {ID_PurchaseOrder  : PurchaseOrderId},
+                       attributes:['ID_PurchaseOrder' ]
+                       }
+                   );
+                   console.log(resultorden);
+                }
+            });
 
+
+             if(PurchaseOrder!==null){
+                 console.log("ORDEN");
+                 let purchaseorder = await PurchaseOrder.findByPk(PurchaseOrder,{
+                    attributes: ['ID_PurchaseOrder']});
+                    console.log(purchaseorder);
+                let updateOrden = { 
+               
+                    State:'Cerrada'          
+                }
+               
+                let resultorden = await purchaseorder.update(updateOrden,
+                    { 
+                    returning: true,                
+                    where: {ID_PurchaseOrder  : PurchaseOrder},
+                    attributes:['ID_PurchaseOrder' ]
+                    }
+                );
+                console.log(resultorden);
+             }
+        
             // retornamos el resultado al cliente
             if(!result) {
                 res.status(500).json({

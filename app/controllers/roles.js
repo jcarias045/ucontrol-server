@@ -6,6 +6,7 @@ const Roles = db.Roles;
 const Company = db.Company;
 const ProfileOptions=db.ProfileOptions;
 const SysOptions = db.SysOptions;
+const Grupos = db.Grupos;
 
 function getRolesByCompany(req, res){
     // Buscamos informacion para llenar el modelo de 
@@ -132,15 +133,28 @@ function getOptionsSystemRol(req, res){
     let rolId=req.params.id;
     try{
         SysOptions.findAll({
-            include: [{
+            include: [
+            {
                 model: ProfileOptions,
-               
+                required: true,
                 on:{
                    
                     ID_OptionMenu: sequelize.where(sequelize.col("sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenu.ID_OptionMenu")),
                     ID_Rol:sequelize.where(sequelize.col("sys_profileoption.ID_Rol"), "=", rolId),
                  }
-            }]
+            },
+            {
+                model:  Grupos,
+                attributes:['Name'],
+                required: true,
+                on:{
+                    
+                    ID_Grupo: sequelize.where(sequelize.col("sys_optionmenu.ID_Grupo"), "=", sequelize.col("sys_grupo.ID_Grupo")),
+                    
+                }
+            }
+        
+        ]
         })
         .then(roles => {
             res.status(200).send({roles});

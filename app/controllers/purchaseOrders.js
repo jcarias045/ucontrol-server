@@ -10,6 +10,7 @@ const Inventory = db.Inventory;
 const Product = db.Product;
 const Measure = db.Measure;
 const User=db.User;
+const SupplierType = db.SupplierTypes;
 
 function getPurchaseOrders(req, res){
     let userId = req.params.id; 
@@ -476,6 +477,15 @@ function getPurchaseOrdersClosed(req, res){
                  model: Supplier,
                  attributes: ['ID_Supplier','Name'],
                  where: {ID_Company:companyId},
+                 include: [{
+                    model:SupplierType,
+                    on:{
+              
+                       ID_SupplierType: sequelize.where(sequelize.col("crm_supplier.crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
+                    
+                    },
+                    attributes: ['Name']
+                }]
                  
              }
             ],
@@ -512,7 +522,15 @@ function getClosedPurchaseDetails(req, res){
              {
                  model: Supplier,
                  attributes: ['ID_Supplier','Name','deliveryDays'],
-                 
+                 include: [{
+                    model:SupplierType,
+                    on:{
+              
+                       ID_SupplierType: sequelize.where(sequelize.col("crm_supplier.crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
+                    
+                    },
+                    attributes: ['Name']
+                }]
                  
              },
              { 

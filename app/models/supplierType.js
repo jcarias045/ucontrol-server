@@ -1,29 +1,26 @@
 module.exports = (sequelize, Sequelize) => {
-	const sysop = sequelize.define('sys_optionmenu', {	
-        ID_OptionMenu : {
+	const suppliertype = sequelize.define('crm_suppliertype', {	
+        ID_SupplierType : {
             type: Sequelize.INTEGER,
             autoIncrement: true,
             primaryKey: true
     },
-	  Name: {
-			type: Sequelize.STRING,
-      
+       Name: {
+			type: Sequelize.STRING
       },
-      ID_Grupo:{
+      Description:{
+        type: Sequelize.STRING
+      },
+      ID_Company :{
         type: Sequelize.INTEGER,
-        foreignKey: true
-      },
-      URL:{
-        type: Sequelize.STRING,
-      },
-      State:{
-        type: Sequelize.BOOLEAN,
+	  	foreignKey: true
       }
+      
    
 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
         freezeTableName: true,
         timestamps: false,
 	  });
 	
-	return sysop;
+	return suppliertype;
 }

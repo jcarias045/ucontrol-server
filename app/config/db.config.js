@@ -59,6 +59,8 @@ db.Job = require('../models/job.model')(sequelize,Sequelize);
 
 db.Roles = require('../models/rol.model')(sequelize,Sequelize);
 db.Grupos= require('../models/grupos')(sequelize,Sequelize);
+db.SupplierTypes= require('../models/supplierType')(sequelize,Sequelize);
+
 //estableciendo relaciones entre las tablas sys_user y sys_profile
 db.Profile.hasMany(db.User,{   
   foreignKey: 'ID_Profile' 
@@ -597,6 +599,22 @@ db.SysOptions.belongsTo(db.Grupos,{
     name: 'ID_Grupo'
   }
 })
+
+db.SupplierTypes.hasMany(db.Supplier,{   
+  foreignKey: 'ID_SupplierType' 
+});
+
+db.Supplier.belongsTo(db.SupplierTypes,{   
+  foreignKey: 'ID_SupplierType' 
+});
+
+db.InvoiceEntriesDetails.hasMany(db.Inventory,{ 
+  foreignKey: 'ID_Inventory ' 
+});
+
+db.Inventory.belongsTo(db.InvoiceEntriesDetails,{ 
+  foreignKey: 'ID_Inventory ' 
+});
 
 
 module.exports = db;

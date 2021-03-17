@@ -4,8 +4,10 @@ const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
 const { Op } = require("sequelize");
 const { Company } = require('../config/db.config.js');
+const sequelize = require('sequelize');
 
 const Supplier = db.Supplier;
+const SupplierType = db.SupplierTypes;
 
 
 
@@ -218,7 +220,17 @@ function getSuppliersInfo(req, res){
     let companyId = req.params.id;
     try{
         Supplier.findAll({where: {ID_Company: companyId},
-            attributes:['ID_Supplier','Name']})
+            attributes:['ID_Supplier','Name','ID_SupplierType'],
+            include: [{
+                model:SupplierType,
+                on:{
+          
+                   ID_SupplierType: sequelize.where(sequelize.col("crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
+                
+                },
+                attributes: ['Name']
+            }]
+        })
         .then(suppliers => {
             res.status(200).send({suppliers});
           
@@ -241,11 +253,20 @@ function getSuppliersDetails(req, res){
     try{
         Supplier.findAll({
 
-        
+            attributes:['ID_Supplier','Name','ID_SupplierType','deliveryDays','PaymentTime','DebsToPay'],
             where: {
                 ID_Supplier:supplierId,
                 ID_Company: companyId
-            }
+            },
+            include: [{
+                model:SupplierType,
+                on:{
+          
+                   ID_SupplierType: sequelize.where(sequelize.col("crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
+                
+                },
+                attributes: ['Name']
+            }]
         })
         .then(suppliers => {
             res.status(200).send(suppliers);
