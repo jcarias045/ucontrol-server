@@ -1,48 +1,23 @@
-module.exports = (sequelize, Sequelize) => {
-    const PaymentDetail = sequelize.define('ec_paymentdetails',{
-        ID_PaymentDetails   : {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-        },
-        Number : {
-            type: Sequelize.INTEGER,
-           
-        },
-        BankName 	:{
-            type: Sequelize.STRING,
-           
-        },
-        CreationDate:{
-            type: Sequelize.DATE
-        },
-        Amount:{
-            type: Sequelize.DECIMAL
-            
-        },
-        Reason:{
-            type: Sequelize.STRING,
+const moongose = require('mongoose');
+const Schema = moongose.Schema
+const PaymentSupplier = require('../models/paymentstoSuppliers.model')
+const PaymentMethods = require('../models/paymentMethods.model')
+const User = require('../models/user.model')
 
-        },
-        ID_Payments:{
-            type: Sequelize.INTEGER,
-            foreignKey: true
-        },
-        NoTransaction:{
-            type: Sequelize.INTEGER,
+const PaymentSupplierSchema = Schema({
+    PurchaseInvoice: { type: Schema.ObjectId, 
+                       ref: "PurchaseInvoice",
+                       // autopopulate: true,
+                     },
+    NumberAccount: String,
+    BankName: String,
+    CreationDate: Date,
+    PaymentSupplier: { type: Schema.ObjectId, ref:"PaymentSupplier"},
+    Amount: Schema.Types.Decimal128,
+    Reason: String,
+    NoTransaction: Number,
+    PaymentMethods: { type: Schema.ObjectId, ref:"PaymentMethods"},
+    Cancelled: Boolean
+})
 
-        },
-        ID_PaymentMethods:{
-            type: Sequelize.INTEGER,
-            foreignKey: true
-        },
-        Cancelled:{
-            type: Sequelize.BOOLEAN,
-        }
-    },{
-		freezeTableName: true,
-		timestamps: false,
-	});
-	
-	return PaymentDetail;
-}
+module.exports = moongose.model('PaymentSupplier', PaymentSupplierSchema)

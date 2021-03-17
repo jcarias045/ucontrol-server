@@ -1,33 +1,17 @@
-module.exports = (sequelize, Sequelize) => {
-    const Payment = sequelize.define('ec_payments',{
-        ID_Payments  : {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-        },
-        ID_PurchaseInvoice : {
-            type: Sequelize.INTEGER,
-            foreignKey: true
-        },
-       
-        DatePayment	:{
-            type: Sequelize.DATE
-        },
-        Saldo:{
-            type: Sequelize.DECIMAL
-            
-        },
-        codpayment: {
-            type: Sequelize.INTEGER,
-        },
-        ID_User: {
-            type: Sequelize.INTEGER,
+const moongose = require('mongoose');
+const Schema = moongose.Schema
+const PurchaseInvoice = require('../models/purchaseInvoice.model')
+const User = require('../models/user.model')
 
-        }
-    },{
-		freezeTableName: true,
-		timestamps: false,
-	});
-	
-	return Payment;
-}
+const PaymentSupplierSchema = Schema({
+    PurchaseInvoice: { type: Schema.ObjectId, 
+                       ref: "PurchaseInvoice",
+                       // autopopulate: true,
+                     },
+    DatePayment: Date,
+    Saldo: Schema.Types.Decimal128,
+    codpayment: Number,
+    User: { type: Schema.ObjectId, ref:"User"}
+})
+
+module.exports = moongose.model('PaymentSupplier', PaymentSupplierSchema)
