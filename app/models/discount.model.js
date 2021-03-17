@@ -1,15 +1,18 @@
 const moongose = require('mongoose');
-import Company from './company.model';
+const Company = require('./company.model');
+const Schema = moongose.Schema;
 
-const DiscountSchema = moongose.Schema({
+const DiscountSchema = Schema({
   Name: String,
-  Discount: Number,
-  Company: Company, 
+  DiscountNumber: Number,
+  Company: {
+    type: Schema.ObjectId,
+    ref: "Company"
+  } 
 })
 
-const Discount = moongose.model('Discount', DiscountSchema)
+module.exports= moongose.model('Discount', DiscountSchema)
 
-export default Discount
 
 
 

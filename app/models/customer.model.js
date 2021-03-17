@@ -1,8 +1,10 @@
 const moongose = require('mongoose');
-import Company from './company.model';
-import User from './user.model';
+const  Company = require('./company.model');
+const User = require('./user.model');
+const Discount = require('./discount.model');
+const Schema =  moongose.Schema;
 
-const CustomerSchema = moongose.Schema({
+const CustomerSchema = Schema({
   Name: String,
   LastName: String,
   codCustomer: String,
@@ -19,13 +21,23 @@ const CustomerSchema = moongose.Schema({
   AccountsReceivable: Number,
   PaymentTime: Number,
   Active: Boolean,
-  User: User,
-  Company: Company,    
+  User: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  },
+  Company: {
+    type: Schema.Types.ObjectId,
+    ref: "Company"
+  },
+  Discount: {
+    type: Schema.Types.ObjectId,
+    ref: "Discount"
+  }    
 })
 
-const Customer = moongose.model('Customer', CustomerSchema)
+module.exports = moongose.model('Customer', CustomerSchema)
 
-export default Customer
+
 
 
 
