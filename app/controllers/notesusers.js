@@ -20,13 +20,12 @@ function getNotes(req, res){
 function createNote(req, res){
     const NoteUser = new noteUser();
 
-    const {Subject, Text, CreationDate, User, Costumer} = req.body
+    const {Subject, Text, CreationDate, User} = req.body
 
     NoteUser.Subject= Subject
     NoteUser.Text= Text;
     NoteUser.CreationDate= CreationDate;
     NoteUser.User=User;
-    NoteUser.Costumer=Costumer;
     
     console.log(NoteUser);
     NoteUser.save((err, NoteUserStored)=>{
