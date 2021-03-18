@@ -1,4 +1,6 @@
-const product = require('../models/product.model')
+const product = require('../models/product.model');
+const measure = require('../models/measure.model');
+const inventory = require('../models/inventory.model');
 const fs =require("fs");
 const path=require("path");
 
@@ -328,47 +330,89 @@ function getRecommendedProducts(req,res){
     
 // }
 
-function getRecommendedProductsInventory(req,res){
-    // Buscamos informacion para llenar el modelo de 
-    let companyId = req.params.id;
-    let ProductId=req.params.Product;
-    try{
-     Product.findAll({
-         attributes:['Name','MinStock','MaxStock','ID_Products','Inventary','BuyPrice','codproducts'],
+// function getRecommendedProductsInventory(req,res){
+//     // Buscamos informacion para llenar el modelo de 
+//     let companyId = req.params.id;
+//     let ProductId=req.params.Product;
+//     try{
+//      Product.findAll({
+//          attributes:['Name','MinStock','MaxStock','ID_Products','Inventary','BuyPrice','codproducts'],
         
-         include:[{
-             model:Measure,
-             attributes: ['Name'],
-             on:{
-                ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_measures.ID_Measure"))
-             }  
-         },
-         {
-             model: Inventory,
-             attributes: ['ID_Inventory','Stock'],
+//          include:[{
+//              model:Measure,
+//              attributes: ['Name'],
+//              on:{
+//                 ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_measures.ID_Measure"))
+//              }  
+//          },
+//          {
+//              model: Inventory,
+//              attributes: ['ID_Inventory','Stock'],
 
-             on:{
-                ID_Products: sequelize.where(sequelize.col("crm_products.ID_Products"), "=", sequelize.col("ec_inventory.ID_Products")),
-                Stock:sequelize.where(sequelize.col("crm_products.MinStock"), ">", sequelize.col("ec_inventory.Stock"))
-             } ,
-             where: {ID_Bodega:8}
-         }
-        ], 
+//              on:{
+//                 ID_Products: sequelize.where(sequelize.col("crm_products.ID_Products"), "=", sequelize.col("ec_inventory.ID_Products")),
+//                 Stock:sequelize.where(sequelize.col("crm_products.MinStock"), ">", sequelize.col("ec_inventory.Stock"))
+//              } ,
+//              where: {ID_Bodega:8}
+//          }
+//         ], 
          
-        })
-     .then(products => {
-         res.status(200).send({products});
+//         })
+//      .then(products => {
+//          res.status(200).send({products});
          
-     })
- }catch(error) {
-     // imprimimos a consola
-     console.log(error);
+//      })
+//  }catch(error) {
+//      // imprimimos a consola
+//      console.log(error);
  
-     res.status(500).json({
-         message: "Error en query!",
-         error: error
-     });
- }
+//      res.status(500).json({
+//          message: "Error en query!",
+//          error: error
+//      });
+//  }
+ 
+//  }
+function getRecommendedProductsInventory(req,res){
+  
+    const { id,supplier } = req.params;
+    console.log(id);
+    console.log(supplier);
+    
+    inventory.find().populate({path: 'Bodega', model: 'Bodega',match:{Name: 'Principal'}})
+    .populate({path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'},match:{Supplier: supplier,Company: id}})
+    .exec((err, products) => {
+        if (err) {
+            console.log(err);
+            return res.send(err.message);
+          }
+          if(!products){
+
+          }else{
+              console.log(products);
+              const productsByCourse = products.filter(
+                (product) => {
+                    
+                    let minStocks=product.Product;
+                   
+                    return(product.Stock < minStocks.MinStock ) 
+                }
+            );
+  
+          res.status(200).send(productsByCourse);
+          }
+          
+    })
+    // .then(inventories => {
+    //     if(!inventories){
+    //         res.status(404).send({message:"No hay "});
+    //     }else{
+    //         console.log(inventories.Stock);
+            
+    //         res.status(200).send({inventories})
+    //     }
+    // });
+    
  
  }
 

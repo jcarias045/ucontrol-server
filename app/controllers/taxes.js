@@ -9,7 +9,7 @@ function getTaxes(req, res){
     let doc=req.params.doc;
     let companyId=req.params.company;
     try{
-        Taxes.findAll({
+        Taxes.find({
             where: {
                 document: doc,
                 ID_Company:companyId
