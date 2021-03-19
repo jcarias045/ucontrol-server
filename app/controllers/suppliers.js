@@ -111,11 +111,11 @@ async function desactivateSupplier(req, res){
 
 function getSuppliersInfo(req, res){
     let companyId = req.params.id;
+    console.log(companyId);
     try{
-        Supplier.findAll({where: {ID_Company: companyId},
-            attributes:['ID_Supplier','Name']})
+        supplier.find({Company: companyId})
         .then(suppliers => {
-            res.status(200).send({suppliers});
+            res.status(200).send(suppliers);
           
         })
     }catch(error) {
@@ -133,13 +133,9 @@ function getSuppliersDetails(req, res){
  
     let supplierId = req.params.id;
     let companyId = req.params.company;
+    console.log(companyId);
     try{
-        Supplier.findAll({        
-            where: {
-                ID_Supplier:supplierId,
-                ID_Company: companyId
-            }
-        })
+        supplier.find({Company: companyId,_id:supplierId})
         .then(suppliers => {
             res.status(200).send(suppliers);
           
