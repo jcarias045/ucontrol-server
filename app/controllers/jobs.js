@@ -7,7 +7,7 @@ const jwt=require('../services/jwt');
 
 
 function getJobs(req, res) {
-    job.find().populate({path: 'Company', model: 'Company'})
+    job.find( {Company: req.params.id} )
     .then(job => {
         if(!job){
             res.status(404).send({message:"No hay "});

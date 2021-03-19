@@ -1,73 +1,17 @@
-const db = require('../config/db.config.js');
+const Inventory = require('../models/inventory.model')
 const { Op } = require("sequelize");
 const sequelize = require('sequelize');
 const { Supplier } = require('../config/db.config.js');
 
-const Inventory = db.Inventory;
-const Product = db.Product;
-const Company = db.Company;
-const Measure = db.Measure;
-const Bodega = db.Bodega;
-const Brand = db.Brand;
-
-
 function getInventories(req, res){
-    
-    let companyId = req.params.id;
-    try{
-        Inventory.findAll(
-            {include: [
-                {
-                    model:Product,
-                    attributes: ['ID_Products','Name','codproducts','ID_Measure','ID_Supplier', 'ID_Brand'],
-                    include:[
-                        {
-                            model:Brand,
-                            attributes: ['ID_Brand','Name']
-                        },
-                        {
-                            model: Supplier,
-                            attributes:['ID_Supplier','Name','codsupplier']
-                        },
-                        {
-                            model: Measure,
-                            attributes:['ID_Measure','Name']
-                        }
-                    ],
-                    on:{
-                        ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"),"=",sequelize.col("crm_product.ID_Products")),
-                    }
-                },
-                {
-                    model: Bodega,
-                    attributes: ['ID_Bodega','Name'],
-                    on:{
-                        ID_Bodega: sequelize.where(sequelize.col("ec_inventory.ID_Bodega"),"=", sequelize.col("crm_bodega.ID_Bodega")),
-                    }
-                },
-                {
-                    model: Company,
-                    attributes: ['ID_Company','Name','ShortName'],
-                    on:{
-                        ID_Company: sequelize.where(sequelize.col("ec_inventory.ID_Company"),"=", sequelize.col("sys_company.ID_Company")),
-                    }
-                }
-            ],
-            where: {ID_Company: companyId}
-            })
-        .then(inventories => {
-            res.status(200).json(inventories);
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    personal.find().populate({path: 'Company', model: 'Company'})
+    .then(personal => {
+        if(!personal){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({personal})
+        }
+    });
 }
 
 function createInventory(req, res){

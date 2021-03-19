@@ -5,8 +5,8 @@ const Company = require('./company.model');
 const Product = require('./product.model');
 
 const InventorySchema = Schema({
-  Stock:Integer,
-  Description:String,
+  Stock: Number,
+  Description: String,
   Bodega: {type: Schema.ObjectId, 
     ref: "Bodega",
     // autopopulate: true,

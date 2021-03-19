@@ -46,10 +46,10 @@ async function updateMeasure(req, res){
 
     measure.findByIdAndUpdate({_id: params.id}, measureData, (err, measureUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!measureUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Measure Actualizado"})
             }
