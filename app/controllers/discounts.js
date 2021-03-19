@@ -25,7 +25,9 @@ function createDiscount(req, res) {
 }
 
 function getDiscounts(req,res){
-    Discount.find().populate({path: 'Company', model: 'Company'})
+    const {id} = req.params;
+    
+    Discount.find({Company: id}).populate({path: 'Company', model: 'Company',match: {Company:companyId }})
     .then(discount=>{
         if(!discount){
             res.status(404).send({message:"No hay"});

@@ -1,11 +1,19 @@
-const moongose = require('mongoose');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const Company = require('./company.model');
 
-const CatProductSchema = moongose.Schema({
+
+
+const CatProductSchema = Schema({
   Name: String,
   Description: String,
+  Company:{
+    type: Schema.ObjectId, 
+    ref: "Company",
+  }
 })
 
-module.exports = moongose.model('CatProduct', CatProductSchema)
+module.exports = mongoose.model('CatProduct', CatProductSchema)
 
 
 

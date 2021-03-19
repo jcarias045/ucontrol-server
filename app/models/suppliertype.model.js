@@ -5,7 +5,10 @@ const Company = require('./company.model');
 const SupplierTypeSchema = Schema({
   Name: String,
   Description: String,
-  Company: { type: Schema.ObjectId, ref: "Company"} 
+  Company: { 
+    type: Schema.ObjectId, 
+    ref: "Company"
+  } 
 })
 
 module.exports = moongose.model('SupplierType', SupplierTypeSchema)

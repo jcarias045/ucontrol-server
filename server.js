@@ -18,6 +18,7 @@ let purchaseOrdersRoutes= require('./app/routers/purchaseOrder');
 let systemOpRoutes=require('./app/routers/sysOptions');
 let ProductNoteRoutes = require('./app/routers/noteproduct');
 let SupplierNoteRoutes = require('./app/routers/notesupplier');
+let SupplierType = require('./app/routers/suppliertype');
 let BanksRoutes= require('./app/routers/bank');
 let JobsRoutes = require('./app/routers/job');
 let BrandsRoutes = require('./app/routers/brand');
@@ -93,6 +94,7 @@ app.use('/api', BookingCustomerRoutes);
 app.use('/api', BookingSupplierRoutes);
 app.use('/api',rolesRoutes);
 app.use('/api', Bodega);
+app.use('/api', SupplierType);
 
 // Create a Server
 // const server = app.listen(3050, function () {
