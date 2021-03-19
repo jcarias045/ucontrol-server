@@ -1,20 +1,4 @@
-const db = require('../config/db.config.js');;
-const sequelize = require('sequelize');
-const { Op, or } = require("sequelize");
-
-
-const PurchaseInvoice=db.PurchaseInvoice;
-const PurchaseOrder = db.PurchaseOrder;
-const PurchaseDetails= db.PurchaseDetails;
-const Supplier = db.Supplier;
-const PurchaseInvoiceDetails = db.PurchaseInvoiceDetails;
-const Inventory = db.Inventory;
-const Product = db.Product;
-const Measure = db.Measure;
-const InvoiceTaxes=db.InvoiceTaxes;
-const Company = db.Company;
-const ProductEntries=db.ProductEntries;
-const InvoiceEntriesDetails = db.InvoiceEntriesDetails;
+const purchaseInvoice = require('../models/purchaseInvoice.model')
 
 function getSuppliersInvoices(req, res){
     let userId = req.params.id; 

@@ -42,10 +42,10 @@ async function updateBrand(req,res){
 
     brand.findByIdAndUpdate({_id: params.id}, brandData, (err, brandUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!brandUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Marca Actualizada"})
             }

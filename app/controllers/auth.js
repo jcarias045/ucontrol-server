@@ -3,6 +3,7 @@ const jwt= require('../services/jwt');
 const moment= require('moment');
 const User = db.User;
 const Customer = db.Customer;
+// const User=require('../models/user.model');
 
 
 function willExpiredToken(token){

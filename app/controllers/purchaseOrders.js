@@ -1,25 +1,46 @@
 const PurchaseOrder = require("../models/purchaseOrder.model");
+const PurchaseOrderDetail = require("../models/purchaseDetail.model");
+const Inventory = require("../models/inventory.model");
+const Product=require("../models/product.model");
+const Measure = require("../models/measure.model")
 
 function getPurchaseOrders(req, res){
     const { id,company } = req.params;
+    console.log(id);
+    console.log(company);
     PurchaseOrder.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}})
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
         }else{
+            console.log(order);
             res.status(200).send({order})
         }
     });
 }
 
-function createPurchaseOrder(req,res){
+async function createPurchaseOrder(req,res){
     
-    const order = new PurchaseOrder();
+    const orden= new PurchaseOrder();
+
     let now= new Date();
     let creacion=now.getTime();
+
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,
     Description} = req.body;
 
+    const purchaseDetalle=req.body.details;
+    const detalle=[];
+    let codigo=0;
+
+    let codigoPurchase=await PurchaseOrder.findOne().sort({CodPurchase:-1}).then(function(doc){
+       return(doc.CodPurchase)
+    });
+
+    if(!codigoPurchase){
+        codigo =1;
+    }else {codigo=codigoPurchase+1}
+   console.log(codigo);
     orden.Supplier=Supplier;
     orden.InvoiceNumber=InvoiceNumber;
     orden.Image=Image;
@@ -41,18 +62,62 @@ function createPurchaseOrder(req,res){
             if(!ordenStored){
                 res.status(500).send({message: "Error al crear el nuevo usuario."});
                 console.log(ordenStored);
-            }else{
+            }
+            else{
+                let idPurchase=ordenStored._id;
+             
+                if(idPurchase){
+                    
+                    purchaseDetalle.map(async item => {
+                    detalle.push({
+                        ProductName:item.ProductName,
+                        PurchaseOrder:idPurchase,
+                        Quantity:parseFloat(item.Quantity) ,
+                        Discount:parseFloat(item.Discount),
+                        Price:parseFloat(item.Price),
+                        Inventory :item.ID_Inventory,
+                    })
+                 })
+                    if(detalle.length>0){
+                        PurchaseOrderDetail.insertMany(detalle)
+                        .then(function () {
+                            
+                            // console.log("INSERTADOS");
+                            
+                        })
+                        .catch(function (err) {
+                            res.status(500).send(err);
+                        });
+                    }
+                }
                 res.status(200).send({orden: ordenStored})
             }
         }
     })
 }
+function getPurchaseDetails(req, res){
+    let purchaseId = req.params.id; 
+    PurchaseOrderDetail.find({PurchaseOrder:purchaseId}).populate({path: 'Inventory', model: 'Inventory',match:{Bodega: 8}})
+    .populate({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})
+    .then(order => {
+        if(!order){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({order})
+        }
+    });
+}
 
+async function updatePurchaseOrder(req, res){
+    let purchaseId = req.params.id;
+    let purchaseDetalle=req.body.details;
+    let detailsAnt=req.body.ordenAnt;
+}
 
 module.exports={
     getPurchaseOrders,
     createPurchaseOrder,
-    // getPurchaseDetails,
+    getPurchaseDetails,
     // updatePurchaseOrder,
     // deletePurchase,
     // changePurchaseState,

@@ -1,9 +1,10 @@
 const moongose = require('mongoose');
 const Schema = moongose.Schema
+const Company = require('../models/company.model')
 
 const BodegaSchema = Schema({
     Name: String,
-    IdCompany: Number,
+    Company: { type: Schema.ObjectId, ref:"Company"},
     State: Boolean
   })
   
