@@ -17,10 +17,10 @@ function getBodega(req, res) {
 function createBodega(req, res){
     const Bodega = new bodega()
 
-   const {Name, IdCompany, State} = req.body
+   const {Name, Company, State} = req.body
 
    Bodega.Name = Name;
-   Bodega.IdCompany = IdCompany,
+   Bodega.Company = Company,
    Bodega.State = State;
 
    console.log(Bodega);
@@ -44,10 +44,10 @@ function updateBodega(req, res){
 
    bodega.findByIdAndUpdate({_id: params.id}, bodegaData, (err,bodegaUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!bodegaUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Bodega Actualizada"})
             }
