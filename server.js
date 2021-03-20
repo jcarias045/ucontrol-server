@@ -95,11 +95,8 @@ app.use('/api', BookingCustomerRoutes);
 app.use('/api', BookingSupplierRoutes);
 app.use('/api',rolesRoutes);
 app.use('/api', Bodega);
-<<<<<<< HEAD
 app.use('/api',supplierTypeRoutes);
-=======
 app.use('/api', SupplierType);
->>>>>>> 3b9ae37ba1ea9ba513550ee5110b5e1ddf033720
 
 // Create a Server
 // const server = app.listen(3050, function () {
