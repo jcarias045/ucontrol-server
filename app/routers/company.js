@@ -16,7 +16,7 @@ router.delete('/company-delete/:id', companies.deleteCompany);
 // router.get('/getcompany/:id',companies.getCompany);
 
 // router.get('/get-company', companies.getCompaniesId);
-// router.put('/desactive-company/:id', companies.desactivateCompany);
+router.put('/desactive-company/:id', companies.desactivateCompany);
 
 module.exports = router;
 

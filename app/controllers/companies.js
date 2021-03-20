@@ -16,14 +16,14 @@ function createCompany (req, res){
     
     const company = new Company();
 
-    const  { Name,Logo,ShortName,Web,Active, AccessToCustomers,AccessToSuppliers,
+    const  { Name,Logo,ShortName,Web, AccessToCustomers,AccessToSuppliers,
     RequieredIncome, RequieredOutput,CompanyRecords,AverageCost} = req.body;
 
     company.Name  =  Name;
     company.Logo = Logo;
     company.ShortName = ShortName;
     company.Web = Web;
-    company.Active = Active;
+    company.Active = true;
     company.AccessToCustomers = AccessToCustomers;
     company.AccessToSuppliers = AccessToSuppliers;
     company.RequieredIncome = RequieredIncome;
@@ -31,6 +31,7 @@ function createCompany (req, res){
     company.CompanyRecords = CompanyRecords;
     company.AverageCost = AverageCost;
     console.log(company);
+
     company.save((err, companyStored)=>{
         if(err){
             res.status(500).send({message: err});
@@ -64,6 +65,7 @@ function deleteCompany(req, res) {
     });
   }
 
+
 function updateCompany(req, res){
     let companyData = req.body;
     const params = req.params;
@@ -81,10 +83,36 @@ function updateCompany(req, res){
     })
 }
 
+async function desactivateCompany(req, res) {
+   
+  let companyId = req.params.id; 
+
+  const {Active} = req.body;  //
+
+  try{
+      
+      await Company.findByIdAndUpdate(companyId, {Active}, (CompanyStored) => {
+          if (!CompanyStored) {
+              res.status(404).send({ message: "No se ha encontrado la plaza." });
+          }
+          else if (Active === false) {
+              res.status(200).send({ message: "Plaza desactivada correctamente." });
+          }
+      })
+      
+  } catch(error){
+      res.status(500).json({
+          message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+          error: error.message
+      });
+  }
+}
+
 module.exports ={
     createCompany,
     getCompanies,
     deleteCompany,
-    updateCompany
+    updateCompany,
+    desactivateCompany
 }
 

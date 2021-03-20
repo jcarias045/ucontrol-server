@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const purchaseInvoice = require("../models/purchaseInvoice.model");
 const purchaseInvoiceDetail = require("../models/purchaseInvoiceDetails.model");
 const invoiceTaxes = require("../models/invoiceTaxes.model");
@@ -6,6 +7,9 @@ const productEntry = require("../models/productEntries.model");
 const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
+=======
+const purchaseInvoice = require('../models/purchaseInvoice.model')
+>>>>>>> 3b9ae37ba1ea9ba513550ee5110b5e1ddf033720
 
 function getSuppliersInvoices(req, res){
     const { id,company } = req.params;

@@ -3,23 +3,28 @@ const fs =require("fs");
 const path=require("path");
 
 function getCatProducts(req,res){
-    catproduct.find()
-    .then(catproduct => {
-        if(!catproduct){
+    const {id} = req.params;
+    console.log(req.params.id);
+    console.log(id);
+    catproduct.find({Company: id}).populate({path: 'Company', model: 'Company'})
+    .then(CatProduct => {
+        if(!CatProduct){
             res.status(404).send({message:"No hay "});
         }else{
-            res.status(200).send({catproduct})
+            res.status(200).send({CatProduct})
         }
-    });
+    })
 }
 
 function createCatProduct(req, res){
+    console.log(req.body);
     const CatProduct = new catproduct()
 
-    const {Name, Description} = req.body
+    const {Name, Description, Company} = req.body
 
-         CatProduct.Name= Name
+         CatProduct.Name= Name;
          CatProduct.Description= Description;
+         CatProduct.Company= Company;
 
          console.log(CatProduct);
             CatProduct.save((err, CatProductStored)=>{

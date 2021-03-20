@@ -11,7 +11,11 @@ const PurchaseInvoiceSchema = Schema({
   },
   InvoiceDate:Date,
   CreationDate:Date,
+<<<<<<< HEAD
   Total:Number,
+=======
+  Total:Schema.Types.Decimal128,
+>>>>>>> 3b9ae37ba1ea9ba513550ee5110b5e1ddf033720
   Comments:String,
   DeliverDay:Date,
   Supplier: {type: Schema.ObjectId, 
@@ -22,9 +26,14 @@ const PurchaseInvoiceSchema = Schema({
     ref: "User",
     // autopopulate: true,
   },
+<<<<<<< HEAD
   PurchaseOrder:String,
   CodInvoice:Number,
   InvoiceNumber:String,
+=======
+  CodInvoice:Number,
+  InvoiceNumber:Number,
+>>>>>>> 3b9ae37ba1ea9ba513550ee5110b5e1ddf033720
   Recibida:Boolean,
   Pagada: Boolean,
   State:String,
