@@ -32,7 +32,8 @@ const ProductSchema = Schema({
     Active: Boolean,
     BuyPrice: Number,
     codproducts: String,
-    Measure: { type: Schema.ObjectId, 
+    Measure: { 
+      type: Schema.ObjectId, 
         ref: "Measure",
         // autopopulate: true,
       },

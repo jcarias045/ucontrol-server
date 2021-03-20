@@ -7,7 +7,7 @@ const path=require("path");
 
 
 function getPoducts(req, res){
-    product.find().populate({path: 'Company', model: 'Company'}).
+    product.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'}).
     populate({path: 'Supplier', model: 'Supplier'}).
     populate({path: 'Brand', model: 'Brand'}).
     populate({path: 'CatProduct', model: 'CatProduct'}).
@@ -417,27 +417,27 @@ function getRecommendedProductsInventory(req,res){
  
  }
 
-function getProduct(req,res){
-    console.log(req.params.id);
-    Product.findByPk(req.params.id,
-        {attributes:[
-            'ID_Products','Name','ID_Brand','SellPrice',
-            'ShortName', 'ID_Company','ID_CatProduct',
-            'ID_Product', 'ID_Measure', 'Logo', 'MinStock',
-            'MaxStock', 'Active', 'BuyPrice', 'codproducts'
-        ]})
-        .then(products => {
-          res.status(200).json(products);
-        }).catch(error => {
-        // imprimimos a consola
-          console.log(error);
+// function getProduct(req,res){
+//     console.log(req.params.id);
+//     Product.findByPk(req.params.id,
+//         {attributes:[
+//             'ID_Products','Name','ID_Brand','SellPrice',
+//             'ShortName', 'ID_Company','ID_CatProduct',
+//             'ID_Product', 'ID_Measure', 'Logo', 'MinStock',
+//             'MaxStock', 'Active', 'BuyPrice', 'codproducts'
+//         ]})
+//         .then(products => {
+//           res.status(200).json(products);
+//         }).catch(error => {
+//         // imprimimos a consola
+//           console.log(error);
 
-          res.status(500).json({
-              message: "Error!",
-              error: error
-          });
-        })
-}
+//           res.status(500).json({
+//               message: "Error!",
+//               error: error
+//           });
+//         })
+// }
  
 module.exports={
     getPoducts,
@@ -451,6 +451,6 @@ module.exports={
     getRecommendedProducts,
     // getImages
     getRecommendedProductsInventory,
-    getProduct
+    // getProduct
 
 }

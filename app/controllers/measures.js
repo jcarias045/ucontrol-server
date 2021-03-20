@@ -4,7 +4,7 @@ const path=require("path");
 
 
 function getMeasures(req, res) {
-    measure.find().populate({path: 'Company', model: 'Company'})
+    measure.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
     .then(measure => {
         if(!measure){
             res.status(404).send({message:"No hay "});
