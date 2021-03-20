@@ -8,7 +8,7 @@ const SupplierSchema = Schema({
   Web: String,
   Email: String,
   Phone: String,
-  Adress: String,
+  Address: String,
   DebsToPay: Number,
   PaymentTime: Number,
   Active: Boolean,
@@ -18,7 +18,10 @@ const SupplierSchema = Schema({
              ref: "Company",
              // autopopulate: true,
            },
-  SupplierType: { type: Schema.ObjectId, ref: "SupplierType"}  
+  SupplierType: { 
+    type: Schema.ObjectId, 
+    ref: "SupplierType"
+  }  
 })
 
 module.exports =mongoose.model('Supplier', SupplierSchema)

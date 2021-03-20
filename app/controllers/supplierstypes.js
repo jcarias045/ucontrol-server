@@ -6,7 +6,7 @@ function getSupplierTypes(req,res){
     const {id} = req.params;
     console.log(req.params.id);
     console.log(id);
-    SupplierType.find({Company: id}).populate({path: 'Company', model: 'Company'})
+    SupplierType.find({Company: id})
     .then(supplierType => {
         if(!supplierType){
             res.status(404).send({message:"No hay "});

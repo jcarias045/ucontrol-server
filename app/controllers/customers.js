@@ -53,7 +53,14 @@ function createCustomer(req, res) {
     }
     
 function getCustomers(req, res){
-        Customer.find().populate({path: "User", model: "User"})
+    console.log(req.params.id);
+    console.log(req.params.userid);
+    const {id} = req.params.id;
+
+    const {userid} = req.params.userid;
+
+        Customer.find({Company: req.params.id , User: req.params.userid})
+            .populate({path: "User", model: "User"})
             .populate({path: "Company", model: "Company"})
             .populate({path: "Discount", model: "Discount"})
         .then(customer => {

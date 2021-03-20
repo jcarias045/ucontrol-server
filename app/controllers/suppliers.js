@@ -6,20 +6,21 @@ function createSupplier(req, res){
 
     const Supplier = new supplier();
 
-    const {Name, Web, Email, Phone, Adress, DebsToPay, Active,
-    codsupplier, PaymentTime, Company, deliveryDays} = req.body
+    const {Name, Web, Email, Phone, Address, DebsToPay, Active,
+    codsupplier, PaymentTime, Company, deliveryDays, SupplierType} = req.body
 
     Supplier.Name= Name
     Supplier.Web= Web;
     Supplier.Email= Email;
     Supplier.Phone=Phone;
-    Supplier.Adress=Adress;
+    Supplier.Address=Address;
     Supplier.DebsToPay=DebsToPay;
     Supplier.Active=Active;
     Supplier.codsupplier=codsupplier;
     Supplier.PaymentTime=PaymentTime;
     Supplier.Company=Company;
-    Supplier.deliveryDays=deliveryDays
+    Supplier.deliveryDays=deliveryDays;
+    Supplier.SupplierType= SupplierType
 
 
     console.log(Supplier);
@@ -39,7 +40,10 @@ function createSupplier(req, res){
 
 
 function getSuppliers(req, res){
-    supplier.find().populate({path: 'Company', model: 'Company'}).
+    const {id} = req.params;
+    console.log(req.params.id);
+    console.log(id);
+    supplier.find({Company:id}).populate({path: 'Company', model: 'Company'}).
     populate({path: 'SupplierType', model: 'SupplierType'})
     .then(supplier => {
         if(!supplier){
@@ -56,10 +60,10 @@ function getSuppliers(req, res){
 
     supplier.findByIdAndUpdate({_id: params.id}, supplierData, (err, supplierUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!supplierUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Trabajo Actualizado"})
             }
@@ -110,13 +114,13 @@ async function desactivateSupplier(req, res){
 }
 
 function getSuppliersInfo(req, res){
-    let companyId = req.params.id;
-    console.log(companyId);
+    const {id} = req.params;
+    console.log(id);
     try{
-        supplier.find({Company: companyId})
+        supplier.findById({_id: id}).populate({path: 'Company', model: 'Company'})
+        .populate({path: 'SupplierType', model: 'SupplierType'})
         .then(suppliers => {
-            res.status(200).send(suppliers);
-          
+            res.status(200).send({suppliers});          
         })
     }catch(error) {
         // imprimimos a consola
@@ -179,6 +183,20 @@ function Suppliers(req, res){
     }
 }
 
+function getSuppliersAll(req, res){
+    const {id} = req.params;
+    console.log(req.params.id);
+    console.log(id);
+    supplier.find({Company:id}).populate({path: 'Company', model: 'Company'}).
+    populate({path: 'SupplierType', model: 'SupplierType'})
+    .then(supplier => {
+        if(!supplier){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({supplier})
+        }
+    });
+}
 // function getImages(req,res){
 //     const logoName=req.params.logoName;
 //     const filePath="./app/uploads/avatar/"+logoName;
@@ -252,8 +270,8 @@ function Suppliers(req, res){
 
 function getSupplierInfo(req, res){
     console.log("gola");
-    Supplier.findByPk(req.params.id,{
-        attributes:['ID_supplier','Name','Web','Email',
+    supplier.findByPk(req.params.id,{
+        attributes:['Name','Web','Email',
         'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
         'deliveryDays','Phone','DebsToPay']})
         .then(supplier => {
@@ -279,5 +297,6 @@ module.exports={
     getSuppliersInfo,
     getSuppliersDetails,
     Suppliers,
-    getSupplierInfo
+    getSuppliersAll
+    // getSupplierInfo
 }
