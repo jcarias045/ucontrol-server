@@ -12,7 +12,7 @@ router.post('/customer-create', customers.createCustomer);
 router.get('/get-customers/:id/:userid',customers.getCustomers);
 // router.get('/customers/:id/:user', customers.customers);
 // router.get('/customer-info/:id', customers.getCustomerInfo);
-// router.put('/customer-update/:id', customers.updateCustomer);
+router.put('/customer-update/:id', customers.updateCustomer);
 // router.delete('/customer-delete/:id', customers.deleteCustomer);
 // router.post('/sign-in-customer', customers.signInCustomer);
 router.put('/desactive-customer/:id', customers.desactivateCustomer);

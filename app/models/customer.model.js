@@ -17,7 +17,7 @@ const CustomerSchema = Schema({
   MobilPhone: String,
   idNumber: String,
   Images: String,
-  Acces: Boolean,
+  Access: Boolean,
   AccountsReceivable: Number,
   PaymentTime: Number,
   Active: Boolean,

@@ -96,10 +96,28 @@ async function desactivateCustomer(req, res){
     }
 }
 
+async function updateCustomer(req,res){
+    let customerData = req.body;
+    const params = req.params;
+
+    Customer.findByIdAndUpdate({_id: params.id}, customerData, (err, customerUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+        } else {
+            if(!customerUpdate){
+                res.status(404).send({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Trabajo Actualizado"})
+            }
+        }
+    })
+}
+
 module.exports = {
     createCustomer,
     getCustomers,
-    desactivateCustomer
+    desactivateCustomer,
+    updateCustomer
 }
 
 
