@@ -12,7 +12,7 @@ const InvoiceTaxesSchema = Schema({
     ref: "Taxes",
     // autopopulate: true,
   },
-  Monto: Schema.Types.Decimal128
+  Monto: Number
   
 })
 

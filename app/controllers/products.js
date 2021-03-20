@@ -376,6 +376,7 @@ function getRecommendedProducts(req,res){
 function getRecommendedProductsInventory(req,res){
   
     const { id,supplier } = req.params;
+    console.log('recomendados');
     console.log(id);
     console.log(supplier);
     

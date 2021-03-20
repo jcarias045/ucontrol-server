@@ -6,14 +6,13 @@ const Measure = require("../models/measure.model")
 
 function getPurchaseOrders(req, res){
     const { id,company } = req.params;
-    console.log(id);
-    console.log(company);
+   
     PurchaseOrder.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}})
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
         }else{
-            console.log(order);
+            
             res.status(200).send({order})
         }
     });
@@ -27,14 +26,21 @@ async function createPurchaseOrder(req,res){
     let creacion=now.getTime();
 
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,
-    Description} = req.body;
+    Description,companyId} = req.body;
 
     const purchaseDetalle=req.body.details;
     const detalle=[];
+    console.log(Supplier);
     let codigo=0;
 
-    let codigoPurchase=await PurchaseOrder.findOne().sort({CodPurchase:-1}).then(function(doc){
-       return(doc.CodPurchase)
+    let codigoPurchase=await PurchaseOrder.findOne().sort({CodPurchase:-1})
+    .populate({path: 'Supplier', model: 'Supplier', match:{Company: companyId}}).then(function(doc){
+            if(doc){
+                    if(doc.CodPurchase!==null){
+                return(doc.CodPurchase)
+            }
+        }
+       
     });
 
     if(!codigoPurchase){
@@ -70,35 +76,40 @@ async function createPurchaseOrder(req,res){
                     
                     purchaseDetalle.map(async item => {
                     detalle.push({
-                        ProductName:item.ProductName,
+                        ProductName:item.Name,
                         PurchaseOrder:idPurchase,
                         Quantity:parseFloat(item.Quantity) ,
                         Discount:parseFloat(item.Discount),
                         Price:parseFloat(item.Price),
-                        Inventory :item.ID_Inventory,
+                        Inventory :item.Inventory,
                     })
-                 })
+                 });
+                 console.log(detalle);
                     if(detalle.length>0){
                         PurchaseOrderDetail.insertMany(detalle)
                         .then(function () {
                             
-                            // console.log("INSERTADOS");
+                            console.log("INSERTADOS");
                             
                         })
                         .catch(function (err) {
-                            res.status(500).send(err);
+                            console.log(err);
                         });
                     }
                 }
                 res.status(200).send({orden: ordenStored})
+              
             }
         }
     })
 }
+
 function getPurchaseDetails(req, res){
     let purchaseId = req.params.id; 
-    PurchaseOrderDetail.find({PurchaseOrder:purchaseId}).populate({path: 'Inventory', model: 'Inventory',match:{Bodega: 8}})
-    .populate({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})
+    PurchaseOrderDetail.find({PurchaseOrder:purchaseId}).populate({path: 'Inventory', model: 'Inventory',
+    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
+    
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
@@ -112,19 +123,138 @@ async function updatePurchaseOrder(req, res){
     let purchaseId = req.params.id;
     let purchaseDetalle=req.body.details;
     let detailsAnt=req.body.ordenAnt;
+    let updatePurchase={};
+
+    updatePurchase.Supplier=req.body.Supplier;
+    updatePurchase.DeliverDate=req.body.DeliverDate;
+    updatePurchase.Description=req.body.Description;
+    updatePurchase.InvoiceNumber=req.body.InvoiceNumber;
+    updatePurchase.Total=req.body.Total;
+    let detallePrev={};
+    let detalle=[];
+    PurchaseOrder.findByIdAndUpdate({_id:purchaseId},updatePurchase,(err,purchaseUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+            console.log(err);
+        } else {
+            if(!purchaseUpdate){
+                console.log(purchaseUpdate);
+                res.status(404).send({message: "No se actualizo registro"});
+            }else{
+                if(detailsAnt.length > 0) {
+                     detailsAnt.map(async item => {  
+                        detallePrev.ProductName=item.ProductName;
+                        detallePrev.PurchaseOrder=purchaseId,
+                        detallePrev.Quantity=parseFloat(item.Quantity) ,
+                        detallePrev.Discount=parseFloat(item.Discount),
+                        detallePrev.Price=parseFloat(item.Price),
+                        detallePrev.Inventory =item.Inventory._id,
+                       
+                        PurchaseOrderDetail.updateMany({_id: item._id ,PurchaseOrder:purchaseId},detallePrev)
+                            .then(function () {
+                                
+                                console.log("Actualizados");
+                                
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                            });
+                       });
+                        console.log(detallePrev);
+                       
+                }
+
+                if(purchaseDetalle.length>0){
+                    purchaseDetalle.map(async item => {
+                        detalle.push({
+                            ProductName:item.Name,
+                            PurchaseOrder:purchaseId,
+                            Quantity:parseFloat(item.Quantity) ,
+                            Discount:parseFloat(item.Discount),
+                            Price:parseFloat(item.Price),
+                            Inventory :item.Inventory,
+                        })
+                     });
+                     console.log(detalle);
+                        if(detalle.length>0){
+                            PurchaseOrderDetail.insertMany(detalle)
+                            .then(function () {
+                                
+                                console.log("INSERTADOS");
+                                
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                            });
+                        }
+                }
+                res.status(200).send(purchaseUpdate)
+            }
+        }
+    })
+}
+
+async function changePurchaseState(req, res){
+    let purchaseId = req.params.id;
+    let state=req.body;
+    console.log(state);
+    PurchaseOrder.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+            
+        } else {
+            if(!purchaseUpdate){
+                res.status(404).send({message: "No se actualizo registro"});
+            }
+            else{
+                res.status(200).send(purchaseUpdate)
+            }
+        }
+   
+    })
+}
+
+function getPurchaseOrdersClosed(req, res){
+    const { id,company } = req.params;
+   
+    PurchaseOrder.find({User:id,State:'Cerrada'}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}})
+    .then(orders => {
+        if(!orders){
+            res.status(404).send({message:"No hay "});
+        }else{
+            
+            res.status(200).send({orders})
+        }
+    });
+}
+
+function getClosedPurchaseDetails(req, res){
+    let purchaseId = req.params.id; 
+    console.log("CERRADA");
+    console.log(purchaseId);
+    PurchaseOrder.find({_id:purchaseId})
+    .populate({path: 'Supplier', model: 'Supplier',populate:({path: 'SupplierType', model:'SupplierType'})})
+   
+    .then(order => {
+        if(!order){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send(order)
+        }
+    });
 }
 
 module.exports={
     getPurchaseOrders,
     createPurchaseOrder,
     getPurchaseDetails,
-    // updatePurchaseOrder,
+    updatePurchaseOrder,
     // deletePurchase,
-    // changePurchaseState,
+    changePurchaseState,
     // getLastMonthPurchase,
     // getThisMonthPurchase,
-    // getPurchaseOrdersClosed,
-    // getClosedPurchaseDetails,
+    getPurchaseOrdersClosed,
+    getClosedPurchaseDetails,
     // getPurchaseOrdersBySupplier,
     // getInvoicesBySupplier
 }

@@ -13,7 +13,7 @@ const EntriesDetailSchema = Schema({
     ref: "ProductEntry",
     // autopopulate: true,
   },
-  Quantity:Decimal128,
+  Quantity:Number,
   Inventory: {type: Schema.ObjectId, 
     ref: "Inventory",
     // autopopulate: true,

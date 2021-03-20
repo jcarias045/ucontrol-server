@@ -111,6 +111,7 @@ async function desactivateSupplier(req, res){
 
 function getSuppliersInfo(req, res){
     let companyId = req.params.id;
+    console.log('proveedores');
     console.log(companyId);
     try{
         supplier.find({Company: companyId})
@@ -133,9 +134,10 @@ function getSuppliersDetails(req, res){
  
     let supplierId = req.params.id;
     let companyId = req.params.company;
+    console.log('detalle proveedor');
     console.log(companyId);
     try{
-        supplier.find({Company: companyId,_id:supplierId})
+        supplier.find({Company: companyId,_id:supplierId}).populate({path: 'SupplierType', model: 'SupplierType'})
         .then(suppliers => {
             res.status(200).send(suppliers);
           
