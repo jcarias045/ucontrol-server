@@ -8,7 +8,7 @@ function createCustomer(req, res) {
 
     const { Name,LastName,codCustomer,Email, Password,Country,City,ZipCode,
             Phone,MobilPhone,idNumber,Images,AccountsReceivable,Access,
-            PaymentTime, Discount, User, Company } = req.body;
+            PaymentTime, Discount, User, Company, Active } = req.body;
 
             customer.Name = Name;
             customer.LastName = LastName;
@@ -27,6 +27,7 @@ function createCustomer(req, res) {
             customer.PaymentTime = PaymentTime;
             customer.Discount = Discount;
             customer.User = User;
+            customer.Active= Active;
             customer.Company = Company;
             if (!Password) {
                 res.status(500).send({ message: "La contraseña es obligatoria. " });
@@ -43,7 +44,7 @@ function createCustomer(req, res) {
                     if(!customerStored){
                         res.status(500).send({message: "Error"});
                     }else{
-                        res.status(200).send({User: customerStored});
+                        res.status(200).send({Customer: customerStored});
                     }
                 }
               });
@@ -72,9 +73,33 @@ function getCustomers(req, res){
         });
 }
 
+async function desactivateCustomer(req, res){
+    let customerId = req.params.id; 
+  
+    const {Active} = req.body;  
+    try{
+        
+        await Customer.findByIdAndUpdate(customerId, {Active}, (customerSotred) => {
+            if (!customerSotred) {
+                res.status(404).send({ message: "No se ha encontrado el proveedor." });
+            }
+            else if (Active === false) {
+                res.status(200).send({ message: "Proveedor desactivado correctamente." });
+            }
+        })
+        
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     createCustomer,
     getCustomers,
+    desactivateCustomer
 }
 
 

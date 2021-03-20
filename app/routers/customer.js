@@ -15,7 +15,7 @@ router.get('/get-customers/:id/:userid',customers.getCustomers);
 // router.put('/customer-update/:id', customers.updateCustomer);
 // router.delete('/customer-delete/:id', customers.deleteCustomer);
 // router.post('/sign-in-customer', customers.signInCustomer);
-// router.put('/desactive-customer/:id', customers.desactiveCustomer);
+router.put('/desactive-customer/:id', customers.desactivateCustomer);
 // router.put('/upload-image/:id',md_upload_avatar,customers.uploadImages);
 // router.get('/get-image/:logoName', customers.getImages);
 // router.get('/customer-userlist/:id', customers.customersUsers);

@@ -71,11 +71,25 @@ async function updateDiscount(req,res) {
     })
 }
 
+function getDiscountId(req,res){
+    const {id} = req.params;
+    
+    Discount.find({Company: id}).populate({path: 'Company', model: 'Company'})
+    .then(discount=>{
+        if(!discount){
+            res.status(404).send({message:"No hay"});
+        }else{
+            res.status(200).send({discount})
+        }
+    })
+}
+
 module.exports={
     createDiscount,
     getDiscounts,
     deleteDiscount,
-    updateDiscount
+    updateDiscount,
+    getDiscountId
 }
 
 
