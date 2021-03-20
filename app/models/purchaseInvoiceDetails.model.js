@@ -9,16 +9,16 @@ const PurchaseInvoiceDetailSchema = Schema({
     ref: "PurchaseInvoice",
     // autopopulate: true,
   },
-  Quantity:Decimal128,
-  Discount:Decimal128,
-  Price:Decimal128,
+  Quantity:Number,
+  Discount:Number,
+  Price:Number,
   ProductName:String,
-  SubTotal:Decimal128,
+  SubTotal:Number,
   Inventory: {type: Schema.ObjectId, 
     ref: "Inventory",
     // autopopulate: true,
   },
-  Ingresados:Decimal128,
+  Ingresados:Number,
   State:Boolean
 
  

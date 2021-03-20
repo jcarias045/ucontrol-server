@@ -31,19 +31,23 @@ function createInventory(req, res){
 
 function getNameProduct(req,res){
     const { id,supplier } = req.params;
+    console.log('productos nombre');
     console.log(id);
     console.log(supplier);
-    Inventory.find().populate({path: 'Product', model: 'Product', match:{Company: id,Supplier:supplier}})
-    .populate({path: 'Bodega', model: 'Bodega', match:{Name: "Principal"}})
-    .then(inventories => {
-        if(!inventories){
-            res.status(404).send({message:"No hay "});
-        }else{
-            console.log(inventories);
-            res.status(200).send({inventories})
-        }
-    });
+    if(supplier){
+         Inventory.find().populate({path: 'Product', model: 'Product', match:{Company: id,Supplier:supplier}})
+        .populate({path: 'Bodega', model: 'Bodega', match:{Name: "Principal"}})
+        .then(inventories => {
+            if(!inventories){
+                res.status(404).send({message:"No hay "});
+            }else{
+                console.log(inventories);
+                res.status(200).send({inventories})
+            }
+        });
 }
+    }
+   
 
 function getProductInfoxInventary(req,res){
     

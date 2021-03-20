@@ -11,7 +11,7 @@ const ProductEntrySchema = Schema({
   },
   Comments:String,
   State:Boolean,
-  CodEntry:Integer,
+  CodEntry:Number,
   Company: {type: Schema.ObjectId, 
     ref: "Company",
     // autopopulate: true,

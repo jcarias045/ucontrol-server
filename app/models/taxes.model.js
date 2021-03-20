@@ -5,7 +5,7 @@ const Company = require('../models/company.model')
 const TaxesSchema = Schema({
   Name: String,
   document: String, 
-  percentage: Schema.Types.Decimal128,
+  percentage: Number,
   Company: { type: Schema.ObjectId, 
              ref: "Company",
             // autopopulate: true,

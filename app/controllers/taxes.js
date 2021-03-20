@@ -1,7 +1,28 @@
-const db = require('../config/db.config.js');;
+const taxes= require('../models/taxes.model');
 
-const Taxes=db.Taxes;
+function createTaxes(req, res){
+    const Taxes = new taxes();
 
+    const {Name, document, percentage, Company} = req.body
+
+    Taxes.Name= Name
+    Taxes.document= document;
+    Taxes.percentage= percentage;
+    Taxes.Company=Company;
+
+    console.log(Taxes);
+    Taxes.save((err, TaxesStored)=>{
+        if(err){
+            res.status(500).send({message: err});
+        }else{
+            if(!TaxesStored){
+                res.status(500).send({message: "Error"});
+            }else{
+                res.status(200).send({Taxes: TaxesStored})
+            }
+        }
+    });
+}
 
 
 function getTaxes(req, res){
@@ -9,12 +30,7 @@ function getTaxes(req, res){
     let doc=req.params.doc;
     let companyId=req.params.company;
     try{
-        Taxes.find({
-            where: {
-                document: doc,
-                ID_Company:companyId
-            }
-        })
+        taxes.find({document:doc,Company:companyId})
         .then(taxes => {
             res.status(200).send({taxes});
           
@@ -31,5 +47,6 @@ function getTaxes(req, res){
 }
 
 module.exports={
-    getTaxes
+    getTaxes,
+    createTaxes
 }
