@@ -6,7 +6,7 @@ function getCatProducts(req,res){
     const {id} = req.params;
     console.log(req.params.id);
     console.log(id);
-    catproduct.find({Company: id}).populate({path: 'Company', model: 'Company'})
+    catproduct.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
     .then(CatProduct => {
         if(!CatProduct){
             res.status(404).send({message:"No hay "});
