@@ -1,9 +1,9 @@
 const  moongose = require('mongoose');
 const Schema = moongose.Schema
 const Company = require('../models/company.model')
-const Bank  = require('./bank.model');
-const Job = require('./job.model')
-
+const Bank  = require('../models/bank.model');
+const Job = require('../models/job.model')
+const User = require('../models/user.model')
 const PersonalSchema = Schema({
     name: String,
     codPersonal: String,
@@ -22,6 +22,7 @@ const PersonalSchema = Schema({
             ref: "Job"},
     salary: Number,
     Company: { type: Schema.ObjectId, ref: "Company"},
+    User: { type: Schema.ObjectId, ref: "User"},
     dui: String,
     nit: String,
     gender: String,

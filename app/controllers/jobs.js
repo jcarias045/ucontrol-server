@@ -105,25 +105,14 @@ async function desactivateJob(req, res) {
 
 
 function getJobId (req, res){
-    
-    let companyId = req.params.id;
-
-    try{
-        Job.findAll({
-            where:{ID_Company: companyId},
-            attributes: ['ID_Job', 'Name']
-        })
-        .then(jobs =>{
-            res.status(200).json({jobs});
-            
-        })
-    }catch(error){
-        console.log(error);
-        res.status(500).json({
-            message: "Error en el query!",
-            error: error
-        })
-    }
+    job.find( {Company: req.params.id})
+    .then(job => {
+        if(!job){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({job})
+        }
+    });
 }
 
 

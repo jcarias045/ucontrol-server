@@ -1,61 +1,9 @@
 const personal = require('../models/personal.model')
 
 function getAllPersonal(req, res) {
-    let personalId=req.params.id;
-    let companyId=req.params.company;
-    try{
-        Personal.findAll({
-            include:[
-            {
-                model:Company,
-                attributes: ['ID_Company','Name'],
-                on:{
-                   
-                    ID_Company: sequelize.where(sequelize.col("sys_companies.ID_Company"), "=", sequelize.col("crm_personal.ID_Company")),
-                    
-                 },
-            },
-            {
-                model:Bank,
-                attributes: ['Name'],
-                on:{
-                   
-                    ID_Bank: sequelize.where(sequelize.col("crm_banks.ID_Bank"), "=", sequelize.col("crm_personal.ID_Bank")),
-                    
-                 },
-            },
-            {
-                model:Personal,
-                attributes: ['Name'],
-                on:{
-                   
-                    ID_Personal: sequelize.where(sequelize.col("crm_Personals.ID_Personal"), "=", sequelize.col("crm_personal.ID_Personal")),
-                    
-                 },
-            },
-        ],
-            where:{
-                ID_Company: companyId,
-                ID_User: personalId
-            }
-        })
-        .then(personal => {
-            res.status(200).json({personal});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }    
-}
-
-function getPersonalGeneral(req,res){
-    personal.find().populate({path: 'Company', model: 'Company'})
+    personal.find().populate({path: 'Company', model: 'Company'}).
+    populate({path: 'Job', model: 'Job'}).
+    populate({path: 'Bank', model: 'Bank'})
     .then(personal => {
         if(!personal){
             res.status(404).send({message:"No hay "});
@@ -63,6 +11,10 @@ function getPersonalGeneral(req,res){
             res.status(200).send({personal})
         }
     });
+}
+
+function getPersonalGeneral(req,res){
+    
 }
 
 function getPersonalRef(req,res){
@@ -174,7 +126,7 @@ branchOffice, addressWorkplace, officeWorkplace} = req.body
             Personal.civilStatus= civilStatus;
             Personal.workplace= workplace;
             Personal.branchOffice= branchOffice;
-            Personal.addresWorkplace= addressWorkplace;
+            Personal.addressWorkplace= addressWorkplace;
             Personal.officeWorkplace= officeWorkplace;
             
             console.log(Personal);
@@ -216,7 +168,7 @@ async function desactivePersonal(req, res) {
     const {active} = req.body;  //
     try{
         
-        await job.findByIdAndUpdate(personalId, {active}, (personalStored) => {
+        await personal.findByIdAndUpdate(personalId, {active}, (personalStored) => {
             if (!personalStored) {
                 res.status(404).send({ message: "No se ha encontrado el personal." });
             }

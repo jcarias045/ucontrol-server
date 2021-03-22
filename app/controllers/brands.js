@@ -4,7 +4,7 @@ const jwt=require('../services/jwt');
 
 
 function getBrands(req,res){
-    brand.find().populate({path: 'Company', model: 'Company'})
+    brand.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
     .then(brand => {
         if(!brand){
             res.status(404).send({message:"No hay "});

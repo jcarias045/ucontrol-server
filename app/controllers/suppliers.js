@@ -43,7 +43,7 @@ function getSuppliers(req, res){
     const {id} = req.params;
     console.log(req.params.id);
     console.log(id);
-    supplier.find({Company:id}).populate({path: 'Company', model: 'Company'}).
+    supplier.find({Company:req.params.id}).populate({path: 'Company', model: 'Company'}).
     populate({path: 'SupplierType', model: 'SupplierType'})
     .then(supplier => {
         if(!supplier){
