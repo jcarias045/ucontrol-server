@@ -16,9 +16,9 @@ const UserSchema = Schema({
   Active: Boolean,
   Image: String,
   UserName: String,
-  Company: {type: Schema.ObjectId, 
-            ref: "Company",
-            // autopopulate: true,
+  Company: {
+    type: Schema.ObjectId, 
+    ref: "Company"
           }
 })
 

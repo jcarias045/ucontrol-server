@@ -1,14 +1,12 @@
 const moongose = require('mongoose');
+const Schema = moongose.Schema;
 
-
-const ProfileSchema = moongose.Schema({
+const ProfileSchema = Schema({
   Name: String,
   Description: String, 
 })
 
-const Profile = moongose.model('Profile', UserSchema)
-
-export default Profile
+module.exports = moongose.model('Profile', ProfileSchema);
 
 
 
@@ -22,7 +20,7 @@ export default Profile
 // 	  Name: {
 // 			type: Sequelize.STRING
 //       },
-//       Description:{
+//       Description:{ 
 //         type: Sequelize.STRING
 //       }
       
