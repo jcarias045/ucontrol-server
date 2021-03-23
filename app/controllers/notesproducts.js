@@ -5,8 +5,9 @@ const moment=require("moment");
 const jwt= require('../services/jwt');
 
 function getNotesProduct(req, res) {
-    noteProduct.find().populate({path: 'User', model: 'User'}).
-    populate({path: 'Product', model: 'Product'})
+    noteProduct.find({User: req.params.id, Product: req.params.product})
+    .populate({path: 'User', model: 'User'})
+    .populate({path: 'Product', model: 'Product'})
     .then(noteProduct => {
         if(!noteProduct){
             res.status(404).send({message:"No hay "});
@@ -18,12 +19,16 @@ function getNotesProduct(req, res) {
 
 function createNoteProduct(req,res){
     const NoteProduct = new noteProduct();
-
-    const {Subject, Text, CreationDate, User, Product} = req.body
+    let date = moment().format('L');
+    let CreationDate = moment().format('LT');
+    console.log(date);
+    console.log(CreationDate);
+    const {Subject, Text, User, Product} = req.body
 
     NoteProduct.Subject= Subject
     NoteProduct.Text= Text;
     NoteProduct.CreationDate= CreationDate;
+    NoteProduct.date = date;
     NoteProduct.User=User;
     NoteProduct.Product=Product;
     
@@ -43,14 +48,16 @@ function createNoteProduct(req,res){
 
 async function updateNote(req, res){
     let noteProductData = req.body;
+    noteProductData.date = moment().format('L');
+    noteProductData.CreationDate = moment().format('LT')
     const params = req.params;
 
     noteProduct.findByIdAndUpdate({_id: params.id}, noteProductData, (err, noteProductUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!noteProductUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Nota Actualizada"})
             }

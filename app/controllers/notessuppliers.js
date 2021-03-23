@@ -5,7 +5,7 @@ const moment=require("moment");
 const jwt= require('../services/jwt');
 
 function getNotesSupplier(req, res) {
-    noteSupplier.find().populate({path: 'User', model: 'User'}).
+    noteSupplier.find({User: req.params.id, Supplier: req.params.supplier}).populate({path: 'User', model: 'User'}).
     populate({path: 'Supplier', model: 'Supplier'})
     .then(noteSupplier => {
         if(!noteSupplier){
@@ -13,17 +13,22 @@ function getNotesSupplier(req, res) {
         }else{
             res.status(200).send({noteSupplier})
         }
-    });
+    })
 }
 
 function createNoteSupplier(req,res){
+    let date = moment().format('L');
+    let CreationDate = moment().format('LT');
+    console.log(date);
+    console.log(CreationDate);
     const NoteSupplier = new noteSupplier();
 
-    const {Subject, Text, CreationDate, User, Supplier} = req.body
+    const {Subject, Text, User, Supplier} = req.body
 
     NoteSupplier.Subject= Subject
     NoteSupplier.Text= Text;
     NoteSupplier.CreationDate= CreationDate;
+    NoteSupplier.date= date;
     NoteSupplier.User=User;
     NoteSupplier.Supplier=Supplier;
     
@@ -44,13 +49,15 @@ function createNoteSupplier(req,res){
 async function updateNote(req, res){
     let noteSupplierData = req.body;
     const params = req.params;
+    noteSupplierData.date = moment().format('L');
+    noteSupplierData.CreationDate= moment().format('LT');
 
     noteSupplier.findByIdAndUpdate({_id: params.id}, noteSupplierData, (err, noteSupplierUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!noteSupplierUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Nota Actualizada"})
             }
