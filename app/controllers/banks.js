@@ -4,7 +4,7 @@ const jwt=require('../services/jwt');
 
 
 function getBanks(req, res) {
-    Bank.find().populate({path: 'Company', model: 'Company'})
+    Bank.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
     .then(bank => {
         if(!bank){
             res.status(404).send({message:"No hay "});
@@ -42,7 +42,7 @@ function createBank(req, res){
 }
 
 
-function updateBank(req, res){
+ function updateBank(req, res){
     let BankData = req.body;
     const params = req.params;
 
