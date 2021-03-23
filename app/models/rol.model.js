@@ -6,7 +6,10 @@ const RolSchema = Schema({
   Name: String,
   Description: String,
   State: Boolean,
-  Company: {type: Schema.ObjectId, ref: "Company"}
+  Company: {
+    type: Schema.ObjectId, 
+    ref: "Company"
+  }
 })
     
 
