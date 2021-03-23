@@ -4,7 +4,7 @@ const PaymentSupplier = require('../models/paymentstoSuppliers.model')
 const PaymentMethods = require('../models/paymentMethods.model')
 const User = require('../models/user.model')
 
-const PaymentSupplierSchema = Schema({
+const PaymentSupplierDetailSchema = Schema({
     PurchaseInvoice: { type: Schema.ObjectId, 
                        ref: "PurchaseInvoice",
                        // autopopulate: true,
@@ -20,4 +20,4 @@ const PaymentSupplierSchema = Schema({
     Cancelled: Boolean
 })
 
-module.exports = moongose.model('PaymentSupplier', PaymentSupplierSchema)
+module.exports = moongose.model('PaymentSupplierDetail', PaymentSupplierDetailSchema)

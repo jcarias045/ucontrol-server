@@ -6,7 +6,8 @@ const Supplier = require('../models/supplier.model')
 const NoteSupplierSchema = Schema({
     Subject: String,
     Text: String,
-    CreationDate: Date,
+    CreationDate: String,
+    date: String,
     User: {type: Schema.ObjectId, ref: "User", },
     Supplier: { type: Schema.ObjectId, ref: "Supplier"}
 
