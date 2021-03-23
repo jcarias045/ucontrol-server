@@ -78,25 +78,15 @@ function deleteBank(req, res){
 }
 
 function getBankId (req, res){
-    
-    let companyId = req.params.id;
-
-    try{
-        Bank.findAll({
-            where:{ID_Company: companyId},
-            attributes: ['ID_Bank', 'Name']
-        })
-        .then(banks =>{
-            res.status(200).json({banks});
-            
-        })
-    }catch(error){
-        console.log(error);
-        res.status(500).json({
-            message: "Error en el query!",
-            error: error
-        })
-    }
+    let company = req.params.id
+    Bank.find({Company: company}).populate({path: 'Company', model: 'Company'})
+    .then(bank => {
+        if(!bank){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bank})
+        }
+    });
 }
 
 
