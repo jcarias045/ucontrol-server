@@ -40,6 +40,7 @@ let paymentsToSuppliersRoutes= require('./app/routers/paymentsToSuppliers');
 let personalRoutes= require('./app/routers/personalroutes');
 let rolesRoutes= require('./app/routers/roles.route');
 let supplierTypeRoutes= require('./app/routers/supplierType.route');
+let notePersonal = require('./app/routers/notepersonal')
 
 const app=express();
 
@@ -97,6 +98,7 @@ app.use('/api',rolesRoutes);
 app.use('/api', Bodega);
 app.use('/api',supplierTypeRoutes);
 app.use('/api', SupplierType);
+app.use('/api', notePersonal)
 
 // Create a Server
 // const server = app.listen(3050, function () {
