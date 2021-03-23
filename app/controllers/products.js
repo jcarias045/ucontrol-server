@@ -45,18 +45,21 @@ function createProduct(req, res){
         Product.Inventary= Inventary;
         Product.AverageCost= AverageCost;
 
-        console.log(Product);
-        Product.save((err, ProductStored)=>{
-            if(err){
-                res.status(500).send({message: err});
-            }else{
-                if(!ProductStored){
-                    res.status(500).send({message: "Error"});
-                }else{
-                    res.status(200).send({Product: ProductStored})
-                }
-            }
-        });
+
+                console.log(Product);
+                Product.save((err, ProductStored)=>{
+                    if(err){
+                        res.status(500).send({message: err});
+                    }else{
+                        if(!ProductStored){
+                            res.status(500).send({message: "Error"});
+                        }else{
+                            res.status(200).send({Product: ProductStored})
+                        }
+                    }
+                });
+        
+       
 }
 
 
