@@ -9,7 +9,7 @@ const PaymentSupplierSchema = Schema({
                        // autopopulate: true,
                      },
     DatePayment: Date,
-    Saldo: Schema.Types.Decimal128,
+    Saldo: Number,
     codpayment: Number,
     User: { type: Schema.ObjectId, ref:"User"}
 })

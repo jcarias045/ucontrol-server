@@ -3,6 +3,7 @@ const Schema =  mongoose.Schema;
 const PurchaseOrder = require('./purchaseOrder.model');
 const Supplier = require('./supplier.model');
 const User = require('./user.model');
+const PaymentSupplier=require('./paymentstoSuppliers.model')
 
 const PurchaseInvoiceSchema = Schema({
   PurchaseOrder: {type: Schema.ObjectId, 
@@ -32,6 +33,8 @@ const PurchaseInvoiceSchema = Schema({
 
  
 })
+
+
 
 module.exports = mongoose.model('PurchaseInvoice', PurchaseInvoiceSchema)
 // module.exports = (sequelize, Sequelize) => {

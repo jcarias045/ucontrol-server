@@ -8,10 +8,10 @@ const entries = require('../controllers/productsEntries');
 
 
 router.get('/get-entries/:id', entries.getEntries);
-router.post('/add-entries/:id', entries.createProductEntry);
-router.get('/get-entriesdetails/:id', entries.getProductEntries);
-router.put('/update-changestateentry/:id', entries.anularProductEntry);
-router.post('/add-entrieswithoutinvoice/:id', entries.createProductEntryWithoutInvoice);
+// router.post('/add-entries/:id', entries.createProductEntry);
+// router.get('/get-entriesdetails/:id', entries.getProductEntries);
+// router.put('/update-changestateentry/:id', entries.anularProductEntry);
+// router.post('/add-entrieswithoutinvoice/:id', entries.createProductEntryWithoutInvoice);
 
 
 

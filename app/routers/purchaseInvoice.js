@@ -10,13 +10,13 @@ router.post('/create-invoicesupplier/:id/:company', purchaseInvoice.createSuppli
 router.post('/createnew-invoicesupplier/:id/:company', purchaseInvoice.createNewSupplierInvoice);
 router.get('/get-invoicesupplier-details/:id', purchaseInvoice.getInvoiceDetails);
 router.put('/update-invoicesupplier/:id', purchaseInvoice.updateInvoicePurchase);
-// router.delete('/delete-invoicedetail/:id', purchaseInvoice.deleteInvoiceDetail);
+router.delete('/delete-invoicedetail/:id', purchaseInvoice.deleteInvoiceDetail);
 router.put('/change-invoicestate/:id', purchaseInvoice.changeInvoiceState);
 // // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 // // router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
 
 // router.get('/get-suppliersinvoicespendientes/:id/:company', purchaseInvoice.getSuppliersInvoicesPendientes);
-// router.get('/get-invoicenopagada/:id/:company', purchaseInvoice.getSuppliersInvoicesNoPagada);
-// router.get('/get-infoinvoice/:id/:company/:invoice', purchaseInvoice.getInfoInvoice);
+router.get('/get-invoicenopagada/:id/:company', purchaseInvoice.getSuppliersInvoicesNoPagada);
+router.get('/get-infoinvoice/:id/:company/:invoice', purchaseInvoice.getInfoInvoice);
 
 module.exports = router;

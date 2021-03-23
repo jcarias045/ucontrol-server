@@ -6,6 +6,7 @@ const productEntry = require("../models/productEntries.model");
 const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
+const PaymentToSupplier= require('../models/paymentstoSuppliers.model')
 
 function getSuppliersInvoices(req, res){
     const { id,company } = req.params;
@@ -696,20 +697,81 @@ async function changeInvoiceState(req, res){
     let purchaseId = req.params.id;
     let state=req.body;
     console.log(state);
-    purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
-        if(err){
-            res.status(500).send({message: "Error del Servidor."});
-            
+    let existPago=await PaymentToSupplier.findOne({PurchaseInvoice:purchaseId}).catch(err => {console.log(err);});
+    console.log(existPago);
+    if(existPago!==null){
+        console.log('tiene pafgos');
+        res.status(500).send({message: "Esta factura contiene pagos registrados"});
+    }else{
+        purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
+            if(err){
+                res.status(500).send({message: "Error del Servidor."});
+                
+            } else {
+                if(!purchaseUpdate){
+                    res.status(404).send({message: "No se actualizo registro"});
+                }
+                else{
+                    res.status(200).send(purchaseUpdate)
+                }
+            }
+       
+        })
+       
+    }
+ 
+}
+
+function deleteInvoiceDetail(req, res){
+    console.log('elimianrdetalle',req.params.id);
+    let detalleid=req.params.id;
+    purchaseInvoiceDetail.findByIdAndDelete(detalleid, (err, userDeleted) => {
+        if (err) {
+          res.status(500).send({ message: "Error del servidor." });
         } else {
-            if(!purchaseUpdate){
-                res.status(404).send({message: "No se actualizo registro"});
-            }
-            else{
-                res.status(200).send(purchaseUpdate)
-            }
+          if (!userDeleted) {
+            res.status(404).send({ message: "Detalle no encontrado" });
+          } else {
+            res.status(200).send({ userDeleted});
+            console.log(userDeleted);
+          }
         }
-   
-    })
+      });
+
+}
+
+function getSuppliersInvoicesNoPagada(req, res){
+    console.log('PAGADAS');
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    purchaseInvoice.find({Pagada:false}).populate({path: 'Supplier', model: 'Supplier'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(invoices);
+            res.status(200).send({invoices})
+        }
+    });
+}
+function getInfoInvoice(req, res){
+    let userId = req.params.id; 
+    let invoiceid = req.params.invoice;
+    let companyId = req.params.company;
+  
+  
+    purchaseInvoice.find({_id:invoiceid}).populate({path: 'User', model: 'User',match:{_id:userId}})
+    .populate({path: 'Supplier', model: 'Supplier'}).populate('PaymentSupplierd').populate('books.$*.PaymentSupplier')
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(invoices);
+            res.status(200).send({invoices})
+        }
+    });
+
 }
 
 module.exports={
@@ -718,11 +780,11 @@ module.exports={
     createNewSupplierInvoice,
     updateInvoicePurchase,
     getInvoiceDetails,
-//     deleteInvoiceDetail,
+    deleteInvoiceDetail,
     changeInvoiceState,
 //     getSuppliersInvoicesPendientes,
-//     getSuppliersInvoicesNoPagada,
-//     getInfoInvoice
+    getSuppliersInvoicesNoPagada,
+    getInfoInvoice
 }
 
 // const db = require('../config/db.config.js');;

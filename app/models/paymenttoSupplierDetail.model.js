@@ -13,7 +13,7 @@ const PaymentSupplierDetailSchema = Schema({
     BankName: String,
     CreationDate: Date,
     PaymentSupplier: { type: Schema.ObjectId, ref:"PaymentSupplier"},
-    Amount: Schema.Types.Decimal128,
+    Amount: Number,
     Reason: String,
     NoTransaction: Number,
     PaymentMethods: { type: Schema.ObjectId, ref:"PaymentMethods"},
