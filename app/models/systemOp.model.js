@@ -1,11 +1,15 @@
 const moongose = require('mongoose');
-const Schema = moongose.Schema
+const Schema = moongose.Schema;
+const Grupos = require('./grupos.model');
 
 const OpMenuModelSchema = Schema({
     Name: String,
-    Grupo: {
-      Name: String
-    }
+    Grupos: {
+        type: Schema.ObjectId,
+        ref: "Grupos"
+    },
+    URL: String,
+    State: Boolean
 })
 
 module.exports =  moongose.model('OpMenu', OpMenuModelSchema );
