@@ -179,148 +179,61 @@ async function createSystemOption(req, res){
 }
 
 async function updateGrupo(req, res){
-   
-    let grupoId = req.params.id; 
-    
-    const { Name,icon} = req.body;  
-    try{
-        let sysOp={};
-        let grupos = await Grupos.findByPk(grupoId);
-        
-        if(!grupos){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + grupoId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name:Name,
-               
-                icon: icon
-               
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await Grupos.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Grupo: grupoId}
-                              }
-                            )
-    
-            
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
-            }
+    console.log(req.body);
+    let GrupoData = req.body;
+    const params = req.params;
 
-            res.status(200).json(result);
+    Grupos.findByIdAndUpdate({_id: params.id}, GrupoData, (err, GrupoUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+        } else {
+            if(!GrupoUpdate){
+                res.status(404).send({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Banca Actualizado"})
+            }
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
 }
 
 async function updateOption(req, res){
-   
-    let optionId = req.params.id; 
-    
-    const { Name,URL,ID_Grupo} = req.body;  
-    try{
-        let sysOp={};
-        let option = await SysOptions.findByPk(optionId);
-        
-        if(!option){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + optionId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name:Name,
-                URL:URL,
-                ID_Grupo: ID_Grupo
-               
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await SysOptions.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_OptionMenu: optionId}
-                              }
-                            ).catch(err => { console.log(err);})
-    
-            
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
-            }
+    console.log(req.body);
+    let OptionData = req.body;
+    const params = req.params;
 
-            res.status(200).json(result);
+    SysOptions.findByIdAndUpdate({_id: params.id}, OptionData, (err, OptionUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+        } else {
+            if(!OptionUpdate){
+                res.status(404).send({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Banca Actualizado"})
+            }
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
+    
 }
 
 async function changeStateOption(req, res){
    
-    let optionId = req.params.id; 
-    
+    let menuOptionId = req.params.id; 
+  
     const {State} = req.body;  //
     try{
-        let sysOp={};
-        let option = await SysOptions.findByPk(optionId);
         
-        if(!option){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + optionId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                
-               State:State
+        await SysOptions.findByIdAndUpdate(menuOptionId, {State}, (menuOptionStored) => {
+            if (!menuOptionStored) {
+                res.status(404).send({ message: "No se ha encontrado la plaza." });
             }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await SysOptions.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_OptionMenu: optionId}
-                              }
-                            ).catch(err => { console.log(err);})
-    
-            
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+            else if (State === false) {
+                res.status(200).send({ message: "Plaza desactivada correctamente." });
             }
-
-            res.status(200).json(result);
-        }
+        })
+        
     } catch(error){
         res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
             error: error.message
         });
     }
