@@ -21,7 +21,7 @@ function createBank(req, res){
    const {Name, Phone, Address, Company} = req.body
 
    bank.Name = Name;
-   bank.Phone = Phone,
+   bank.Phone = Phone;
    bank.Address = Address;
    bank.Company = Company;
 
@@ -40,7 +40,6 @@ function createBank(req, res){
 
     
 }
-
 
  function updateBank(req, res){
     let BankData = req.body;
