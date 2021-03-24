@@ -58,7 +58,6 @@ function getRolesSystem(req, res){
     }
 }
 
-
 async function createRol(req, res){
     let rol = {};
     
@@ -157,8 +156,6 @@ function getOptionsSystemRol(req, res){
     }
 }
 
-
-
 async function updateRol(req, res){
    
     let rolId = req.params.id; 
@@ -237,7 +234,6 @@ async function updateRol(req, res){
     }
 }
 
-
 async function changeStateRol(req,res){
     let rolId = req.params.id; 
     
@@ -286,6 +282,7 @@ async function changeStateRol(req,res){
         });
     }
 }
+
 module.exports={
     getRolesByCompany,
     getRolesSystem,
