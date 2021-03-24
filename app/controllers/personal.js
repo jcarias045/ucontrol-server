@@ -93,9 +93,11 @@ function createPersonal(req, res) {
 
     const {name, codPersonal, lastName, CellPhone , Phone,
     email, address, birthDate, Bank, bankAccount,Job, salary, Company, dui, nit,
-gender, active, nationality, nameRef, phoneRef, companyRef, addressRef,
+gender, active, nationality, nameRef, phoneRef, companyRef, 
+addressRef,nameRef2, phoneRef2, companyRef2, addressRef2,
+nameRef3, phoneRef3, companyRef3, addressRef3,
 spouseName, numberOfChildren, dateOfUnion, civilStatus, workplace, 
-branchOffice, addressWorkplace, officeWorkplace} = req.body
+branchOffice, addressWorkPlace, officeWorkPlace} = req.body
     
             Personal.codPersonal= codPersonal
             Personal.name= name;
@@ -120,14 +122,22 @@ branchOffice, addressWorkplace, officeWorkplace} = req.body
             Personal.phoneRef= phoneRef;
             Personal.companyRef= companyRef;
             Personal.addressRef= addressRef;
+            Personal.nameRef2= nameRef2;
+            Personal.phoneRef2= phoneRef2;
+            Personal.companyRef2= companyRef2;
+            Personal.addressRef2= addressRef2;
+            Personal.nameRef3= nameRef3;
+            Personal.phoneRef3= phoneRef3;
+            Personal.companyRef3= companyRef3;
+            Personal.addressRef3= addressRef3;
             Personal.spouseName= spouseName;
             Personal.numberOfChildren= numberOfChildren;
             Personal.dateOfUnion= dateOfUnion;
             Personal.civilStatus= civilStatus;
             Personal.workplace= workplace;
             Personal.branchOffice= branchOffice;
-            Personal.addressWorkplace= addressWorkplace;
-            Personal.officeWorkplace= officeWorkplace;
+            Personal.addressWorkPlace= addressWorkPlace;
+            Personal.officeWorkPlace= officeWorkPlace;
             
             console.log(Personal);
             Personal.save((err, PersonalStored)=>{

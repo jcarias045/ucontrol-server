@@ -1,17 +1,24 @@
 const moongose = require('mongoose');
-import Rol from ('./rol.model');
-import OpMenu from('./systemOp.model');
+const Schema =  moongose.Schema;
+const Rol = require('./rol.model');
+const OpMenu = require('./systemOp.model');
 
 
-const ProfileOptionSchema = moongose.Schema({
+const ProfileOptionSchema = Schema({
   Checked: Boolean,
-  Rol: Rol,
-  OpMenu: OpMenu 
+  Rol: {
+    type: Schema.ObjectId,
+    ref: "Rol"
+  },
+  OpMenu: {
+    type: Schema.ObjectId,
+    ref: "OpMenu"
+  } 
 })
 
-const ProfileOption = moongose.model('ProfileOption', ProfileOptionSchema)
+module.exports = moongose.model('ProfileOption', ProfileOptionSchema)
 
-export default ProfileOption
+
 
 
 

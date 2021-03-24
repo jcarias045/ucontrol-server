@@ -6,9 +6,16 @@ const Product = require('../models/product.model')
 const NoteProductSchema = Schema({
     Subject: String,
     Text: String,
-    CreationDate: Date,
-    User: {type: Schema.ObjectId, ref: "User", },
-    Product: { type: Schema.ObjectId, ref: "Product"}
+    CreationDate: String,
+    date: String,
+    User: {
+      type: Schema.ObjectId, 
+      ref: "User", 
+    },
+    Product: { 
+      type: Schema.ObjectId, 
+      ref: "Product"
+    }
 
   })
   
