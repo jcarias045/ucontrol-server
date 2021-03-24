@@ -741,16 +741,16 @@ function deleteInvoiceDetail(req, res){
 }
 
 function getSuppliersInvoicesNoPagada(req, res){
-    console.log('PAGADAS');
+
     console.log(req.params.id);
     // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
     // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
-    purchaseInvoice.find({Pagada:false}).populate({path: 'Supplier', model: 'Supplier'})
+    purchaseInvoice.find({Pagada:false,User:req.params.id}).populate({path: 'Supplier', model: 'Supplier'})
     .then(invoices => {
         if(!invoices){
             res.status(404).send({message:"No hay "});
         }else{
-            console.log(invoices);
+           
             res.status(200).send({invoices})
         }
     });
@@ -773,7 +773,21 @@ function getInfoInvoice(req, res){
     });
 
 }
-
+function getSuppliersInvoicesPendientes(req, res){
+   
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    purchaseInvoice.find({Recibida:false,User:req.params.id}).populate({path: 'Supplier', model: 'Supplier'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+           
+            res.status(200).send({invoices})
+        }
+    });
+}
 module.exports={
     getSuppliersInvoices,
     createSupplierInvoice,
@@ -782,7 +796,7 @@ module.exports={
     getInvoiceDetails,
     deleteInvoiceDetail,
     changeInvoiceState,
-//     getSuppliersInvoicesPendientes,
+    getSuppliersInvoicesPendientes,
     getSuppliersInvoicesNoPagada,
     getInfoInvoice
 }

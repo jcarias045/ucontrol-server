@@ -1,3 +1,4 @@
+const moment=require("moment");
 const PurchaseOrder = require("../models/purchaseOrder.model");
 const PurchaseOrderDetail = require("../models/purchaseDetail.model");
 const Inventory = require("../models/inventory.model");
@@ -24,7 +25,8 @@ async function createPurchaseOrder(req,res){
 
     let now= new Date();
     let creacion=now.getTime();
-
+    let date = moment().format('L');
+    let CreationDate = moment().format('LT');
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,
     Description,companyId} = req.body;
 

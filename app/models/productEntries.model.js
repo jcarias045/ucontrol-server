@@ -4,7 +4,7 @@ const User = require('./user.model');
 const Company = require('./company.model')
 
 const ProductEntrySchema = Schema({
-  EntryDate:Date,
+  EntryDate:String,
   User: {type: Schema.ObjectId, 
     ref: "User",
     // autopopulate: true,
@@ -18,6 +18,7 @@ const ProductEntrySchema = Schema({
   }
  
 })
+
 
 module.exports = mongoose.model('ProductEntry', ProductEntrySchema)
 // module.exports = (sequelize, Sequelize) => {

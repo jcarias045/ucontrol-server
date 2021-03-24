@@ -395,8 +395,13 @@ function getRecommendedProductsInventory(req,res){
                 (product) => {
                     
                     let minStocks=product.Product;
+                    if(minStocks!==null){
+                         return(product.Stock < minStocks.MinStock ) 
+                    }
+                    else{
+                        return(null) 
+                    }
                    
-                    return(product.Stock < minStocks.MinStock ) 
                 }
             );
   

@@ -15,7 +15,7 @@ router.put('/change-invoicestate/:id', purchaseInvoice.changeInvoiceState);
 // // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 // // router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
 
-// router.get('/get-suppliersinvoicespendientes/:id/:company', purchaseInvoice.getSuppliersInvoicesPendientes);
+router.get('/get-suppliersinvoicespendientes/:id/:company', purchaseInvoice.getSuppliersInvoicesPendientes);
 router.get('/get-invoicenopagada/:id/:company', purchaseInvoice.getSuppliersInvoicesNoPagada);
 router.get('/get-infoinvoice/:id/:company/:invoice', purchaseInvoice.getInfoInvoice);
 

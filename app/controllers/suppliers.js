@@ -119,6 +119,7 @@ function getSuppliersInfo(req, res){
     console.log(companyId);
     try{
         supplier.find({Company: companyId})
+        .populate({path: 'SupplierType', model: 'SupplierType'})
         .then(suppliers => {
             res.status(200).send(suppliers);          
         })
