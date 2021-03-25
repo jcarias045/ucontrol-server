@@ -84,6 +84,8 @@ async function createPurchaseOrder(req,res){
                         Discount:parseFloat(item.Discount),
                         Price:parseFloat(item.Price),
                         Inventory :item.Inventory,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts
                     })
                  });
                  console.log(detalle);

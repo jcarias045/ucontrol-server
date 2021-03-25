@@ -154,7 +154,9 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:0,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts,
                     })
                 })
                 }
@@ -169,7 +171,10 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory._id,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:false,
+                        Measure:item.Measure,
+                        CodProduct:item.CodProduct,
+                       
                     })
                 }) 
                 }
@@ -240,12 +245,17 @@ async function createSupplierInvoice(req, res){
                                     if(!detalle){
                                         res.status(404).send({message:"No hay "});
                                     }else{
+                                        console.log(detalle);
                                         detalle.map(async item=>{
                                         entryDataDetail.push({
                                             PurchaseInvoiceDetail:item._id,
                                             ProductEntry:productEntryID,
                                             Quantity:item.Quantity,
-                                            Inventory:item.Inventory
+                                            Inventory:item.Inventory,
+                                            ProductName:item.ProductName,
+                                            Price:item.Price,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
                                              });
                                          })
                                         productEntryDetails.insertMany(entryDataDetail)
