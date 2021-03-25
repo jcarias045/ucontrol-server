@@ -280,6 +280,10 @@ async function createSupplierInvoice(req, res){
                     });
                                 
                 }
+
+                if(!averageCost){
+                    
+                }
             
                 purchaseOrder.findByIdAndUpdate({_id:PurchaseOrder},{State:'Facturada'},(err,updateDeuda)=>{
                     if(err){
