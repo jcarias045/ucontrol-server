@@ -79,7 +79,15 @@ async function createSupplierInvoice(req, res){
            return(income.RequieredIncome) 
         }
     });
-    
+    let averageCost=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.AverageCost) 
+        }
+    });
+    console.log(averageCost);
     //obteniendo deuda actual con proveedor
     let deudaAct=await supplier.findById(Supplier) //esta variable la mando a llamar luego que se ingreso factura
     .then(deuda => {
