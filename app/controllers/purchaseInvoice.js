@@ -162,7 +162,7 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0,
+                        State:false,
                         Measure:item.Measures,
                         CodProduct:item.codproducts,
                     })
@@ -419,7 +419,9 @@ async function createNewSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:0,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts,
                     })
                 })
                 }
@@ -484,7 +486,9 @@ async function createNewSupplierInvoice(req, res){
                                             PurchaseInvoiceDetail:item._id,
                                             ProductEntry:productEntryID,
                                             Quantity:item.Quantity,
-                                            Inventory:item.Inventory
+                                            Inventory:item.Inventory,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
                                              });
                                          })
                                         productEntryDetails.insertMany(entryDataDetail)
