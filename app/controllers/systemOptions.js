@@ -54,48 +54,37 @@ function createProfileOptions(req, res){
 function getSysUserOptions(req, res){
     let rolId = req.params.id;
     try{
-        Grupos.findAll({
-            model:  ProfileOptions,
-            include: [
-              
-            {
-                group: 'ID_Grupo',   
-                model:  SysOptions,
-                required: true,
-                on:{
-                   
-                    ID_Grupo: sequelize.where(sequelize.col("sys_optionmenus.ID_Grupo"), "=", sequelize.col("sys_grupos.ID_Grupo")),
-                    
-                },
-                include:[
-                      {
-                         
-                model:  ProfileOptions,
-                on:{
-                   
-                    ID_OptionMenu: sequelize.where(sequelize.col("sys_optionmenus->sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenus.ID_OptionMenu")),
-                    ID_Rol: rolId
-                },
-                required: true
-                 },
-                 
-                ]
-            }
-        ]
-        })
-        // SysOptions.findAll({
+        // ({
+        //     model:  ProfileOptions,
         //     include: [
-        //         {
-        //             model:ProfileOptions,
-        //             on:{
+              
+        //     {
+        //         group: 'ID_Grupo',   
+        //         model:  SysOptions,
+        //         required: true,
+        //         on:{
                    
-        //             ID_OptionMenu: sequelize.where(sequelize.col("sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenu.ID_OptionMenu")),
+        //             ID_Grupo: sequelize.where(sequelize.col("sys_optionmenus.ID_Grupo"), "=", sequelize.col("sys_grupos.ID_Grupo")),
+                    
+        //         },
+        //         include:[
+        //               {
+                         
+        //         model:  ProfileOptions,
+        //         on:{
+                   
+        //             ID_OptionMenu: sequelize.where(sequelize.col("sys_optionmenus->sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenus.ID_OptionMenu")),
         //             ID_Rol: rolId
-        //         }
-        //         }
-        //     ],
-        //     group:'ID_Grupo',
+        //         },
+        //         required: true
+        //          },
+                 
+        //         ]
+        //     }
+        // ]
         // })
+        Grupos.find().populate({path: 'SysOptions', populate:{path: 'OpMenu'}})
+        .populate({path: 'ProfileOptions', populate:{path: 'OpMenu'} })
         .then(options => {
             res.status(200).send(options);
           
