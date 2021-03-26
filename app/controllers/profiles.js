@@ -1,15 +1,18 @@
-const db = require('../config/db.config.js');;
-const Profile = db.Profile;
-const ProfileOptions=db.ProfileOptions;
-const systemOp=db.SysOptions;
+const profile = require('../models/profile.model')
+const ProfileOption = require('../models/profileOptions.model')
+const systemOp = require('../models/systemOp.model')
+
 function getProfiles(req, res){
     // Buscamos informacion para llenar el modelo de 
     try{
-        Profile.findAll()
-        .then(profiles => {
-            res.status(200).send({profiles});
-          
-        })
+        profile.find()
+        .then(profile => {
+            if(!profile){
+                res.status(404).send({message:"No hay "});
+            }else{
+                res.status(200).send({profile})
+            }
+        });
     }catch(error) {
         // imprimimos a consola
         console.log(error);
@@ -22,31 +25,30 @@ function getProfiles(req, res){
 }
 
  function createProfile(req, res){
-    let profile = {};
-    
     console.log();
-    let opciones=req.body.opciones;
+    let opciones=req.body.opciones 
     
     try{
-        let promises = [];
-        let sysOp={};
+        //let promises = [];
+        //let sysOp={};
         // Construimos el modelo del objeto
-        profile.Name = req.body.Name;
-        profile.Description=req.body.Description;
-        let perfilId="";
+        const Profile = new profile();
+        const SystemOp = new systemOp();
+
+
+        const {Name, Description} = req.body
         // Save to MySQL database
-       Profile.create(profile)
+       Profile.save(Profile)
       .then(async result => {    
         res.status(200).json(result);
-          perfilId=result.ID_Profile;
           for  (const cartItem of opciones) {
                 sysOp.ID_Profile=perfilId;
-                sysOp.ID_OptionMenu=cartItem;
+                sysOp._id=cartItem;
                 console.log(sysOp);
-                await ProfileOptions.create(sysOp).then(async result=>{}).catch(err=>{
+                await ProfileOption.save(sysOp).then(async result=>{}).catch(err=>{
                     return err.message;
                 });
-              }
+            }
       });  
        
       console.log(perfilId);
@@ -167,7 +169,7 @@ async function deleteProfile(req, res){
 function getProfilesId(req, res){
     // Buscamos informacion para llenar el modelo de 
     try{
-        Profile.findAll({attributes:['ID_Profile','Name']})
+        profile.findAll({attributes:['ID_Profile','Name']})
         .then(profiles => {
             res.status(200).send({profiles});
           
@@ -183,24 +185,24 @@ function getProfilesId(req, res){
     }
 }
 
-function getOptions(req,res){
-    let perfilId=req.params.id;
-    try{
-        ProfileOptions.findAll({where:{ID_Rol:perfilId}})
-        .then(options => {
-            res.status(200).send({options});
+// function getOptions(req,res){
+//     let perfilId=req.params.id;
+//     try{
+//         ProfileOptions.findAll({where:{ID_Rol:perfilId}})
+//         .then(options => {
+//             res.status(200).send({options});
           
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
+//         })
+//     }catch(error) {
+//         // imprimimos a consola
+//         console.log(error);
 
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
-}
+//         res.status(500).json({
+//             message: "Error en query!",
+//             error: error
+//         });
+//     }
+// }
 
 module.exports={
   getProfiles,
@@ -208,7 +210,4 @@ module.exports={
   updateProfile,
   deleteProfile,
   getProfilesId,
-  getOptions
-
-
 };

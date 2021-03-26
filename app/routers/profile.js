@@ -12,6 +12,6 @@ router.put('/profile-update/:id', profiles.updateProfile);
 
 //para obtener nada más el id y nombre 
 router.get('/get-profile',profiles.getProfilesId);
-router.get('/get-options/:id',profiles.getOptions);
+//router.get('/get-options/:id',profiles.getOptions);
 
 module.exports = router;

@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const Company = require('./company.model');
-
+const Rol = require('./rol.model')
+const Perfil = require('./profile.model')
 
 const UserSchema = Schema({
   Name: String,
@@ -19,7 +20,15 @@ const UserSchema = Schema({
   Company: {
     type: Schema.ObjectId, 
     ref: "Company"
-          }
+        },
+  Rol: {
+    type: Schema.ObjectId,
+    ref: "Rol"
+  },
+  Profile: {
+    type: Schema.ObjectId,
+    ref: "Profile"
+  }
 })
 
 module.exports = mongoose.model('User', UserSchema)

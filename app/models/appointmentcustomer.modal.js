@@ -7,7 +7,7 @@ const AppointmenCustomerSchema = Schema({
   StartDate: Date,
   EndDate: Date, 
   Description: String,
-  State: Boolean,
+  //State: Boolean,
   User: {
     type: Schema.ObjectId,
     ref: "User"
@@ -17,8 +17,8 @@ const AppointmenCustomerSchema = Schema({
     ref: "Customer",
   },
   Name: String,
-  StartTime: Date,
-  EndTime: Date,
+  StartTime: String,
+  EndTime: String,
 })
 
 module.exports = mongoose.model('BookingCustomer', AppointmenCustomerSchema)
