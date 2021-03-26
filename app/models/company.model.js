@@ -13,6 +13,13 @@ const CompanySchema = Schema({
   RequieredOutput: Boolean,
   CompanyRecords: Boolean,
   AverageCost: Boolean,
+  members: {
+    type: Map,
+    of: {
+      type: 'ObjectId',
+      ref: 'Supplier'
+    }
+  }
   },
   // { 
   //       freezeTableName: true,

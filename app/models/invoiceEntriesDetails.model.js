@@ -14,6 +14,10 @@ const EntriesDetailSchema = Schema({
     // autopopulate: true,
   },
   Quantity:Number,
+  ProductName:String,
+  Price:Number,
+  Measure:String,
+  CodProduct:String,
   Inventory: {type: Schema.ObjectId, 
     ref: "Inventory",
     // autopopulate: true,
@@ -21,6 +25,17 @@ const EntriesDetailSchema = Schema({
 
  
 })
+
+EntriesDetailSchema.virtual('members', {
+  ref: 'ProductEntry', // The model to use
+  localField: '_id', // Find people where `localField`
+  foreignField: 'ProductEntry', // is equal to `foreignField`
+  // If `justOne` is true, 'members' will be a single doc as opposed to
+  // an array. `justOne` is false by default.
+  justOne: false,
+  options: { sort: { name: -1 }, limit: 5 } // Query options, see http://bit.ly/mongoose-query-options
+});
+
 
 module.exports = mongoose.model('EntryDetail', EntriesDetailSchema)
 

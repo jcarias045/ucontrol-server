@@ -6,6 +6,7 @@ const productEntry = require("../models/productEntries.model");
 const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
+const PaymentToSupplier= require('../models/paymentstoSuppliers.model')
 
 function getSuppliersInvoices(req, res){
     const { id,company } = req.params;
@@ -78,7 +79,15 @@ async function createSupplierInvoice(req, res){
            return(income.RequieredIncome) 
         }
     });
-    
+    let averageCost=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.AverageCost) 
+        }
+    });
+    console.log(averageCost);
     //obteniendo deuda actual con proveedor
     let deudaAct=await supplier.findById(Supplier) //esta variable la mando a llamar luego que se ingreso factura
     .then(deuda => {
@@ -153,7 +162,9 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:false,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts,
                     })
                 })
                 }
@@ -168,7 +179,10 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory._id,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:false,
+                        Measure:item.Measure,
+                        CodProduct:item.CodProduct,
+                       
                     })
                 }) 
                 }
@@ -239,12 +253,17 @@ async function createSupplierInvoice(req, res){
                                     if(!detalle){
                                         res.status(404).send({message:"No hay "});
                                     }else{
+                                        console.log(detalle);
                                         detalle.map(async item=>{
                                         entryDataDetail.push({
                                             PurchaseInvoiceDetail:item._id,
                                             ProductEntry:productEntryID,
                                             Quantity:item.Quantity,
-                                            Inventory:item.Inventory
+                                            Inventory:item.Inventory,
+                                            ProductName:item.ProductName,
+                                            Price:item.Price,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
                                              });
                                          })
                                         productEntryDetails.insertMany(entryDataDetail)
@@ -260,6 +279,10 @@ async function createSupplierInvoice(req, res){
                         }
                     });
                                 
+                }
+
+                if(!averageCost){
+                    
                 }
             
                 purchaseOrder.findByIdAndUpdate({_id:PurchaseOrder},{State:'Facturada'},(err,updateDeuda)=>{
@@ -400,7 +423,9 @@ async function createNewSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:0,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts,
                     })
                 })
                 }
@@ -465,7 +490,9 @@ async function createNewSupplierInvoice(req, res){
                                             PurchaseInvoiceDetail:item._id,
                                             ProductEntry:productEntryID,
                                             Quantity:item.Quantity,
-                                            Inventory:item.Inventory
+                                            Inventory:item.Inventory,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
                                              });
                                          })
                                         productEntryDetails.insertMany(entryDataDetail)
@@ -696,33 +723,108 @@ async function changeInvoiceState(req, res){
     let purchaseId = req.params.id;
     let state=req.body;
     console.log(state);
-    purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
-        if(err){
-            res.status(500).send({message: "Error del Servidor."});
-            
-        } else {
-            if(!purchaseUpdate){
-                res.status(404).send({message: "No se actualizo registro"});
+    let existPago=await PaymentToSupplier.findOne({PurchaseInvoice:purchaseId}).catch(err => {console.log(err);});
+    console.log(existPago);
+    if(existPago!==null){
+        console.log('tiene pafgos');
+        res.status(500).send({message: "Esta factura contiene pagos registrados"});
+    }else{
+        purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
+            if(err){
+                res.status(500).send({message: "Error del Servidor."});
+                
+            } else {
+                if(!purchaseUpdate){
+                    res.status(404).send({message: "No se actualizo registro"});
+                }
+                else{
+                    res.status(200).send(purchaseUpdate)
+                }
             }
-            else{
-                res.status(200).send(purchaseUpdate)
-            }
-        }
-   
-    })
+       
+        })
+       
+    }
+ 
 }
 
+function deleteInvoiceDetail(req, res){
+    console.log('elimianrdetalle',req.params.id);
+    let detalleid=req.params.id;
+    purchaseInvoiceDetail.findByIdAndDelete(detalleid, (err, userDeleted) => {
+        if (err) {
+          res.status(500).send({ message: "Error del servidor." });
+        } else {
+          if (!userDeleted) {
+            res.status(404).send({ message: "Detalle no encontrado" });
+          } else {
+            res.status(200).send({ userDeleted});
+            console.log(userDeleted);
+          }
+        }
+      });
+
+}
+
+function getSuppliersInvoicesNoPagada(req, res){
+
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    purchaseInvoice.find({Pagada:false,User:req.params.id}).populate({path: 'Supplier', model: 'Supplier'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+           
+            res.status(200).send({invoices})
+        }
+    });
+}
+function getInfoInvoice(req, res){
+    let userId = req.params.id; 
+    let invoiceid = req.params.invoice;
+    let companyId = req.params.company;
+  
+  
+    purchaseInvoice.find({_id:invoiceid}).populate({path: 'User', model: 'User',match:{_id:userId}})
+    .populate({path: 'Supplier', model: 'Supplier'}).populate('PaymentSupplierd').populate('books.$*.PaymentSupplier')
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(invoices);
+            res.status(200).send({invoices})
+        }
+    });
+
+}
+function getSuppliersInvoicesPendientes(req, res){
+   
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    purchaseInvoice.find({Recibida:false,User:req.params.id}).populate({path: 'Supplier', model: 'Supplier'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+           
+            res.status(200).send({invoices})
+        }
+    });
+}
 module.exports={
     getSuppliersInvoices,
     createSupplierInvoice,
     createNewSupplierInvoice,
     updateInvoicePurchase,
     getInvoiceDetails,
-//     deleteInvoiceDetail,
+    deleteInvoiceDetail,
     changeInvoiceState,
-//     getSuppliersInvoicesPendientes,
-//     getSuppliersInvoicesNoPagada,
-//     getInfoInvoice
+    getSuppliersInvoicesPendientes,
+    getSuppliersInvoicesNoPagada,
+    getInfoInvoice
 }
 
 // const db = require('../config/db.config.js');;
