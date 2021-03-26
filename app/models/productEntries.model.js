@@ -15,7 +15,8 @@ const ProductEntrySchema = Schema({
   Company: {type: Schema.ObjectId, 
     ref: "Company",
     // autopopulate: true,
-  }
+  },
+  PurchaseInvoice:String
  
 })
 

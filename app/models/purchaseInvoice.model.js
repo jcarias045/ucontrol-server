@@ -14,7 +14,7 @@ const PurchaseInvoiceSchema = Schema({
   CreationDate: String,
   Total:Number,
   Comments:String,
-  DeliverDay:Date,
+  DeliverDay:String,
   Supplier: {type: Schema.ObjectId, 
     ref: "Supplier",
     // autopopulate: true,

@@ -3,6 +3,11 @@ const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const inventory = require("../models/inventory.model");
 const purchaseInvoiceDetails= require("../models/purchaseInvoiceDetails.model");
 const purchaseInvoice= require("../models/purchaseInvoice.model");
+const supplier = require("../models/supplier.model");
+const company = require("../models/company.model");
+const product = require("../models/product.model");
+
+
 function getEntries(req, res){
    const { id } = req.params;
    productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
@@ -57,7 +62,7 @@ async function createProductEntry(req, res){
     let detalles=req.body.entries;
     let inventaryUpdate={};
 
-    const {Company,User,PurchaseInvoiceId,Comments,EntryDate} = req.body;
+    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId} = req.body;
       //para generar el correctivo del ingreso en caso de que sea requerido
       let codEntry=await productEntry.findOne({Company:Company}).sort({CodEntry:-1})
       .then(function(doc){
@@ -71,7 +76,25 @@ async function createProductEntry(req, res){
       if(!codEntry){
         codigoEntradas =1;
     }else {codigoEntradas=codEntry+1}
-    console.log('codigo de entrada',codigoEntradas);
+    
+    let averageCost=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.AverageCost) 
+        }
+    });
+    console.log('COSTO PROMEDIO',averageCost);
+    let tipoProveedor=await supplier.findById(SupplierId).populate({path: 'SupplierType',model:'SupplierType'})
+    .then(tipo => {
+        if(!tipo){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(tipo.SupplierType.Name) 
+        }
+    });
+    console.log(tipoProveedor);
 
     entryData.EntryDate=EntryDate;
     entryData.User=User;
@@ -79,6 +102,8 @@ async function createProductEntry(req, res){
     entryData.State=true;
     entryData.CodEntry=codigoEntradas;
     entryData.Company=Company;
+    entryData.PurchaseInvoice=null;
+
     entryData.save(async (err, entryStored)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
@@ -201,8 +226,40 @@ async function createProductEntry(req, res){
         }
     })
 
-}
+    if (averageCost) {
+        console.log('COSTO PROMEDIO');
+        if(detalles.length>0){
+            detalles.map(item => {
+                console.log(item.totalImpuestos);
+                console.log(item.total);
+                console.log(item.Price);
+                console.log('stock',item.Stock);
+                let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                let fact1=parseFloat((item.Stock*item.Price)+parseFloat(facturaProveedor));
+                let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                console.log('fact2',fact2);
+                console.log('fact1',fact1);
+                costo=parseFloat((fact1)/(fact2));
+                let costoprom={
+                    AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                    (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                    
+                }
+                console.log('costo promedio prodcutos nuevows',costo);
+                
+                product.updateMany({_id: item.ID_Products},costoprom)    
+                .then(function () { 
+                    console.log("Se actualizo costo promedio nuevo");
+                })
+                .catch(function (err) {
+                    console.log(err);
+                });  
+            })
+        }
+        
+    }
 
+}
 
 async function createProductEntryWithoutInvoice(req, res){
     const entryData=new productEntry();
@@ -211,7 +268,7 @@ async function createProductEntryWithoutInvoice(req, res){
     let detalles=req.body.entries;
     let inventaryUpdate={};
 
-    const {Company,User,PurchaseInvoiceId,Comments,EntryDate} = req.body;
+    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId} = req.body;
       //para generar el correctivo del ingreso en caso de que sea requerido
       let codEntry=await productEntry.findOne({Company:Company}).sort({CodEntry:-1})
       .then(function(doc){
@@ -225,14 +282,31 @@ async function createProductEntryWithoutInvoice(req, res){
       if(!codEntry){
         codigoEntradas =1;
     }else {codigoEntradas=codEntry+1}
-    console.log('codigo de entrada',codigoEntradas);
-
+     
+    let averageCost=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.AverageCost) 
+        }
+    });
+    console.log('COSTO PROMEDIO',averageCost);
+    let tipoProveedor=await supplier.findById(SupplierId).populate({path: 'SupplierType',model:'SupplierType'})
+    .then(tipo => {
+        if(!tipo){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(tipo.SupplierType.Name) 
+        }
+    });
     entryData.EntryDate=EntryDate;
     entryData.User=User;
     entryData.Comments=Comments;
     entryData.State=true;
     entryData.CodEntry=codigoEntradas;
     entryData.Company=Company;
+    entryData.PurchaseInvoice=null;
     entryData.save(async (err, entryStored)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
@@ -286,7 +360,7 @@ async function createProductEntryWithoutInvoice(req, res){
                                 //actualizando el stock
                                 inventory.findByIdAndUpdate({_id:item.Inventory},{
                                     Stock:parseFloat(cantidad),
-                                }).then(inventory => {console.log(inventory);})
+                                })
                                 .catch(err => {console.log(err);});
                                 //contando 
                             
@@ -302,17 +376,51 @@ async function createProductEntryWithoutInvoice(req, res){
                              console.log(err);
                          });
                 }
+                if (averageCost) {
+                    console.log('COSTO PROMEDIO');
+                    if(detalles.length>0){
+                        detalles.map(item => {
+                            console.log(item.totalImpuestos);
+                            console.log(item.total);
+                            console.log(item.Price);
+                            console.log('stock',item.Stock);
+                            let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                            let fact1=parseFloat((item.Stock*item.Price)+parseFloat(facturaProveedor));
+                            let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                            console.log('fact2',fact2);
+                            console.log('fact1',fact1);
+                            costo=parseFloat((fact1)/(fact2));
+                            let costoprom={
+                                AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                                (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                
+                            }
+                            console.log('costo promedio prodcutos nuevows',costo);
+                            
+                            product.updateMany({_id: item.ID_Products},costoprom)    
+                            .then(function () { 
+                                console.log("Se actualizo costo promedio nuevo");
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                            });  
+                        })
+                    }
+                    
+                }
+            
                 res.status(200).send({Entry: entryStored});
             }
         }
     })
+
+
 }
 
 function getProductEntries(req, res){
     let invoiceId = req.params.id;
-    productEntryDetails.find({ProductEntry:id}).populate({path: 'Inventory', model: 'Inventory', 
+    productEntryDetails.find({ProductEntry:invoiceId}).populate({path: 'Inventory', model: 'Inventory', 
     populate:{path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'}}})
-    
     .then(supplier => {
         if(!supplier){
             res.status(404).send({message:"No hay "});
@@ -321,11 +429,107 @@ function getProductEntries(req, res){
         }
     }); 
 }
+
+async function anularProductEntry(req, res){
+    let entryId= req.params.id;
+
+    productEntry.findByIdAndUpdate(entryId,{State:false},async (err, entryUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+
+        }else {
+            if(!entryUpdate){
+                res.status(404).send({message: "No se agrego registro."});
+
+            }
+            else{
+                let invoiceId=entryUpdate.PurchaseInvoice;
+                console.log(entryUpdate);
+                let entryDetail=await productEntryDetails.find({ProductEntry:entryId})
+                .then(function(doc){
+                    if(doc){
+                            return(doc);
+                    }
+                });
+                let invoiceDetail=await purchaseInvoiceDetails.find({PurchaseInvoice:invoiceId})
+                .then(function(doc){
+                    if(doc){
+                            return(doc);
+                    }
+                });
+                console.log(entryDetail);
+                entryDetail.map(async item =>{
+                    let ingresados=null;
+                    let inStock=await inventory.findOne({_id:item.Inventory},'Stock')
+                    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                    if(item.PurchaseInvoiceDetail!==null){
+                        ingresados=await purchaseInvoiceDetails.findOne({_id:item.PurchaseInvoiceDetail})
+                    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                    } 
+                   
+                    let cantidad=0.0;
+                    let ingresoUpdate=0.0;
+                    console.log('INGRESADOS');
+                    console.log(inStock);
+                    console.log('+++++++++++++++');
+                    if(ingresados!==null){
+                        console.log(ingresados.Ingresados);
+                        console.log(inStock.Stock);
+                            if(inStock.Stock>=ingresados.Ingresados){
+                                console.log('SE ACTUALIZO STOCK');
+                                cantidad=parseFloat(inStock.Stock-item.Quantity); 
+                                if(ingresados.Ingresados>=item.Quantity){
+                                    ingresoUpdate=parseFloat(ingresados.Ingresados-item.Quantity)
+                                }
+                                
+                                console.log('cantidad',cantidad);
+                                console.log('ingresos',ingresoUpdate);
+                                inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                    Stock:parseFloat(cantidad),
+                                })
+                                .catch(err => {console.log(err);});
+
+                                purchaseInvoiceDetails.findByIdAndUpdate({_id:item.PurchaseInvoiceDetail},{
+                                    Ingresados:parseFloat(ingresoUpdate),
+                                    State:false
+                                })
+                                .catch(err => {console.log(err);});
+
+                                purchaseInvoice.findByIdAndUpdate({_id:ingresados.PurchaseInvoice},{
+                                    Recibida:false,
+                                })
+                                .catch(err => {console.log(err);});
+
+                                productEntry.findByIdAndUpdate({_id:item.ProductEntry},{
+                                    State:false,
+                                })
+                                .catch(err => {console.log(err);});
+                        }
+                  
+                    }
+                    else{
+                        cantidad=parseFloat(inStock.Stock-item.Quantity); 
+                        inventory.findByIdAndUpdate({_id:item.Inventory},{
+                            Stock:parseFloat(cantidad),
+                        }).then(up=>{console.log(up)})
+                        .catch(err => {console.log(err);});
+                    }
+                    
+                });
+               res.status(200).json(entryUpdate);
+
+            }
+        }
+
+    })
+ 
+}
+
 module.exports={
     getEntries,
     createProductEntry,
     getProductEntries,
-//     anularProductEntry,
+    anularProductEntry,
     createProductEntryWithoutInvoice
 }
 // const db = require('../config/db.config.js');;
@@ -634,121 +838,121 @@ function getProductEntriccces(req,res){
 }
 
 
-// async function anularProductEntry(req,res){
-//     let entryId = req.params.id; 
-//     console.log(entryId);
+async function anularggggProductEntry(req,res){
+    let entryId = req.params.id; 
+    console.log(entryId);
    
-//     try{
-//         let entry = await ProductEntries.findByPk(entryId,{
-//             attributes: ['ID_ProductEntry']});
+    try{
+        let entry = await ProductEntries.findByPk(entryId,{
+            attributes: ['ID_ProductEntry']});
     
 
-//         if(!entry){
-//            // retornamos el resultado al cliente
-//             res.status(404).json({
-//                 message: "No se encuentra el cliente con ID = " + entryId,
-//                 error: "404"
-//             });
-//         } else {    
-//             let invoiceEntryD=await InvoiceEntriesDetails.findAll({where: {ID_ProductEntry: entryId}}).then(function(result){return result});
+        if(!entry){
+           // retornamos el resultado al cliente
+            res.status(404).json({
+                message: "No se encuentra el cliente con ID = " + entryId,
+                error: "404"
+            });
+        } else {    
+            let invoiceEntryD=await InvoiceEntriesDetails.findAll({where: {ID_ProductEntry: entryId}}).then(function(result){return result});
             
-//             // actualizamos nuevo cambio en la base de datos, definición de
-//             let updatedObject = { 
+            // actualizamos nuevo cambio en la base de datos, definición de
+            let updatedObject = { 
                
-//                 State:0          
-//             }
-//              //agregar proceso de encriptacion
-//             let result = await entry.update(updatedObject,
-//                               { 
-//                                 returning: true,                
-//                                 where: {ID_ProductEntry  : entryId},
-//                                 attributes:['ID_ProductEntrys' ]
-//                               }
-//                             );
+                State:0          
+            }
+             //agregar proceso de encriptacion
+            let result = await entry.update(updatedObject,
+                              { 
+                                returning: true,                
+                                where: {ID_ProductEntry  : entryId},
+                                attributes:['ID_ProductEntrys' ]
+                              }
+                            );
 
-//             // retornamos el resultado al cliente
-//             if(!result) {
-//                 res.status(500).json({
-//                     message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
-//                     error: "No se puede actualizar",
-//                 });
-//             }
-//             if(result){
-//                 let invoiceDetailId=null;
-//                for(var i=0; i<invoiceEntryD.length; i++){
-//                    invoiceDetailId =await invoiceEntryD[i].dataValues.ID_PurchaseInvoiceDetail;
-//                   console.log(invoiceDetailId);
-//                   let invoiceDetails=await PurchaseInvoiceDetails.findAll({ where:{ID_PurchaseInvoiceDetail:invoiceDetailId}})
-//                   .then(await function(result){return result});
-//                     for(var j=0; j<invoiceDetails.length; j++){
-//                       let purchaseInvoiceId = await invoiceDetails[j].dataValues.ID_PurchaseInvoice;
-//                       let inventoryId= await invoiceDetails[j].dataValues.ID_Inventory;
-//                       let ingresados= await invoiceDetails[j].dataValues.Ingresados;
-//                       let cantidad=0;
-//                       console.log(ingresados);
-//                       let invenrotyExist = await  Inventory.findAll({
-//                         include: [
-//                             {
-//                                model:Product,
-//                                attributes: [],
-//                                on: {
-//                                 ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
-//                                }
-//                             }
-//                         ],
-//                         attributes: ['Stock'],
-//                         where: {ID_Inventory:inventoryId}
-//                     }).then(orders => {
-//                         return orders
-//                     });
-//                     console.log(invenrotyExist[0].dataValues.Stock);
-//                     console.log(ingresados);
-//                     cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) - parseFloat(ingresados);
-//                     console.log(cantidad);
-//                     //CAMBIO DE ESTADO DE ORDEN DE DETALLE DE FACTURA
-//                     updateIngresados={
-//                         Ingresados:0,
-//                         State:0
-//                     };
-//                     let resul = await PurchaseInvoiceDetails.update(updateIngresados,
-//                         {             
-//                           where: {ID_PurchaseInvoiceDetail : invoiceDetailId},
-//                           attributes: ['ID_PurchaseInvoiceDetail']
-//                         }
-//                       );
-//                     //editar estado de la FACTURAS
-//                     let updateInvoice={
-//                         Recibida:0
-//                     };
-//                     let invoiceEditado = await PurchaseInvoice.update(updateInvoice,
-//                         {             
-//                           where: {ID_PurchaseInvoice : purchaseInvoiceId},
-//                           attributes: ['ID_PurchaseInvoice']
-//                         }
-//                       );
-//                       let updateStock={
-//                         Stock :cantidad
+            // retornamos el resultado al cliente
+            if(!result) {
+                res.status(500).json({
+                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+                    error: "No se puede actualizar",
+                });
+            }
+            if(result){
+                let invoiceDetailId=null;
+               for(var i=0; i<invoiceEntryD.length; i++){
+                   invoiceDetailId =await invoiceEntryD[i].dataValues.ID_PurchaseInvoiceDetail;
+                  console.log(invoiceDetailId);
+                  let invoiceDetails=await PurchaseInvoiceDetails.findAll({ where:{ID_PurchaseInvoiceDetail:invoiceDetailId}})
+                  .then(await function(result){return result});
+                    for(var j=0; j<invoiceDetails.length; j++){
+                      let purchaseInvoiceId = await invoiceDetails[j].dataValues.ID_PurchaseInvoice;
+                      let inventoryId= await invoiceDetails[j].dataValues.ID_Inventory;
+                      let ingresados= await invoiceDetails[j].dataValues.Ingresados;
+                      let cantidad=0;
+                      console.log(ingresados);
+                      let invenrotyExist = await  Inventory.findAll({
+                        include: [
+                            {
+                               model:Product,
+                               attributes: [],
+                               on: {
+                                ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
+                               }
+                            }
+                        ],
+                        attributes: ['Stock'],
+                        where: {ID_Inventory:inventoryId}
+                    }).then(orders => {
+                        return orders
+                    });
+                    console.log(invenrotyExist[0].dataValues.Stock);
+                    console.log(ingresados);
+                    cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) - parseFloat(ingresados);
+                    console.log(cantidad);
+                    //CAMBIO DE ESTADO DE ORDEN DE DETALLE DE FACTURA
+                    updateIngresados={
+                        Ingresados:0,
+                        State:0
+                    };
+                    let resul = await PurchaseInvoiceDetails.update(updateIngresados,
+                        {             
+                          where: {ID_PurchaseInvoiceDetail : invoiceDetailId},
+                          attributes: ['ID_PurchaseInvoiceDetail']
+                        }
+                      );
+                    //editar estado de la FACTURAS
+                    let updateInvoice={
+                        Recibida:0
+                    };
+                    let invoiceEditado = await PurchaseInvoice.update(updateInvoice,
+                        {             
+                          where: {ID_PurchaseInvoice : purchaseInvoiceId},
+                          attributes: ['ID_PurchaseInvoice']
+                        }
+                      );
+                      let updateStock={
+                        Stock :cantidad
                            
-//                     }
-//                     let inventario = await Inventory.update(updateStock,
-//                         {             
-//                           where: {ID_Inventory : inventoryId, ID_Bodega:8},
-//                           attributes: ['Stock']
-//                         }
-//                       );
-//                   }
-//                }
-//             }
+                    }
+                    let inventario = await Inventory.update(updateStock,
+                        {             
+                          where: {ID_Inventory : inventoryId, ID_Bodega:8},
+                          attributes: ['Stock']
+                        }
+                      );
+                  }
+               }
+            }
 
-//             res.status(200).json(result);
-//         }
-//     } catch(error){
-//         res.status(500).json({
-//             message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
-//             error: error.message
-//         });
-//     }
-// }
+            res.status(200).json(result);
+        }
+    } catch(error){
+        res.status(500).json({
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            error: error.message
+        });
+    }
+}
 
 
 async function createProductEntryWifggthoutInvoice(req,res){
