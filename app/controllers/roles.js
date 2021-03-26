@@ -1,3 +1,11 @@
+// const db = require('../config/db.config.js');
+// const { Op } = require("sequelize");
+
+// const sequelize = require('sequelize');
+// const Roles = db.Roles;
+// const Company = db.Company;
+// const ProfileOptions=db.ProfileOptions;
+// const SysOptions = db.SysOptions;
 const Roles = require('../models/rol.model');
 const SysOptions = require('../models/systemOp.model');
 const profileOptions = require('../models/profileOptions.model')

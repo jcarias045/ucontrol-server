@@ -1,7 +1,4 @@
-const db = require('../config/db.config.js');
-
-
-const PurchaseDetails = db.PurchaseDetails;
+const PurchaseDetail= require('../models/purchaseDetail.model');
 
 
 function getPurchaseDetails(req, res){
@@ -54,28 +51,21 @@ function createPurchaseOrder(req, res){
 
 async function deletePurchaseDetail(req, res){
     console.log(req.params.id);
-
-    try{
-        let detailId = req.params.id;
-        let detalle= await PurchaseDetails.findByPk(detailId);
-        console.log(detalle);
-        if(!detalle){
-            res.status(404).json({
-                message: "La compañia con este ID no existe = " + detailId,
-                error: "404",
-            });
+    let detalleid=req.params.id;
+    PurchaseDetail.findByIdAndRemove(detalleid, (err, userDeleted) => {
+        if (err) {
+          res.status(500).send({ message: "Error del servidor." });
         } else {
-            await detalle.destroy();
-            res.status(200).send({
-                message:"Compañia eliminada con exito"
-            });
+          if (!userDeleted) {
+            res.status(404).send({ message: "Detalle no encontrado" });
+          } else {
+            res
+              .status(200)
+              .send({ userDeleted});
+          }
         }
-    } catch(error) {
-        res.status(500).json({
-            message: "Error -> No se puede eliminar el detalle de la orden con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+      });
+
 }
 
 module.exports={

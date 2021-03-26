@@ -1,3 +1,4 @@
+const moment=require("moment");
 const purchaseInvoice = require("../models/purchaseInvoice.model");
 const purchaseInvoiceDetail = require("../models/purchaseInvoiceDetails.model");
 const invoiceTaxes = require("../models/invoiceTaxes.model");
@@ -6,11 +7,13 @@ const productEntry = require("../models/productEntries.model");
 const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
-
+const PaymentToSupplier= require('../models/paymentstoSuppliers.model');
+const product= require('../models/product.model');
+const inventory = require('../models/inventory.model')
 function getSuppliersInvoices(req, res){
     const { id,company } = req.params;
    purchaseInvoice.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
-    populate: {path: 'SupplierType', model: 'SupplierType'}})
+    populate: {path: 'SupplierType', model: 'SupplierType'}}).sort({CodInvoice:-1})
     .then(invoices => {
         if(!invoices){
             res.status(404).send({message:"No hay "});
@@ -36,15 +39,18 @@ async function createSupplierInvoice(req, res){
     let diasEntrega=req.body.dias;
     let fechaInvoice=req.body.InvoiceDate;
     
-    let now= new Date();
-    let creacion=now.getTime();
+   
+    let nuevows = moment().format('L');
+    let creacion = moment().format('L');
+    
+    console.log(creacion);
     var date = new Date(fechaInvoice);
-   
-   
+   console.log(date);
+    
     date.setDate(date.getDate() + diasEntrega);
    
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,CreationDate,Total,User,
-    DeliverDay,Description,InvoiceComments,PurchaseNumber} = req.body;
+    DeliverDay,Description,InvoiceComments,PurchaseNumber,tipoProveedor} = req.body;
 
     const invoiceDetails=req.body.details;
     const detalle=[];
@@ -78,7 +84,15 @@ async function createSupplierInvoice(req, res){
            return(income.RequieredIncome) 
         }
     });
-    
+    let averageCost=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.AverageCost) 
+        }
+    });
+    console.log(averageCost);
     //obteniendo deuda actual con proveedor
     let deudaAct=await supplier.findById(Supplier) //esta variable la mando a llamar luego que se ingreso factura
     .then(deuda => {
@@ -153,7 +167,9 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:false,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts,
                     })
                 })
                 }
@@ -168,7 +184,10 @@ async function createSupplierInvoice(req, res){
                         Inventory :item.Inventory._id,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:false,
+                        Measure:item.Measure,
+                        CodProduct:item.CodProduct,
+                       
                     })
                 }) 
                 }
@@ -223,6 +242,7 @@ async function createSupplierInvoice(req, res){
                     entryData1.State=true;
                     entryData1.CodEntry=codigoEntradas;
                     entryData1.Company=companyId;
+                    entryData1.PurchaseInvoice=invoiceId;
                     entryData1.save((err, entryStored)=>{
                         if(err){
                             console.log(err);
@@ -239,12 +259,17 @@ async function createSupplierInvoice(req, res){
                                     if(!detalle){
                                         res.status(404).send({message:"No hay "});
                                     }else{
+                                        console.log(detalle);
                                         detalle.map(async item=>{
                                         entryDataDetail.push({
                                             PurchaseInvoiceDetail:item._id,
                                             ProductEntry:productEntryID,
                                             Quantity:item.Quantity,
-                                            Inventory:item.Inventory
+                                            Inventory:item.Inventory,
+                                            ProductName:item.ProductName,
+                                            Price:item.Price,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
                                              });
                                          })
                                         productEntryDetails.insertMany(entryDataDetail)
@@ -259,9 +284,74 @@ async function createSupplierInvoice(req, res){
                             }
                         }
                     });
+
+                    if(averageCost){
+                        console.log('COMPAÑIA CON CO0STO PRODMEDIO ACTIVO');
+                        if(dePurchaseOrder.length > 0){
+                              dePurchaseOrder.map(async item => {
+                                console.log(item.totalImpuestos);
+                                console.log(item.total);
+                                console.log(item.Price);
+                                console.log(item.Inventory.Stock);
+                                let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                                let fact1=(item.Inventory.Stock*item.Price)+facturaProveedor;
+                                let fact2=parseFloat(item.Inventory.Stock)+parseFloat(item.Quantity);
+                                console.log(fact2);
+                                console.log(fact1);
+                                costo=parseFloat((fact1)/(fact2));
+                                let costoprom={
+                                    AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                                    (item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                    
+                                }
+                                console.log('costo promedio prodcutos orden',costo);
+                                product.updateMany({_id: item.Inventory._id},costoprom)    
+                                .then(function () { 
+                                    console.log("Se actualizo costo promedio de orden");
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });  
+    
+                            })
+                        }
+    
+                        if(invoiceDetalle.length>0){
+                            invoiceDetalle.map(item => {
+                                console.log(item.totalImpuestos);
+                                console.log(item.total);
+                                console.log(item.Price);
+                                console.log('stock',item.Stock);
+                                let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                                let fact1=parseFloat((item.Stock*item.Price)+facturaProveedor);
+                                let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                                console.log('fact1',fact2);
+                                console.log('fact2',fact1);
+                                costo=parseFloat((fact1)/(fact2));
+                                let costoprom={
+                                    AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                                    (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                    
+                                }
+                                console.log('costo promedio prodcutos nuevows',costo);
+                                
+                                product.updateMany({_id: item.ProductId},costoprom)    
+                                .then(function () { 
+                                    console.log("Se actualizo costo promedio nuevo");
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });  
+                            })
+                        }
+    
+                      
+                    }
+                
                                 
                 }
-            
+
+               
                 purchaseOrder.findByIdAndUpdate({_id:PurchaseOrder},{State:'Facturada'},(err,updateDeuda)=>{
                     if(err){
                         res.status(500).send({message: "Error del Servidor."});
@@ -304,7 +394,7 @@ async function createNewSupplierInvoice(req, res){
     
     date.setDate(date.getDate() + diasEntrega);
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,Total,User
-        ,Description,InvoiceComments,PurchaseNumber} = req.body;
+        ,Description,InvoiceComments,PurchaseNumber,tipoProveedor} = req.body;
     //para generar el correctivo del ingreso en caso de que sea requerido
     let codEntry=await productEntry.findOne({Company:companyId}).sort({CodEntry:-1})
     .then(function(doc){
@@ -330,6 +420,14 @@ async function createNewSupplierInvoice(req, res){
             res.status(404).send({message:"No hay "});
         }else{
            return(income.RequieredIncome) 
+        }
+    });
+    let averageCost=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.AverageCost) 
         }
     });
     //obteniendo deuda actual con proveedor
@@ -369,8 +467,8 @@ async function createNewSupplierInvoice(req, res){
     invoice.Comments=Description; 
     invoice.InvoiceComments	=InvoiceComments;
     invoice.Pagada=false;
-    // invoice.Recibida=requiredIncome.length > 0?true:false;
-    invoice.Recibida=false;
+    invoice.Recibida=!requiredIncome?true:false;
+    // invoice.Recibida=false;
     invoice.CodInvoice=codigo;
 
     
@@ -400,7 +498,9 @@ async function createNewSupplierInvoice(req, res){
                         Inventory :item.Inventory,
                         SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
                         Ingresados:0,
-                        State:0
+                        State:0,
+                        Measure:item.Measures,
+                        CodProduct:item.codproducts,
                     })
                 })
                 }
@@ -444,6 +544,7 @@ async function createNewSupplierInvoice(req, res){
                     entryData.State=true;
                     entryData.CodEntry=codigoEntradas;
                     entryData.Company=companyId;
+                    entryData.PurchaseInvoice=invoiceId;
                     entryData.save((err, entryStored)=>{
                         if(err){
                             console.log(err);
@@ -465,8 +566,25 @@ async function createNewSupplierInvoice(req, res){
                                             PurchaseInvoiceDetail:item._id,
                                             ProductEntry:productEntryID,
                                             Quantity:item.Quantity,
-                                            Inventory:item.Inventory
+                                            Inventory:item.Inventory,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
+                                            ProductName:item.ProductName
                                              });
+
+                                            purchaseInvoiceDetail.findByIdAndUpdate({_id: item._id},{
+                                                Ingresados:parseFloat(item.Quantity),
+                                                State:true
+                                            })
+                                            .catch(err => {console.log(err);});
+                                            
+                                            let inStock=await inventory.findOne({_id:item.Inventory},'Stock')
+                                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                            console.log('EN STOCK:',inStock);
+                                            inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                                Stock:parseFloat(inStock.Stock + item.Quantity),
+                                            })
+                                            .catch(err => {console.log(err);});
                                          })
                                         productEntryDetails.insertMany(entryDataDetail)
                                         .catch(function (err) {
@@ -475,11 +593,48 @@ async function createNewSupplierInvoice(req, res){
                                     }
                                 });
                                 
+                              
                                 
                                 
                             }
                         }
                     });
+
+                    if(averageCost){
+                        console.log('COMPAÑIA CON CO0STO PRODMEDIO ACTIVO');
+                   
+                        if(invoiceDetalle.length>0){
+                            invoiceDetalle.map(item => {
+                                console.log(item.totalImpuestos);
+                                console.log(item.total);
+                                console.log(item.Price);
+                                console.log('stock',item.Stock);
+                                let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                                let fact1=parseFloat((item.Stock*item.Price)+facturaProveedor);
+                                let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                                console.log('fact1',fact2);
+                                console.log('fact2',fact1);
+                                costo=parseFloat((fact1)/(fact2));
+                                let costoprom={
+                                    AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                                    (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                    
+                                }
+                                console.log('costo promedio prodcutos nuevows',costo);
+                                
+                                product.updateMany({_id: item.ProductId},costoprom)    
+                                .then(function () { 
+                                    console.log("Se actualizo costo promedio nuevo");
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });  
+                            })
+                        }
+    
+                      
+                    }
+                
                                 
                 }
                 let totalDeuda=parseFloat(Total)+parseFloat(deudaAct);
@@ -518,6 +673,7 @@ async function updateInvoicePurchase(req, res){
     let detailsAnt=req.body.ordenAnt;
     let companyId=req.body.Company;
     let updateInvoice={};
+    let tipoProveedor=req.body.tipoProveedor;
     let entryDataDetail=[];
     
     updateInvoice.Supplier=req.body.Supplier;
@@ -540,189 +696,390 @@ async function updateInvoicePurchase(req, res){
             return(income.RequieredIncome) 
          }
      });
-
-    purchaseInvoice.findByIdAndUpdate({_id:invoiceId},updateInvoice,async (err,invoiceUpdate)=>{
-        if(err){
-            res.status(500).send({message: "Error del Servidor."});
-            console.log(err);
-        } else {
-            if(!invoiceUpdate){
-                
-                res.status(404).send({message: "No se actualizo registro"});
-            }
-            else{
-               
-                let codInvoice;
-                let idd=await purchaseInvoiceDetail.find({PurchaseInvoice: invoiceId}).then(function(doc){
-                    if(doc){
-                            if(doc.CodInvoice!==null){
-                        return(doc._id)
+     let averageCost=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+     .then(income => {
+         if(!income){
+             res.status(404).send({message:"No hay "});
+         }else{
+            return(income.AverageCost) 
+         }
+     });
+     let existPago=await PaymentToSupplier.findOne({PurchaseInvoice:invoiceId}).catch(err => {console.log(err);});
+     if(existPago!==null){
+        console.log('tiene pafgos');
+        res.status(500).send({message: "Esta factura contiene pagos registrados"});
+    }else{
+                purchaseInvoice.findByIdAndUpdate({_id:invoiceId},updateInvoice,async (err,invoiceUpdate)=>{
+                if(err){
+                    res.status(500).send({message: "Error del Servidor."});
+                    console.log(err);
+                } else {
+                    if(!invoiceUpdate){
+                        
+                        res.status(404).send({message: "No se actualizo registro"});
                     }
-                }  
-            });
-                console.log('id',idd);
-                if(detailsAnt.length > 0) {
+                    else{
                     
-                    detailsAnt.map(async item => {  
-                       codDetail=item._id;
-                       detallePrev.ProductName=item.ProductName;
-                       detallePrev.Quantity=parseFloat(item.Quantity) ,
-                       detallePrev.Discount=parseFloat(item.Discount),
-                       detallePrev.Price=parseFloat(item.Price),
-                       detallePrev.Inventory =item.Inventory._id,
-                       purchaseInvoiceDetail.updateMany({_id: item._id ,PurchaseInvoice:invoiceId},detallePrev)
-                           .then(function () { 
-                               console.log("Actualizados");
-                           })
-                           .catch(function (err) {
-                               console.log(err);
-                           });  
-                           productEntryDetails.findOneAndUpdate({PurchaseInvoiceDetail:item._id},{
-                               Quantity:parseFloat(item.Quantity),
-                               Inventory :item.Inventory._id
-                           }).then(( data)=>{
-                               
-                           console.log(data);
-                               return(data.ProductEntry)}).catch(function (err) {
-                               console.log(err);
-                           }) 
-                           
-                           console.log('ENTRADA',idEntry);
-                          
-                           
+                        let codInvoice;
+                        let idd=await purchaseInvoiceDetail.find({PurchaseInvoice: invoiceId}).then(function(doc){
+                            if(doc){
+                                    if(doc.CodInvoice!==null){
+                                return(doc._id)
+                            }
+                        }  
                     });
-                   
-                    console.log('-------');
-                    console.log('ENTRADA',idEntry);
-                    console.log('ENTRADA',codInvoice);
-                    console.log('-------');
-               }
+                        console.log('id',idd);
+                        if(detailsAnt.length > 0) {
+                            
+                            detailsAnt.map(async item => {  
+                            codDetail=item._id;
+                            detallePrev.ProductName=item.ProductName;
+                            detallePrev.Quantity=parseFloat(item.Quantity) ,
+                            detallePrev.Discount=parseFloat(item.Discount),
+                            detallePrev.Price=parseFloat(item.Price),
+                            detallePrev.Inventory =item.Inventory._id,
+                            purchaseInvoiceDetail.updateMany({_id: item._id ,PurchaseInvoice:invoiceId},detallePrev)
+                                .then(function () { 
+                                    console.log("Actualizados");
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });  
+                                productEntryDetails.findOneAndUpdate({PurchaseInvoiceDetail:item._id},{
+                                    Quantity:parseFloat(item.Quantity),
+                                    Inventory :item.Inventory._id
+                                }).then(( data)=>{
+                                    
+                                console.log(data);
+                                    return(data.ProductEntry)}).catch(function (err) {
+                                    console.log(err);
+                                }) 
+                                
+                                console.log('ENTRADA',idEntry);
+                                
+                                
+                            });
+                        
+                            console.log('-------');
+                            console.log('ENTRADA',idEntry);
+                            console.log('ENTRADA',codInvoice);
+                            console.log('-------');
+                    }
 
-               if(invoiceDetalle.length>0){
-                    invoiceDetalle.map(async item => {
-                       detalle.push({
-                           ProductName:item.Name,
-                           PurchaseInvoice:invoiceId,
-                           Quantity:parseFloat(item.Quantity) ,
-                           Discount:parseFloat(item.Discount),
-                           Price:parseFloat(item.Price),
-                           Inventory :item.Inventory,
-                       })
-                    });
-                    console.log(detalle);
-                       if(detalle.length>0){
-                        purchaseInvoiceDetail.insertMany(detalle)
-                           .then(function (detalleStored) {
-                               console.log(detalleStored);
-                               console.log("INSERTADOS");
-                            //    detalleStored.map(async item=>{
-                            //     entryDataDetail.push({
-                            //         PurchaseInvoiceDetail:item._id,
-                            //         ProductEntry:entryId,
-                            //         Quantity:item.Quantity,
-                            //         Inventory:item.Inventory
-                            //             });
-                            //         })
-                            //     console.log(entryDataDetail);
-                            //     productEntryDetails.insertMany(entryDataDetail)
-                            //     .catch(function (err) {
-                            //         console.log(err);
-                            //     });
-                            
-                               
-                           })
-                           .catch(function (err) {
-                               console.log(err);
-                           });
-                       }
-               }
-               console.log(codDetail);
-               productEntry.find({PurchaseInvoiceDetail:codDetail}).then(entry=>{
-                   console.log('entrdas');
-                   console.log(entry);
-               })
+                    if(invoiceDetalle.length>0){
+                            invoiceDetalle.map(async item => {
+                            detalle.push({
+                                ProductName:item.Name,
+                                PurchaseInvoice:invoiceId,
+                                Quantity:parseFloat(item.Quantity) ,
+                                Discount:parseFloat(item.Discount),
+                                Price:parseFloat(item.Price),
+                                Inventory :item.Inventory,
+                                Measure:item.Measures,
+                                CodProduct:item.codproducts,
+                                SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*item.Discount),
+                            })
+                            });
+                            console.log(detalle);
+                            if(detalle.length>0){
+                                purchaseInvoiceDetail.insertMany(detalle)
+                                .then(async function (detalleStored) {
+                                    console.log(detalleStored);
+                                    console.log("INSERTADOS");
+                                    if(!requiredIncome){  
+                                        let entryDataDetail=[];
+                                    
+                                       let entryId=await productEntry.findOne({PurchaseInvoice:invoiceId})
+                                        .then(entry=>{
+                                           if(entry!==null){
+                                               return entry._id;
+                                           }else {return null}
+                                            
+                                        }).catch(err => {console.log(err);})
+                                        console.log('id de la entrada:' ,entryId);
+                                       if(entryId!==null){
+                                        detalleStored.map(async item=>{
+                                            entryDataDetail.push({
+                                                PurchaseInvoiceDetail:item._id,
+                                                ProductEntry:entryId,
+                                                Quantity:item.Quantity,
+                                                Inventory:item.Inventory,
+                                                ProductName:item.ProductName,
+                                                Price:item.Price,
+                                                Measure:item.Measure,
+                                                CodProduct:item.CodProduct,
+                                                    });
+                                                })
+                                            console.log(entryDataDetail);
+                                            productEntryDetails.insertMany(entryDataDetail)
+                                            .catch(function (err) {
+                                                console.log(err);
+                                            });
 
-            //    if(!requiredIncome){   
-            //     entryData.EntryDate=creacion;
-            //     entryData.User=User;
-            //     entryData.Comments="Ingreso automatico "+creacion;
-            //     entryData.State=true;
-            //     entryData.CodEntry=codigoEntradas;
-            //     entryData.Company=companyId;
-            //     entryData.save((err, entryStored)=>{
-            //         if(err){
-            //             console.log(err);
-            
-            //         }else {
-            //             if(!entryStored){
-            //                 console.log('no se ingreso entrada');
-            
-            //             }
-            //             else{
-            //                 let productEntryID=entryStored._id;
-            //                 purchaseInvoiceDetail.find({PurchaseInvoice: invoiceId})
-            //                 .then(detalle => {
-            //                     if(!detalle){
-            //                         res.status(404).send({message:"No hay "});
-            //                     }else{
-            //                         detalle.map(async item=>{
-            //                         entryDataDetail.push({
-            //                             PurchaseInvoiceDetail:item._id,
-            //                             ProductEntry:productEntryID,
-            //                             Quantity:item.Quantity,
-            //                             Inventory:item.Inventory
-            //                              });
-            //                          })
-            //                         productEntryDetails.insertMany(entryDataDetail)
-            //                         .catch(function (err) {
-            //                             console.log(err);
-            //                         });
-            //                     }
-            //                 });
-                            
-                            
-                            
-            //             }
-            //         }
-            //     });
-                            
-            //   }
-              res.status(200).send({invoice: invoiceUpdate});
-            }
-        }
-    });
+                                       }
+                                        
+                                       if(averageCost){
+                                        console.log('COMPAÑIA CON CO0STO PRODMEDIO ACTIVO');
+                                        if(detailsAnt.length > 0){
+                                            detailsAnt.map(async item => {
+                                                console.log(item.totalImpuestos);
+                                                console.log(item.total);
+                                                console.log(item.Price);
+                                                console.log(item.Inventory.Stock);
+                                                let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                                                let fact1=(item.Inventory.Stock*item.Price)+facturaProveedor;
+                                                let fact2=parseFloat(item.Inventory.Stock)+parseFloat(item.Quantity);
+                                                console.log(fact2);
+                                                console.log(fact1);
+                                                costo=parseFloat((fact1)/(fact2));
+                                                let costoprom={
+                                                    AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                                                    (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                                    
+                                                }
+                                                console.log('costo promedio prodcutos orden',costo);
+                                                console.log('productId',item.Inventory.Product._id);
+                                                product.updateMany({_id: item.Inventory.Product._id},costoprom)    
+                                                .then(function () { 
+                                                    console.log("Se actualizo costo promedio de orden");
+                                                })
+                                                .catch(function (err) {
+                                                    console.log(err);
+                                                });  
+                    
+                                            })
+                                        }
+                    
+                                        if(invoiceDetalle.length>0){
+                                            invoiceDetalle.map(item => {
+                                                console.log(item.totalImpuestos);
+                                                console.log(item.total);
+                                                console.log(item.Price);
+                                                console.log('stock',item.Stock);
+                                                let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
+                                                let fact1=parseFloat((item.Stock*item.Price)+facturaProveedor);
+                                                let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+                                                console.log('fact1',fact2);
+                                                console.log('fact2',fact1);
+                                                costo=parseFloat((fact1)/(fact2));
+                                                let costoprom={
+                                                    AverageCost : parseFloat(averageCost?parseFloat(costo): 
+                                                    (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                                                    
+                                                }
+                                                console.log('costo promedio prodcutos nuevows',costo);
+                                                
+                                                product.updateMany({_id: item.ProductId},costoprom)    
+                                                .then(function () { 
+                                                    console.log("Se actualizo costo promedio nuevo");
+                                                })
+                                                .catch(function (err) {
+                                                    console.log(err);
+                                                });  
+                                            })
+                                        }
+                    
+                                      
+                                    }
+                                    
+                                    }
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
+                                });
+                            }
+                    }
+                    console.log(codDetail);
+                    productEntry.find({PurchaseInvoiceDetail:codDetail}).then(entry=>{
+                        console.log('entrdas');
+                        console.log(entry);
+                    })
+
+                    // if(!requiredIncome){  
+                    //     let entryDataDetail=[];
+                    //     productEntry.findOne({PurchaseInvoice:invoiceId})
+                    //     .then(entry=>{
+                    //         let =entry._id;
+                    //         invoiceDetalle.map(async item=>{
+                    //             entryDataDetail.push({
+                    //                 PurchaseInvoiceDetail:item._id,
+                    //                 ProductEntry:productEntryID,
+                    //                 Quantity:item.Quantity,
+                    //                 Inventory:item.Inventory
+                    //                  });
+                    //              })
+                    //         productEntryDetails.insertMany(entryDataDetail)
+                    //                         .catch(function (err) {
+                    //                             console.log(err);
+                    //                         });
+                    //     })
+                    //     .catch(err => {console.log(err);});
+                    //     entryData.EntryDate=creacion;
+                    //     entryData.User=User;
+                    //     entryData.Comments="Ingreso automatico "+creacion;
+                    //     entryData.State=true;
+                    //     entryData.CodEntry=codigoEntradas;
+                    //     entryData.Company=companyId;
+                    //     entryData.save((err, entryStored)=>{
+                    //         if(err){
+                    //             console.log(err);
+                    
+                    //         }else {
+                    //             if(!entryStored){
+                    //                 console.log('no se ingreso entrada');
+                    
+                    //             }
+                    //             else{
+                    //                 let productEntryID=entryStored._id;
+                    //                 purchaseInvoiceDetail.find({PurchaseInvoice: invoiceId})
+                    //                 .then(detalle => {
+                    //                     if(!detalle){
+                    //                         res.status(404).send({message:"No hay "});
+                    //                     }else{
+                                          
+                                            
+                    //                     }
+                    //                 });
+                                    
+                                    
+                                    
+                    //             }
+                    //         }
+                    //     });
+                                    
+                    //   }
+                    res.status(200).send({invoice: invoiceUpdate});
+                    }
+                }
+            });
+    }
+   
 }
 async function changeInvoiceState(req, res){
     let purchaseId = req.params.id;
     let state=req.body;
     console.log(state);
-    purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
-        if(err){
-            res.status(500).send({message: "Error del Servidor."});
-            
-        } else {
-            if(!purchaseUpdate){
-                res.status(404).send({message: "No se actualizo registro"});
-            }
-            else{
-                res.status(200).send(purchaseUpdate)
-            }
+    console.log(purchaseId);
+    let existPago=await PaymentToSupplier.findOne({PurchaseInvoice:purchaseId}).catch(err => {console.log(err);});
+    let existIngreso=await productEntry.findOne({PurchaseInvoice:purchaseId}).catch(err => {console.log(err);});
+
+    console.log(existIngreso);
+    console.log(existPago);
+    if(existPago!==null || existIngreso!==null ){
+        console.log('tiene pafgos');
+        if(existPago!==null){
+             res.status(500).send({message: "Esta factura contiene pagos registrados"});
         }
-   
-    })
+        if(existIngreso!==null){
+            res.status(500).send({message: "Esta factura ha registrado ingresos"});
+       }
+       
+    }else{
+        purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
+            if(err){
+                res.status(500).send({message: "Error del Servidor."});
+                
+            } else {
+                if(!purchaseUpdate){
+                    res.status(404).send({message: "No se actualizo registro"});
+                }
+                else{
+                    if(!purchaseUpdate.PurchaseOrder){
+                            purchaseOrder.findByIdAndUpdate({_id:purchaseUpdate.PurchaseOrder},{State:'Cerrda'},(err,updateDeuda)=>{
+                            if(err){
+                                res.status(500).send({message: "Error del Servidor."});
+                                console.log(err);
+                            }
+                        });
+                        }
+                    
+                    res.status(200).send(purchaseUpdate)
+                }
+            }
+       
+        })
+       
+    }
+ 
 }
 
+function deleteInvoiceDetail(req, res){
+    console.log('elimianrdetalle',req.params.id);
+    let detalleid=req.params.id;
+    purchaseInvoiceDetail.findByIdAndDelete(detalleid, (err, userDeleted) => {
+        if (err) {
+          res.status(500).send({ message: "Error del servidor." });
+        } else {
+          if (!userDeleted) {
+            res.status(404).send({ message: "Detalle no encontrado" });
+          } else {
+            res.status(200).send({ userDeleted});
+            console.log(userDeleted);
+          }
+        }
+      });
+
+}
+
+function getSuppliersInvoicesNoPagada(req, res){
+
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    purchaseInvoice.find({Pagada:false,User:req.params.id}).populate({path: 'Supplier', model: 'Supplier'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+           
+            res.status(200).send({invoices})
+        }
+    });
+}
+function getInfoInvoice(req, res){
+    let userId = req.params.id; 
+    let invoiceid = req.params.invoice;
+    let companyId = req.params.company;
+  
+  
+    purchaseInvoice.find({_id:invoiceid}).populate({path: 'User', model: 'User',match:{_id:userId}})
+    .populate({path: 'Supplier', model: 'Supplier'}).populate('PaymentSupplierd').populate('books.$*.PaymentSupplier')
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(invoices);
+            res.status(200).send({invoices})
+        }
+    });
+
+}
+function getSuppliersInvoicesPendientes(req, res){
+   
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    purchaseInvoice.find({Recibida:false,User:req.params.id}).populate({path: 'Supplier', model: 'Supplier'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+           
+            res.status(200).send({invoices})
+        }
+    });
+}
 module.exports={
     getSuppliersInvoices,
     createSupplierInvoice,
     createNewSupplierInvoice,
     updateInvoicePurchase,
     getInvoiceDetails,
-//     deleteInvoiceDetail,
+    deleteInvoiceDetail,
     changeInvoiceState,
-//     getSuppliersInvoicesPendientes,
-//     getSuppliersInvoicesNoPagada,
-//     getInfoInvoice
+    getSuppliersInvoicesPendientes,
+    getSuppliersInvoicesNoPagada,
+    getInfoInvoice
 }
 
 // const db = require('../config/db.config.js');;

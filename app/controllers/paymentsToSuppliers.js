@@ -1,18 +1,496 @@
 const PaymentToSupplier=require('../models/paymentstoSuppliers.model');
 const PaymnetToSupplierDetails=require('../models/paymenttoSupplierDetail.model');
-const PurchaseInvoiceDetails=require('../models/purchaseInvoice.model');
+const PurchaseInvoice=require('../models/purchaseInvoice.model');
 const Company = require('../models/company.model');
+const Supplier = require('../models/supplier.model');
+const { ObjectId } = require('bson');
 
 async function addPaymentToInvoice(req, res){
+    const payment=new PaymentToSupplier();
+    const paymentDetails=new PaymnetToSupplierDetails();
 
+    let codigo=0;
+    let now= new Date();
+    let creacion=now.getTime();
+    const {Company,User,PurchaseInvoiceId,Supplierid,Monto,Total,Reason,
+        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
+
+    console.log(req.body);
+    let codigoPayment=await PaymentToSupplier.find().sort({codpayment:-1})
+    .populate({path: 'User', model: 'User', match:{_id: User},populate:{path:'Company',model: 'Company', match:{_id: Company}}}).then(function(doc){
+        if(doc){
+            if(doc.codpayment!==null){
+                return(doc.codpayment)
+            }
+        }
+       
+    });
+    
+    if(!codigoPayment){
+        codigo =1;
+    }else {codigo=codigoPayment+1}
+    console.log(codigo);
+    //obteniendo total de la factura, Para comprobar respecto al saldo
+
+    let totalaPagarInvoice=await PurchaseInvoice.findOne({_id:PurchaseInvoiceId},'Total')
+    .then(resultado =>{return resultado} );
+    // verificando si factura ya tiene un pago.
+    let existePago=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'Saldo')
+    .then(resultado =>{return resultado});
+    //obteniendo cuenta/deuda 
+    let deudaProveedor=await Supplier.findOne({_id:Supplierid},'DebsToPay')
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    
+    let totalFactura=  Total;
+    
+    let deuda=deudaProveedor.DebsToPay;
+    console.log(totalaPagarInvoice.Total);
+    console.log('existe ya',existePago);
+    console.log(deudaProveedor.DebsToPay);
+
+    payment.PurchaseInvoice=PurchaseInvoiceId;
+    payment.DatePayment=creacion;
+    payment.User=User;
+    payment.codpayment=codigo;
+    payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto)
+
+    if(existePago!==null){
+        let saldoActual=existePago.Saldo;
+        console.log('enncontro pago');
+        console.log(totalaPagarInvoice.Total);
+        console.log(saldoActual);
+        if(parseFloat(totalaPagarInvoice.Total)>=parseFloat(saldoActual)){
+            console.log("aPLICA PAGO");
+            let paymentId=null;
+            
+            payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto);
+            if(parseFloat(saldoActual)<parseFloat(Monto)){
+                res.status(500).send({message:"Monto Superior a Deuda"});
+            }
+            else{
+                PaymentToSupplier.updateOne({PurchaseInvoice:PurchaseInvoiceId},
+                    {Saldo: parseFloat(saldoActual)-parseFloat(Monto)}).catch(err => {console.log(err);});
+                
+                //para obtener el id del pago realizado
+                let getPaymentId=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'_id')
+                .then(resultado => {return resultado});
+
+                console.log("ID OBTENIDI",getPaymentId);
+                if(getPaymentId){
+                    paymentDetails.CreationDate=creacion;
+                    paymentDetails.Reason=Reason;
+                    paymentDetails.PaymentMethods=PaymentMethodId;
+                    paymentDetails.Cancelled=false;
+                    paymentDetails.Amount=Monto;
+                    paymentDetails.PaymentSupplier=getPaymentId;
+                    paymentDetails.PurchaseInvoice=PurchaseInvoiceId;
+                    if(PaymentMethodName!=='Contado'){
+                        paymentDetails.NumberAccount=NumberAccount;
+                        paymentDetails.BankName= BankName;
+                        paymentDetails.NoTransaction= NoTransaction;
+                    }
+                    console.log(paymentDetails);
+                    paymentDetails.save(async (err, detailStored)=>{
+                        if(err){
+                            res.status(500).send({message: err});
+                            console.log(err);
+                        }else {
+                            if(!detailStored){
+                                res.status(500).send({message: err});
+                            }
+                            else{
+                                let paymentDetailId=detailStored._id;
+                             
+                                if(paymentDetailId){
+                                    console.log("SUMANDO PAGOS");
+                                    console.log("EL ID DEL PAGO",getPaymentId);
+                                    let sumMontos=await PaymnetToSupplierDetails.aggregate([
+                                        {$match :{PaymentSupplier: getPaymentId._id,Cancelled:false}},
+                                       
+                                        {
+                                            $group:{
+                                               _id:null,
+                                            "sumAmount":{$sum: '$Amount'}
+                                        }
+                                       },
+                                      
+                                ]);
+                                let sumaMontos=0.0;
+                                    sumMontos.map(item =>{
+                                        sumaMontos=item.sumAmount;
+                                    })
+                                    console.log('suma',sumMontos);
+                                    if(parseFloat(sumaMontos)===parseFloat(totalaPagarInvoice.Total)){
+                                        console.log('SUMANDO MONTOS');
+                                        PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                            if(err){
+                                                console.log(err);
+                                            }
+                                        });
+                                    }
+                                    //actualizando deuda con proveedor
+                                    let actMonto=parseFloat(deuda)-parseFloat(Monto);
+                                    Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:actMonto},(err,updateDeuda)=>{
+                                    if(err){
+                                        
+                                        console.log(err);
+                                    }
+                                    else{
+                                        console.log(updateDeuda);
+                                    }
+                                    });
+                                    
+                                }
+                                res.status(200).send({pago: detailStored});
+                            }
+                        }
+                    });
+                    
+                }
+            }
+
+        }
+    }
+    else{
+        console.log('pago ya registrADO');
+        payment.save((err, paymentStored)=>{
+            if(err){
+                console.log(err);
+    
+            }else {
+                if(!paymentStored){
+                    console.log('no se ingreso entrada');
+    
+                }
+                else{
+                    let paymentid=paymentStored._id;
+                    console.log('METODO',PaymentMethodId);
+                    paymentDetails.CreationDate=creacion;
+                    paymentDetails.Reason=Reason;
+                    paymentDetails.PaymentMethods=PaymentMethodId;
+                    paymentDetails.Cancelled=false;
+                    paymentDetails.Amount=Monto;
+                    paymentDetails.PaymentSupplier=paymentid;
+                    paymentDetails.PurchaseInvoice=PurchaseInvoiceId;
+                  
+                    console.log(paymentDetails);
+                    if(PaymentMethodName!=='Contado'){
+                        paymentDetails.NumberAccount=NumberAccount;
+                        paymentDetails.BankName= BankName;
+                        paymentDetails.NoTransaction= NoTransaction;
+                    }
+                    paymentDetails.save(async (err, detailStored)=>{
+                        if(err){
+                            res.status(500).send({message: err});
+                            console.log(err);
+                
+                        }else {
+                            if(!detailStored){
+                                res.status(500).send({message: err});
+                            }
+                            else{
+                                let paymentDetailId=detailStored._id;
+                                if(paymentDetailId){
+                                    let sumMontos=await PaymnetToSupplierDetails.aggregate([
+                                        {$match :{PaymentSupplier: paymentid}},
+                                       
+                                        {
+                                            $group:{
+                                               _id:null,
+                                            "sumAmount":{$sum: '$Amount'}
+                                        }
+                                       },
+                                      
+                                    ]);
+                                    let sumaMontos=0.0;
+                                    sumMontos.map(item =>{
+                                        sumaMontos=item.sumAmount;
+                                    })
+                                    //actualizando deuda con proveedor
+                                    Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
+                                        if(err){
+                                           
+                                            console.log(err);
+                                        }
+                                    });
+                                    if(parseFloat(sumMontos)===parseFloat(totalaPagarInvoice.Total)){
+                                        console.log('SUMANDO MONTOS');
+                                        PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                            if(err){
+                                             
+                                                console.log(err);
+                                            }else{console.log(updateDeuda);}
+                                        });
+                                        
+                                        
+                                    }
+                                   
+                                }
+                               
+                            }
+                        }
+                    });
+                    
+                    res.status(200).send({ paymentStored});
+                }
+            }
+        })
+    }
+
+
+
+}
+
+function getPaymentDetails(req, res){
+    const { id} = req.params;
+   
+    PaymnetToSupplierDetails.find({PurchaseInvoice:id}).populate({path: 'PaymentSupplier', model: 'PaymentSupplier',match:{PurchaseInvoice:id}})
+    .populate({path: 'PaymentMethods', model: 'PaymentMethods'})
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            
+            res.status(200).send({details})
+        }
+    });
+}
+
+async function updatePaymentInvoice(req, res){
+    let detailId=req.params.id;
+    let monto=0;
+    let supplierId=req.body.ID_Supplier;
+    let idpay=req.body.idpayment;
+    let saldop=req.body.saldopendiente;
+    let montoRegistrado=req.body.montoReg;
+    let invoiceId= req.body.ID_PurchaseInvoice;
+    let cambios=req.body.change;
+    const {SupplierId,idpayment,saldopendiente,Total,PurchaseInvoiceId,_id}=req.body;
+    
+    //obteniendo total de la factura, Para comprobar respecto al saldo
+
+    let totalaPagarInvoice=await PurchaseInvoice.findOne({_id:PurchaseInvoiceId},'Total')
+    .then(resultado =>{return resultado} );
+    // verificando si factura ya tiene un pago.
+    let existePago=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'Saldo')
+    .then(resultado =>{return resultado});
+    //obteniendo cuenta/deuda 
+    let deudaProveedor=await Supplier.findOne({_id:SupplierId},'DebsToPay')
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+    let deuda=deudaProveedor.DebsToPay;
+    let detailPayment=await PaymnetToSupplierDetails.findById(detailId);
+    
+    if(detailPayment)
+    {
+        if(cambios.Amount){
+            //reversion del monto con el que se registro el pago
+            Supplier.findByIdAndUpdate({_id:SupplierId},{DebsToPay: parseFloat(deuda)+parseFloat(montoRegistrado)},(err,purchaseUpdate)=>{
+                if(err){
+                    console.log(err);
+                } 
+            });
+            console.log('registrado',montoRegistrado,saldopendiente);
+            PaymentToSupplier.findByIdAndUpdate({_id:idpayment},{Saldo: parseFloat(saldopendiente)+parseFloat(montoRegistrado)},async (err,purchaseUpdate)=>{
+                if(err){
+                    console.log(err);
+                } else{
+                    let nuevoSaldo=await PaymentToSupplier.findOne({_id:idpayment},'Saldo')
+                    .then(resultado =>{return resultado});
+                    let nuevaCuentaxPagar=await Supplier.findOne({_id:SupplierId},'DebsToPay')
+                    .then(resultado =>{return resultado}).catch(err =>{return err});
+                    console.log('nuevo saldo',nuevoSaldo);
+                    console.log('nuevo cuenta',nuevaCuentaxPagar.DebsToPay);
+                    if(parseFloat(nuevoSaldo.Saldo)>= parseFloat(cambios.Amount) )
+                    {
+                        console.log("PERMITEE PAGOOO");
+                        Supplier.findByIdAndUpdate({_id:SupplierId},{DebsToPay: parseFloat(deuda)-parseFloat(cambios.Amount)},(err,purchaseUpdate)=>{
+                            if(err){
+                                console.log(err);
+                            } 
+                        });
+            
+                        PaymentToSupplier.findByIdAndUpdate({_id:idpayment},{Saldo: parseFloat(nuevoSaldo.Saldo)-parseFloat(cambios.Amount)},(err,purchaseUpdate)=>{
+                            if(err){
+                                console.log(err);
+                            } 
+                        });
+        
+                        
+                        let updateDetails={
+                            Amount:cambios.Amount,
+                            BankName: cambios.BankName?cambios.BankName:null,
+                            NumberAccount:cambios.Number?cambios.Number:null,
+        
+                        }
+        
+                        PaymnetToSupplierDetails.findByIdAndUpdate(detailId,updateDetails,async (err,purchaseUpdate)=>{
+                            if(err){
+                                console.log(err);
+                            } else{
+                                console.log(purchaseUpdate);
+                                console.log(idpayment);
+                                console.log("SUMANDO PAGOS");
+                                console.log("EL ID DEL PAGO",_id);
+                                let sumMontos=await PaymnetToSupplierDetails.aggregate([
+                                    {$match :{PaymentSupplier: purchaseUpdate.PaymentSupplier, Cancelled:false}},
+                                
+                                    {
+                                        $group:{
+                                        _id:null,
+                                        "sumAmount":{$sum: '$Amount'}
+                                    }
+                                },
+                                
+                                ]);
+                                let sumaMontos=0.0;
+                                    sumMontos.map(item =>{
+                                        sumaMontos=item.sumAmount;
+                                    })
+                                 console.log('suma',sumaMontos);
+                                 if(parseFloat(sumaMontos)===parseFloat(Total)){
+                                    console.log('SUMANDO MONTOS');
+                                    PurchaseInvoice.findByIdAndUpdate({_id:_id},{Pagada:true},(err,updateDeuda)=>{
+                                        if(err){
+                                            console.log(err);
+                                        }
+                                    });
+                                }else{
+                                    PurchaseInvoice.findByIdAndUpdate({_id:_id},{Pagada:false},(err,updateDeuda)=>{
+                                        if(err){
+                                            console.log(err);
+                                        }
+                                    });
+                                }
+                                res.status(200).json(purchaseUpdate);
+                            }
+                        });
+                        
+                        
+        
+        
+                        
+                    }
+                }
+            });
+           
+
+        }
+    }
+}
+
+async function cancelledPaymentInvoice(req, res){
+    let detailId=req.params.id;
+    let monto=0;
+    let supplierId=req.body.ID_Supplier;
+    let idpay=req.body.idpayment;
+    let saldop=req.body.saldopendiente;
+    let montoRegistrado=req.body.montoReg;
+    let invoiceId= req.body.ID_PurchaseInvoice;
+    let cambios=req.body.change;
+    const {SupplierId,idpayment,saldopendiente,Total,PurchaseInvoiceId,_id}=req.body;
+    console.log('purchase invoice',_id);
+    //obteniendo total de la factura, Para comprobar respecto al saldo
+
+    let totalaPagarInvoice=await PurchaseInvoice.findOne({_id:PurchaseInvoiceId},'Total')
+    .then(resultado =>{return resultado} );
+    // verificando si factura ya tiene un pago.
+    let existePago=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'Saldo')
+    .then(resultado =>{return resultado});
+    //obteniendo cuenta/deuda 
+    let deudaProveedor=await Supplier.findOne({_id:SupplierId},'DebsToPay')
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+    let deuda=deudaProveedor.DebsToPay;
+    let detailPayment=await PaymnetToSupplierDetails.findById(detailId);
+    
+    if(detailPayment)
+    {
+        
+            //reversion del monto con el que se registro el pago
+            Supplier.findByIdAndUpdate({_id:SupplierId},{DebsToPay: parseFloat(deuda)+parseFloat(montoRegistrado)},(err,purchaseUpdate)=>{
+                if(err){
+                    console.log(err);
+                } 
+            });
+
+            PaymentToSupplier.findByIdAndUpdate({_id:idpayment},{Saldo: parseFloat(saldopendiente)+parseFloat(montoRegistrado)},(err,purchaseUpdate)=>{
+                if(err){
+                    console.log(err);
+                } else{console.log('cambios',purchaseUpdate);}
+            });
+            
+            let updateDetails={
+                Cancelled:true,
+                
+
+            }
+
+            PaymnetToSupplierDetails.findByIdAndUpdate(detailId,updateDetails,async (err,purchaseUpdate)=>{
+                if(err){
+                    console.log(err);
+                } else{
+                    console.log(purchaseUpdate);
+                    console.log(idpayment);
+                    console.log("SUMANDO PAGOS");
+                    console.log("EL ID DEL PAGO",_id);
+                    let sumMontos=await PaymnetToSupplierDetails.aggregate([
+                        {$match :{PaymentSupplier: purchaseUpdate.PaymentSupplier, Cancelled:false}},
+                    
+                        {
+                            $group:{
+                            _id:null,
+                            "sumAmount":{$sum: '$Amount'}
+                        }
+                    },
+                    
+                    ]);
+                    let sumaMontos=0.0;
+                        sumMontos.map(item =>{
+                            sumaMontos=item.sumAmount;
+                        })
+                     console.log('suma',sumaMontos);
+                     if(parseFloat(sumaMontos)===parseFloat(Total)){
+                        console.log('SUMANDO MONTOS');
+                        PurchaseInvoice.findByIdAndUpdate({_id:_id},{Pagada:true},(err,updateDeuda)=>{
+                            if(err){
+                                console.log(err);
+                            }
+                        });
+                    }else{
+                        PurchaseInvoice.findByIdAndUpdate({_id:_id},{Pagada:false},(err,updateDeuda)=>{
+                            if(err){
+                                console.log(err);
+                            }
+                        });
+                    }
+                    res.status(200).json(purchaseUpdate);
+                }
+            });
+        
+    }
+}
+
+async function getAllPayments(req, res){
+    
+    PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice'})
+    .then(pagos => {
+        if(!pagos){
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(pagos);
+            res.status(200).send({pagos})
+        }
+    });
 }
 
 module.exports={
     addPaymentToInvoice,
-    // getPaymentDetails,
-    // cancelledPaymentInvoice,
-    // updatePaymentInvoice,
-    // getAllPayments
+    getPaymentDetails,
+    cancelledPaymentInvoice,
+    updatePaymentInvoice,
+    getAllPayments
 }
 
 // const db = require('../config/db.config.js');;
@@ -443,241 +921,241 @@ module.exports={
 // }
 
 
-// async function updatePaymentInvoice(req,res){
-//     let paymentinfo = {};
-//     let detailId=req.params.id;
-//     let monto=0;
-//     let supplierId=req.body.ID_Supplier;
-//     let deuda=0;
-//     let idpay=req.body.idpayment;
-//     let saldop=req.body.saldopendiente;
-//     let montoRegistrado=req.body.montoReg;
-//     let invoiceId= req.body.ID_PurchaseInvoice;
-//     let cambios=req.body.change;
+async function updatePaymentInvdoice(req,res){
+    let paymentinfo = {};
+    let detailId=req.params.id;
+    let monto=0;
+    let supplierId=req.body.ID_Supplier;
+    let deuda=0;
+    let idpay=req.body.idpayment;
+    let saldop=req.body.saldopendiente;
+    let montoRegistrado=req.body.montoReg;
+    let invoiceId= req.body.ID_PurchaseInvoice;
+    let cambios=req.body.change;
     
-//     console.log(req.body.idpayment);
+    console.log(req.body.idpayment);
 
-//     let deudaProveedor=await Supplier.findAll({ 
-//         where:{	ID_Supplier:supplierId},
-//         attributes: ['DebsToPay']
-//     });
+    let deudaProveedor=await Supplier.findAll({ 
+        where:{	ID_Supplier:supplierId},
+        attributes: ['DebsToPay']
+    });
   
-//     for(let i=0; i<deudaProveedor.length;i++){
-//        deuda=deudaProveedor[i].dataValues.DebsToPay;
-//     }
-//     let totalaPagarInvoice=await PurchaseInvoice.findByPk(invoiceId,{attributes: ['Total']});
-//     let cuentaxPagar=await PurchaseInvoice.findByPk(invoiceId,{ //de factura
-//         attributes: ['Total']
-//     });
-//     console.log(cuentaxPagar.Total); //total de factura
+    for(let i=0; i<deudaProveedor.length;i++){
+       deuda=deudaProveedor[i].dataValues.DebsToPay;
+    }
+    let totalaPagarInvoice=await PurchaseInvoice.findByPk(invoiceId,{attributes: ['Total']});
+    let cuentaxPagar=await PurchaseInvoice.findByPk(invoiceId,{ //de factura
+        attributes: ['Total']
+    });
+    console.log(cuentaxPagar.Total); //total de factura
 
-//     try {
-//         let detailPayment=await PaymentToSupplierDetails.findByPk(detailId);
+    try {
+        let detailPayment=await PaymentToSupplierDetails.findByPk(detailId);
         
        
-//             if(detailPayment)
-//             {
-//                 console.log(saldop);
-//                 console.log(cambios.Amount);
+            if(detailPayment)
+            {
+                console.log(saldop);
+                console.log(cambios.Amount);
                 
-//                 if(cambios.Amount){
-//                         let updateSaldo={
-//                             Saldo:parseFloat(saldop)+parseFloat(montoRegistrado)
-//                         }
-//                         let updateDebstoPay={
-//                             DebsToPay: parseFloat(deuda)+parseFloat(montoRegistrado)
-//                         }
-//                         let updateDeudaProveedor = await Supplier.update(updateDebstoPay,
-//                             {             
-//                             where: {ID_Supplier:supplierId},
-//                             attributes: ['DebsToPay']
-//                             }
-//                         );
-//                             let updatePaymentSaldo = await PaymentToSupplier.update(updateSaldo,
-//                             {             
-//                             where: {ID_Payments:idpay},
-//                             attributes: ['Saldo']
-//                             }
-//                         );
-//                         let nuevoSaldo=await PaymentToSupplier.findByPk(idpay,{attributes:['Saldo']});
-//                         let nuevaCuentaxPagar=await Supplier.findByPk(supplierId,{attributes: ['DebsToPay']});
-//                          console.log(nuevoSaldo.Saldo);
-//                          console.log(nuevaCuentaxPagar.DebsToPay);
-//                          if(parseFloat(nuevoSaldo.Saldo)>= parseFloat(cambios.Amount) )
-//                         {
-//                             console.log("PERMITEE PAGOOO");
+                if(cambios.Amount){
+                        let updateSaldo={
+                            Saldo:parseFloat(saldop)+parseFloat(montoRegistrado)
+                        }
+                        let updateDebstoPay={
+                            DebsToPay: parseFloat(deuda)+parseFloat(montoRegistrado)
+                        }
+                        let updateDeudaProveedor = await Supplier.update(updateDebstoPay,
+                            {             
+                            where: {ID_Supplier:supplierId},
+                            attributes: ['DebsToPay']
+                            }
+                        );
+                            let updatePaymentSaldo = await PaymentToSupplier.update(updateSaldo,
+                            {             
+                            where: {ID_Payments:idpay},
+                            attributes: ['Saldo']
+                            }
+                        );
+                        let nuevoSaldo=await PaymentToSupplier.findByPk(idpay,{attributes:['Saldo']});
+                        let nuevaCuentaxPagar=await Supplier.findByPk(supplierId,{attributes: ['DebsToPay']});
+                         console.log(nuevoSaldo.Saldo);
+                         console.log(nuevaCuentaxPagar.DebsToPay);
+                         if(parseFloat(nuevoSaldo.Saldo)>= parseFloat(cambios.Amount) )
+                        {
+                            console.log("PERMITEE PAGOOO");
 
-//                             let updateSaldo={
-//                                 Saldo:parseFloat(nuevoSaldo.Saldo)-parseFloat(cambios.Amount)
-//                             }
-//                             let updatePaymentSaldo = await PaymentToSupplier.update(updateSaldo,
-//                              {             
-//                                where: {ID_Payments:idpay},
-//                                attributes: ['Saldo']
-//                              }
-//                            );
+                            let updateSaldo={
+                                Saldo:parseFloat(nuevoSaldo.Saldo)-parseFloat(cambios.Amount)
+                            }
+                            let updatePaymentSaldo = await PaymentToSupplier.update(updateSaldo,
+                             {             
+                               where: {ID_Payments:idpay},
+                               attributes: ['Saldo']
+                             }
+                           );
 
-//                            let updateDebstoPay={
-//                             DebsToPay: parseFloat(deuda)-parseFloat(montoRegistrado)
-//                             }
-//                            let updateDeudaProveedor = await Supplier.update(updateDebstoPay,
-//                             {             
-//                             where: {ID_Supplier:supplierId},
-//                             attributes: ['DebsToPay']
-//                             }
-//                            );
+                           let updateDebstoPay={
+                            DebsToPay: parseFloat(deuda)-parseFloat(montoRegistrado)
+                            }
+                           let updateDeudaProveedor = await Supplier.update(updateDebstoPay,
+                            {             
+                            where: {ID_Supplier:supplierId},
+                            attributes: ['DebsToPay']
+                            }
+                           );
 
                            
 
-//                            let updateDetails={
-//                                Amount:cambios.Amount,
-//                                BankName: cambios.BankName?cambios.BankName:null,
-//                                Number:cambios.Number?cambios.Number:null,
+                           let updateDetails={
+                               Amount:cambios.Amount,
+                               BankName: cambios.BankName?cambios.BankName:null,
+                               Number:cambios.Number?cambios.Number:null,
 
-//                            }
+                           }
 
-//                            let updateDetailPay = await detailPayment.update(updateDetails,
-//                             {             
-//                               where: {ID_PaymentDetails:detailId},
-//                               attributes: ['Cancelled']
-//                             }
-//                           );
+                           let updateDetailPay = await detailPayment.update(updateDetails,
+                            {             
+                              where: {ID_PaymentDetails:detailId},
+                              attributes: ['Cancelled']
+                            }
+                          );
 
-//                           if(!updateDetailPay){
-//                             res.status(500).json({
-//                                 message: "Error -> No se ha registrado Pago ",
-//                                 error: "No se puede actualizar",
-//                             });
-//                           }else{
-//                             let sumMontos=await PaymentToSupplierDetails.sum('Amount', { where: { ID_Payments: idpay, Cancelled:false} });
+                          if(!updateDetailPay){
+                            res.status(500).json({
+                                message: "Error -> No se ha registrado Pago ",
+                                error: "No se puede actualizar",
+                            });
+                          }else{
+                            let sumMontos=await PaymentToSupplierDetails.sum('Amount', { where: { ID_Payments: idpay, Cancelled:false} });
                             
-//                             console.log(sumMontos);
-//                             console.log(parseFloat(totalaPagarInvoice.Total));
-//                             if(parseFloat(sumMontos)===parseFloat(totalaPagarInvoice.Total)){
-//                                 console.log("SUMAAAANDOOOO");
-//                                 console.log(invoiceId);
-//                                 console.log(sumMontos);
-//                                 console.log(totalaPagarInvoice);
-//                                 let pagada={
-//                                     Pagada: 1
-//                                 };
-//                                 let pagoUpdate = await PurchaseInvoice.update(pagada,
-//                                     {             
-//                                         where: {ID_PurchaseInvoice:invoiceId},
-//                                         attributes: ['Pagada',]
-//                                     }
-//                                     );
+                            console.log(sumMontos);
+                            console.log(parseFloat(totalaPagarInvoice.Total));
+                            if(parseFloat(sumMontos)===parseFloat(totalaPagarInvoice.Total)){
+                                console.log("SUMAAAANDOOOO");
+                                console.log(invoiceId);
+                                console.log(sumMontos);
+                                console.log(totalaPagarInvoice);
+                                let pagada={
+                                    Pagada: 1
+                                };
+                                let pagoUpdate = await PurchaseInvoice.update(pagada,
+                                    {             
+                                        where: {ID_PurchaseInvoice:invoiceId},
+                                        attributes: ['Pagada',]
+                                    }
+                                    );
                                 
-//                             }
-//                             else{
-//                                 let pagada={
-//                                     Pagada: 0
-//                                 };
-//                                 let pagoUpdate = await PurchaseInvoice.update(pagada,
-//                                     {             
-//                                         where: {ID_PurchaseInvoice:invoiceId},
-//                                         attributes: ['Pagada',]
-//                                     }
-//                                     );
-//                             }
-//                           }
+                            }
+                            else{
+                                let pagada={
+                                    Pagada: 0
+                                };
+                                let pagoUpdate = await PurchaseInvoice.update(pagada,
+                                    {             
+                                        where: {ID_PurchaseInvoice:invoiceId},
+                                        attributes: ['Pagada',]
+                                    }
+                                    );
+                            }
+                          }
                 
-//                         res.status(200).json(updateDetailPay);
+                        res.status(200).json(updateDetailPay);
     
                 
                         
 
-//                     }
-//                     else{
-//                         res.status(500).json({
-//                             message: "Monto Incorrecto",
-//                             error: "Ingrese  Monto Valido",
-//                         });
-//                     }
-//                 }
-//                 else{
-//                    let updateDetails={
-//                        BankName: cambios.BankName?cambios.BankName:null,
-//                        Number:cambios.Number?cambios.Number:null,
-//                        ID_PaymentMethods:cambios.ID_PaymentMethod?cambios.ID_PaymentMethod:null,
+                    }
+                    else{
+                        res.status(500).json({
+                            message: "Monto Incorrecto",
+                            error: "Ingrese  Monto Valido",
+                        });
+                    }
+                }
+                else{
+                   let updateDetails={
+                       BankName: cambios.BankName?cambios.BankName:null,
+                       Number:cambios.Number?cambios.Number:null,
+                       ID_PaymentMethods:cambios.ID_PaymentMethod?cambios.ID_PaymentMethod:null,
 
-//                    }
+                   }
 
-//                    let updateDetailPay = await detailPayment.update(updateDetails,
-//                     {             
-//                       where: {ID_PaymentDetails:detailId},
-//                       attributes: ['Cancelled']
-//                     }
-//                   );
+                   let updateDetailPay = await detailPayment.update(updateDetails,
+                    {             
+                      where: {ID_PaymentDetails:detailId},
+                      attributes: ['Cancelled']
+                    }
+                  );
 
-//                   if(!updateDetailPay){
-//                     res.status(500).json({
-//                         message: "Error -> No se ha registrado Pago ",
-//                         error: "No se puede actualizar",
-//                     });
-//                 }
+                  if(!updateDetailPay){
+                    res.status(500).json({
+                        message: "Error -> No se ha registrado Pago ",
+                        error: "No se puede actualizar",
+                    });
+                }
         
-//                 res.status(200).json(updateDetailPay);
-//                 }
+                res.status(200).json(updateDetailPay);
+                }
                 
              
-//             //    let updateDebstoPay={
-//             //        DebsToPay: parseFloat(deuda)+parseFloat(detailPayment.Amount)
-//             //    }
-//             //    let updateSaldo={
-//             //        Saldo:parseFloat(saldop)+parseFloat(detailPayment.Amount)
-//             //    }
+            //    let updateDebstoPay={
+            //        DebsToPay: parseFloat(deuda)+parseFloat(detailPayment.Amount)
+            //    }
+            //    let updateSaldo={
+            //        Saldo:parseFloat(saldop)+parseFloat(detailPayment.Amount)
+            //    }
     
-//             //    let changeState={
-//             //        Cancelled:true
-//             //    }
+            //    let changeState={
+            //        Cancelled:true
+            //    }
                
-//             //    let updateDeudaProveedor = await Supplier.update(updateDebstoPay,
-//             //     {             
-//             //       where: {ID_Supplier:supplierId},
-//             //       attributes: ['DebsToPay']
-//             //     }
-//             //   );
+            //    let updateDeudaProveedor = await Supplier.update(updateDebstoPay,
+            //     {             
+            //       where: {ID_Supplier:supplierId},
+            //       attributes: ['DebsToPay']
+            //     }
+            //   );
     
-//             //   let updatePaymentSaldo = await PaymentToSupplier.update(updateSaldo,
-//             //     {             
-//             //       where: {ID_Payments:idpay},
-//             //       attributes: ['Saldo']
-//             //     }
-//             //   );
+            //   let updatePaymentSaldo = await PaymentToSupplier.update(updateSaldo,
+            //     {             
+            //       where: {ID_Payments:idpay},
+            //       attributes: ['Saldo']
+            //     }
+            //   );
     
-//             //   let cancelledPay = await detailPayment.update(changeState,
-//             //     {             
-//             //       where: {ID_PaymentDetails:detailId},
-//             //       attributes: ['Cancelled']
-//             //     }
-//             //   );
-//             //   if(!cancelledPay) {
-//             //     res.status(500).json({
-//             //         message: "Error -> No se ha registrado Pago ",
-//             //         error: "No se puede actualizar",
-//             //     });
-//             // }
+            //   let cancelledPay = await detailPayment.update(changeState,
+            //     {             
+            //       where: {ID_PaymentDetails:detailId},
+            //       attributes: ['Cancelled']
+            //     }
+            //   );
+            //   if(!cancelledPay) {
+            //     res.status(500).json({
+            //         message: "Error -> No se ha registrado Pago ",
+            //         error: "No se puede actualizar",
+            //     });
+            // }
     
-//             // res.status(200).json(cancelledPay);
+            // res.status(200).json(cancelledPay);
     
-//             }
-//             else
-//             {
-//                 res.status(500).json({
-//                     message: "EError -> No se ha registrado Pago",
-//                     error: "No se puede actualizar",
-//                 });
-//             }
+            }
+            else
+            {
+                res.status(500).json({
+                    message: "EError -> No se ha registrado Pago",
+                    error: "No se puede actualizar",
+                });
+            }
             
-//         } catch (error) {
-//             res.status(500).json({
-//                 message: "Error en query!",
-//                 error: error
-//             });
-//         }
+        } catch (error) {
+            res.status(500).json({
+                message: "Error en query!",
+                error: error
+            });
+        }
 
-// }
+}
 
 // async function getAllPayments(req,res){
 //     let userId= req.params.id;

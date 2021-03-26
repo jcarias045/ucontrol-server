@@ -3,17 +3,18 @@ const Schema =  mongoose.Schema;
 const PurchaseOrder = require('./purchaseOrder.model');
 const Supplier = require('./supplier.model');
 const User = require('./user.model');
+const PaymentSupplier=require('./paymentstoSuppliers.model')
 
 const PurchaseInvoiceSchema = Schema({
   PurchaseOrder: {type: Schema.ObjectId, 
     ref: "PurchaseOrder",
     // autopopulate: true,
   },
-  InvoiceDate:Date,
-  CreationDate:Date,
+  InvoiceDate:String,
+  CreationDate: String,
   Total:Number,
   Comments:String,
-  DeliverDay:Date,
+  DeliverDay:String,
   Supplier: {type: Schema.ObjectId, 
     ref: "Supplier",
     // autopopulate: true,
@@ -32,6 +33,8 @@ const PurchaseInvoiceSchema = Schema({
 
  
 })
+
+
 
 module.exports = mongoose.model('PurchaseInvoice', PurchaseInvoiceSchema)
 // module.exports = (sequelize, Sequelize) => {

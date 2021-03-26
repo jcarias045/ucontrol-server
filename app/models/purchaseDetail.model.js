@@ -13,6 +13,8 @@ const PurchaseOrderDetailSchema = Schema({
   Price:Number,
   ProductName:String,
   SubTotal:Number,
+  Measure:String,
+  CodProduct:String,
   Inventory: {type: Schema.ObjectId, 
     ref: "Inventory",
     // autopopulate: true,
