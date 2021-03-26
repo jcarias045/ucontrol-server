@@ -1,11 +1,14 @@
-const db = require('../config/db.config.js');
-const { Op } = require("sequelize");
+// const db = require('../config/db.config.js');
+// const { Op } = require("sequelize");
 
-const sequelize = require('sequelize');
-const Roles = db.Roles;
-const Company = db.Company;
-const ProfileOptions=db.ProfileOptions;
-const SysOptions = db.SysOptions;
+// const sequelize = require('sequelize');
+// const Roles = db.Roles;
+// const Company = db.Company;
+// const ProfileOptions=db.ProfileOptions;
+// const SysOptions = db.SysOptions;
+const Roles = require('../models/rol.model');
+const SysOptions = require('../models/systemOp.model');
+const profileOptions = require('../models/profileOptions.model')
 
 function getRolesByCompany(req, res){
     // Buscamos informacion para llenar el modelo de 
@@ -33,33 +36,21 @@ function getRolesByCompany(req, res){
 }
 
 function getRolesSystem(req, res){
-    // Buscamos informacion para llenar el modelo de 
-   
-    let companyId=req.params.company;
-    try{
-        Roles.findAll({
-            include: [{
-                model: Company,
-                attributes: ['ID_Company','Name']
-            }]
-        })
-        .then(roles => {
-            res.status(200).send({roles});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
 
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    Roles.find().populate({path: 'Company', model: 'Company'})
+    .then(roles => {
+        if(!roles){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({roles})
+        }
+    });
 }
 
 async function createRol(req, res){
-    let rol = {};
+    
+    const rol = new Roles();
+    const sysOp = new profileOptions();
     
     console.log();
     let opciones=req.body.opciones;
@@ -72,21 +63,21 @@ async function createRol(req, res){
         // Construimos el modelo del objeto
         rol.Name = req.body.Name;
         rol.Description=req.body.Description;
-        rol.ID_Company=req.body.ID_Company;
+        rol.Company=req.body.Company;
         rol.State=true;
         let rolId="";
         
-        Roles.create(rol)
+        rol.save(rol)
         .then(async result => {    
         res.status(200).json(result);
-          rolId=result.ID_Rol;
+          rolId=result._id;
           if(opciones.length>0){
               for(let item of opciones){   
-                sysOp.ID_Rol=rolId;
-                sysOp.ID_OptionMenu=item.id;
+                sysOp.Rol=rolId;
+                sysOp.OpMenu=item.id;
                 sysOp.Checked=item.checked;
                 console.log(sysOp);
-                 await ProfileOptions.create(sysOp).then(async result=>{
+                 await profileOptions.insertMany(sysOp).then(async result=>{
                      console.log(result);
                  }).catch(err=>{
                      console.log(err);
@@ -99,11 +90,11 @@ async function createRol(req, res){
 
           if(noCheck.length>0){
             for(let item of noCheck){   
-                sysOp.ID_Rol=rolId;
-                sysOp.ID_OptionMenu=item.id;
+                sysOp.Rol=rolId;
+                sysOp.OpMenu=item.id;
                 sysOp.Checked=item.checked;
                 console.log(sysOp);
-                 await ProfileOptions.create(sysOp).then(async result=>{
+                 await profileOptions.insertMany(sysOp).then(async result=>{
                      console.log(result);
                  }).catch(err=>{
                      console.log(err);
@@ -195,7 +186,7 @@ async function updateRol(req, res){
                 sysOp.ID_OptionMenu=cartItem.id;
                 sysOp.Checked=cartItem.checked;
                 console.log(sysOp);
-                await ProfileOptions.create(sysOp).then(async result=>{}).catch(err=>{
+                await ProfileOptions.save(sysOp).then(async result=>{}).catch(err=>{
                     console.log(err);
                     return err.message;
                 });
@@ -207,7 +198,7 @@ async function updateRol(req, res){
                 sysOp.ID_OptionMenu=cartItem.id;
                 sysOp.Checked=cartItem.checked;
                 console.log(sysOp);
-                await ProfileOptions.create(sysOp).then(async result=>{}).catch(err=>{
+                await ProfileOptions.save(sysOp).then(async result=>{}).catch(err=>{
                     console.log(err);
                     return err.message;
                 });
