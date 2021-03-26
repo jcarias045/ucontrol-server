@@ -59,7 +59,7 @@ async function addPaymentToInvoice(req, res){
         console.log('enncontro pago');
         console.log(totalaPagarInvoice.Total);
         console.log(saldoActual);
-        if(parseFloat(totalaPagarInvoice.Total)>parseFloat(saldoActual)){
+        if(parseFloat(totalaPagarInvoice.Total)>=parseFloat(saldoActual)){
             console.log("aPLICA PAGO");
             let paymentId=null;
             
@@ -320,7 +320,7 @@ async function updatePaymentInvoice(req, res){
                         let updateDetails={
                             Amount:cambios.Amount,
                             BankName: cambios.BankName?cambios.BankName:null,
-                            Number:cambios.Number?cambios.Number:null,
+                            NumberAccount:cambios.Number?cambios.Number:null,
         
                         }
         
