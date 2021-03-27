@@ -9,7 +9,7 @@ const OpMenuModelSchema = Schema({
         ref: "Grupos"
     },
     URL: String,
-    State: Boolean
+    State: Boolean,
 })
 
 module.exports =  moongose.model('OpMenu', OpMenuModelSchema );

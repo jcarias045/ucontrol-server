@@ -1,9 +1,10 @@
 const moongose = require('mongoose');
 const Schema = moongose.Schema;
 
+
 const GruposSchema = Schema({
     Name: String,
-    icon: String
+    icon: String,
 })
 
 module.exports =  moongose.model('Grupos', GruposSchema );

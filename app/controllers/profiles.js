@@ -1,4 +1,8 @@
 const Profile = require('../models/profile.model');
+<<<<<<< HEAD
+=======
+
+>>>>>>> 992d3cab2d003862c31c5b56ab306fbc1136d80f
 function getProfiles(req, res){
     Profile.find()
     .then(Profile => {
