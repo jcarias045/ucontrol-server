@@ -1,6 +1,5 @@
 const Profile = require('../models/profile.model');
 
-
 function getProfiles(req, res){
     Profile.find()
     .then(Profile => {
