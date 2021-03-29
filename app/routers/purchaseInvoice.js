@@ -11,7 +11,7 @@ router.post('/createnew-invoicesupplier/:id/:company', purchaseInvoice.createNew
 router.get('/get-invoicesupplier-details/:id', purchaseInvoice.getInvoiceDetails);
 router.put('/update-invoicesupplier/:id', purchaseInvoice.updateInvoicePurchase);
 router.delete('/delete-invoicedetail/:id', purchaseInvoice.deleteInvoiceDetail);
-router.put('/change-invoicestate/:id', purchaseInvoice.changeInvoiceState);
+router.put('/change-invoicestate/:id/:company', purchaseInvoice.changeInvoiceState);
 // // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 // // router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
 
