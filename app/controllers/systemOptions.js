@@ -1,6 +1,7 @@
 const SysOptions = require('../models/systemOp.model');
 const ProfileOptions = require('../models/profileOptions.model');
 const Grupos = require('../models/grupos.model');
+const Roles = require('../models/rol.model');
 
 // const db = require('../config/db.config.js');
 // const { Op } = require("sequelize");
@@ -53,7 +54,7 @@ function createProfileOptions(req, res){
 
 function getSysUserOptions(req, res){
     let rolId = req.params.id;
-    try{
+    
         // ({
         //     model:  ProfileOptions,
         //     include: [
@@ -97,53 +98,111 @@ function getSysUserOptions(req, res){
         //             from: "profileoptions",
         //             localField: "_id",
         //             foreignField: "OpMenu",
+
         //             as: "menu",
         //         }
         //     }
         // ])
         // Grupos.aggregate.model() === SysOptions;
         // Grupos.aggregate.model() === ProfileOptions;
-        Grupos.aggregate([
-            {
-                "$lookup": {
+       
+        ProfileOptions.aggregate([                         
+            // {"$match": { "Rol": rolId } }, {match:{"Rol":{$eq:rolId}}}
+        
+            {    
+                "$lookup": 
+                {
+                    "from": "rols",
+                    "localField": "id",
+                    "foreignField": "Rol",
+                    "as": "roles"
+                }},
+                {
+                    "$lookup": 
+                    {
                     "from": "opmenus",
-                    "let": {"idsysop": "$_id"},
+                    // "localField": "_id",
+                    // "foreignField": "Grupos",
+                    "let": {"id": "$Grupos"},
                     "pipeline": [
-                        //{"$match": {"$expr": {"$eq":["$OpMenu", "$$idsysop"] }}},
-                        { "$lookup": {
-                            "from": "profileoptions",
-                            "let": {"id": "$Rol"},
-                            "pipeline": [
-                               //     {"$match": { "$expr": { "$eq": [ "$Rol" , rolId ] } }},
-                                   {"$lookup": {
-                                        "from": "rols" , 
-                                        "localField": "_id",
-                                        "foreignField": "Rol",
-                                        "as": "profile"}}
+                            { "$lookup": {
+                              "from": "grupos" , 
+                              "localField": "id",
+                              "foreignField": "Grupos",
+                              "as": "grupos"
+                        }}
+                                            
+                                 ],
+                     "as": "opmenus"}}])
+        //             // "pipeline": [
+        //             //    // {"$match": {"$expr": {"$eq":["$OpMenu", "$$idsysop"] }}},
+                    //     { "$lookup": {
+                    //         "from": "profileoptions",
+                    //         "let": {"id": "$Rol"},
+                    //         "pipeline": [
+                    //             // {"$match": { "$expr": { "$eq": [ "$Rol" , rolId ] } }},
+                    //                {"$lookup": {
+                    //                     "from": "rols" , 
+                    //                     "localField": "_id",
+                    //                     "foreignField": "Rol",
+                    //                     "as": "profile"}}
                                         
-                            ],
-                            "as": "opmenu"
-                          }}
-                    ],
-                    "as": "grupos"
-                }
-            }
-        ])
-        .then(options => {
+                    //         ],
+                    //         "as": "opmenu"
+                    //       }}
+                    // ],
+                    // "as": "grupos"
+               
+        
+            //  ProfileOptions.find({Checked: true, Rol: rolId})
+            // .populate({path:'Rol', model: "Rol"})
+            // .populate({path:'OpMenu', model: "OpMenu", populate: ({path:"Grupos", model: "Grupos"})})
+            .then(options => {
             res.status(200).send(options);
-          
         }).catch(err => {
             console.log(err);
         })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
+    //     .exec((err, products) => {
+    //     if (err) {
+    //         console.log(err);
+    //         return res.send(err.message);
+    //       }
+    //       if(!products){
 
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    //       }else{
+    //           console.log(products);
+    //           const productsByCourse = products.filter(
+    //             (product) => {
+                    
+                        
+    //                     let roles=product.roles;
+    //                     let id=null;
+    //                     roles.map(item=>{id=item._id;});
+    //                     if(roles){
+    //                         console.log('id de rol',id);
+    //                      return( product.Rol===rolId ) 
+    //                     }else{
+    //                         return null;
+    //                     }
+                        
+                    
+                   
+    //             }
+    //         );
+    //         console.log(productsByCourse);
+  
+    //       res.status(200).send(productsByCourse);
+    //       }
+    // })
+    // .catch(error) {
+    //     // imprimimos a consola
+    //     console.log(error);
+
+    //     res.status(500).json({
+    //         message: "Error en query!",
+    //         error: error
+    //     });
+    // }
 }
 
 function getGrupos(req, res){
