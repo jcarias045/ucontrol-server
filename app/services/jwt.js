@@ -20,8 +20,10 @@ exports.createAccessToken=function(user){
        Image: user.Image,
        Company: user.Company,
        UserName: user.UserName,
+       Rol: user.Rol,
+       Profile: user.Profile,
        createToken: moment().unix(),
-       exp: moment().add(1,"hours").unix()
+       exp: moment().add(4,"hours").unix()
    };
    return jwt.encode(payload, SECRET_KEY);
 };

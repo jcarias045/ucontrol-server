@@ -7,7 +7,7 @@ function createUser(req,res){
     const user = new User();
 
     const { Name,LastName,Email,Password,Gender,BirthDate,Country,
-       Address, LastLogin, Active, Image, UserName, Company} = req.body;
+       Address, LastLogin, Active, Image, UserName, Company, Rol, Profile} = req.body;
 
     user.Name= Name;
     user.LastName= LastName;
@@ -22,6 +22,8 @@ function createUser(req,res){
     user.Image=Image;
     user.UserName=UserName;
     user.Company = Company;
+    user.Rol = Rol,
+    user.Profile = Profile
     console.log(user);
     if (!Password) {
         res.status(500).send({ message: "La contraseña es obligatoria. " });
@@ -48,7 +50,8 @@ function createUser(req,res){
 }
 
 function getUsers(req, res){
-    User.find().populate({path: 'Company', model: 'Company'})
+    User.find().populate({path: 'Company', model: 'Company'}).populate({path: 'Rol', model:'Rol'}).
+    populate({path: 'Profile', model: 'Profile'})
     .then(user => {
         if(!user){
             res.status(404).send({message:"No hay "});

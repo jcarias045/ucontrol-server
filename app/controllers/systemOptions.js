@@ -54,48 +54,81 @@ function createProfileOptions(req, res){
 function getSysUserOptions(req, res){
     let rolId = req.params.id;
     try{
-        Grupos.findAll({
-            model:  ProfileOptions,
-            include: [
-              
-            {
-                group: 'ID_Grupo',   
-                model:  SysOptions,
-                required: true,
-                on:{
-                   
-                    ID_Grupo: sequelize.where(sequelize.col("sys_optionmenus.ID_Grupo"), "=", sequelize.col("sys_grupos.ID_Grupo")),
-                    
-                },
-                include:[
-                      {
-                         
-                model:  ProfileOptions,
-                on:{
-                   
-                    ID_OptionMenu: sequelize.where(sequelize.col("sys_optionmenus->sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenus.ID_OptionMenu")),
-                    ID_Rol: rolId
-                },
-                required: true
-                 },
-                 
-                ]
-            }
-        ]
-        })
-        // SysOptions.findAll({
+        // ({
+        //     model:  ProfileOptions,
         //     include: [
-        //         {
-        //             model:ProfileOptions,
-        //             on:{
+              
+        //     {
+        //         group: 'ID_Grupo',   
+        //         model:  SysOptions,
+        //         required: true,
+        //         on:{
                    
-        //             ID_OptionMenu: sequelize.where(sequelize.col("sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenu.ID_OptionMenu")),
+        //             ID_Grupo: sequelize.where(sequelize.col("sys_optionmenus.ID_Grupo"), "=", sequelize.col("sys_grupos.ID_Grupo")),
+                    
+        //         },
+        //         include:[
+        //               {
+                         
+        //         model:  ProfileOptions,
+        //         on:{
+                   
+        //             ID_OptionMenu: sequelize.where(sequelize.col("sys_optionmenus->sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenus.ID_OptionMenu")),
         //             ID_Rol: rolId
+        //         },
+        //         required: true
+        //          },
+                 
+        //         ]
+        //     }
+        // ]
+        // 
+        // Grupos.find().populate({path: 'SysOptions', model: 'SysOptions', populate:{path: 'OpMenu', model: 'OpMenu'}})
+        // // .populate({path: 'ProfileOptions', populate:{path: 'OpMenu'} })
+        // Grupos.aggregate([
+        //     {
+        //         $lookup:{
+        //             from: "opmenus",
+        //             localField: "_id",
+        //             foreignField: "Grupos",
+        //             as: "opciones",
+        //         },
+        //         $lookup1:{
+        //             from: "profileoptions",
+        //             localField: "_id",
+        //             foreignField: "OpMenu",
+        //             as: "menu",
         //         }
-        //         }
-        //     ],
-        //     group:'ID_Grupo',
-        // })
+        //     }
+        // ])
+        // Grupos.aggregate.model() === SysOptions;
+        // Grupos.aggregate.model() === ProfileOptions;
+        Grupos.aggregate([
+            {
+                "$lookup": {
+                    "from": "opmenus",
+                    "let": {"idsysop": "$_id"},
+                    "pipeline": [
+                        //{"$match": {"$expr": {"$eq":["$OpMenu", "$$idsysop"] }}},
+                        { "$lookup": {
+                            "from": "profileoptions",
+                            "let": {"id": "$Rol"},
+                            "pipeline": [
+                               //     {"$match": { "$expr": { "$eq": [ "$Rol" , rolId ] } }},
+                                   {"$lookup": {
+                                        "from": "rols" , 
+                                        "localField": "_id",
+                                        "foreignField": "Rol",
+                                        "as": "profile"}}
+                                        
+                            ],
+                            "as": "opmenu"
+                          }}
+                    ],
+                    "as": "grupos"
+                }
+            }
+        ])
         .then(options => {
             res.status(200).send(options);
           

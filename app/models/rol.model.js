@@ -3,7 +3,7 @@ const Schema = moongose.Schema
 const Company = require('./company.model');
 
 const RolSchema = Schema({
-  Name: String,
+  Name: String, 
   Description: String,
   State: Boolean,
   Company: {

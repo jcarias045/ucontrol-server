@@ -7,7 +7,7 @@ const Supplier = require('../models/supplier.model')
       Description: String,
       StartDate: Date,
       EndDate: Date,
-      State: Boolean,
+      //State: Boolean,
       User: { type: Schema.ObjectId, ref: "User"},
       Supplier: { type: Schema.ObjectId, ref: "Supplier"},
       Name: String,
