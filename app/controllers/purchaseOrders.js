@@ -28,7 +28,7 @@ async function createPurchaseOrder(req,res){
     let date = moment().format('L');
     let CreationDate = moment().format('LT');
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,
-    Description,companyId} = req.body;
+    Description,companyId,SupplierName} = req.body;
 
     const purchaseDetalle=req.body.details;
     const detalle=[];
@@ -61,6 +61,7 @@ async function createPurchaseOrder(req,res){
     orden.State='Abierta'; 
     orden.Description=Description; 
     orden.CodPurchase=codigo;
+   
     console.log(orden);
     orden.save((err, ordenStored)=>{
         if(err){
@@ -85,7 +86,8 @@ async function createPurchaseOrder(req,res){
                         Price:parseFloat(item.Price),
                         Inventory :item.Inventory,
                         Measure:item.Measures,
-                        CodProduct:item.codproducts
+                        CodProduct:item.codproducts,
+                        SupplierName:SupplierName
                     })
                  });
                  console.log(detalle);

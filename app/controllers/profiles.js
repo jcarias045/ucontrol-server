@@ -1,5 +1,4 @@
 const Profile = require('../models/profile.model');
-
 function getProfiles(req, res){
     Profile.find()
     .then(Profile => {
@@ -130,7 +129,7 @@ async function deleteProfile(req, res){
 function getProfilesId(req, res){
     // Buscamos informacion para llenar el modelo de 
     try{
-        Profile.findAll({attributes:['ID_Profile','Name']})
+        profile.findAll({attributes:['ID_Profile','Name']})
         .then(profiles => {
             res.status(200).send({profiles});
           
@@ -146,24 +145,24 @@ function getProfilesId(req, res){
     }
 }
 
-function getOptions(req,res){
-    let perfilId=req.params.id;
-    try{
-        ProfileOptions.findAll({where:{ID_Rol:perfilId}})
-        .then(options => {
-            res.status(200).send({options});
+// function getOptions(req,res){
+//     let perfilId=req.params.id;
+//     try{
+//         ProfileOptions.findAll({where:{ID_Rol:perfilId}})
+//         .then(options => {
+//             res.status(200).send({options});
           
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
+//         })
+//     }catch(error) {
+//         // imprimimos a consola
+//         console.log(error);
 
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
-}
+//         res.status(500).json({
+//             message: "Error en query!",
+//             error: error
+//         });
+//     }
+// }
 
 module.exports={
   getProfiles,
@@ -171,5 +170,5 @@ module.exports={
   updateProfile,
   deleteProfile,
   getProfilesId,
-  getOptions
+  //getOptions
 };

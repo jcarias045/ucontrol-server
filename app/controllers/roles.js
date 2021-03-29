@@ -12,27 +12,15 @@ const profileOptions = require('../models/profileOptions.model')
 
 function getRolesByCompany(req, res){
     // Buscamos informacion para llenar el modelo de 
+    Roles.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
+    .then(roles => {
+        if(!roles){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({roles})
+        }
+    });
    
-    let companyId=req.params.id;
-    try{
-        Roles.findAll({
-            where: {
-                ID_Company:companyId
-            }
-        })
-        .then(roles => {
-            res.status(200).send({roles});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
 }
 
 function getRolesSystem(req, res){

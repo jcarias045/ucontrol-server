@@ -19,6 +19,7 @@ const PurchaseOrderDetailSchema = Schema({
     ref: "Inventory",
     // autopopulate: true,
   },
+  SupplierName:String,
 
  
 })

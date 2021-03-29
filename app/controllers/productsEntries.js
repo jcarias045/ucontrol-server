@@ -10,14 +10,23 @@ const product = require("../models/product.model");
 
 function getEntries(req, res){
    const { id } = req.params;
-   productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
+//    productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
     productEntry.aggregate([
         {
             $lookup: {
                 from:"entrydetails",
                 localField:"_id",
                 foreignField:"ProductEntry",
-              
+                // let:{idiv:"Inventory" },
+                // pipeline:[
+                //     // { "$match": { "$expr": { "$eq": ["$_id", "$$idiv"] }}},,
+                //     {
+                //         $lookup: {
+                //             from:"inventories",
+                //             as:"children"
+                //         }
+                //     }
+                // ],
                 as:"detalles",
                 
             }
@@ -28,31 +37,63 @@ function getEntries(req, res){
     // productEntry.aggregate([
     //     { $lookup: {
     //       from: "entrydetails",
-    //       let: { "companyId": "$Inventory" },
+    //       let: { "companyId": "$PurchaseInvoiceDetail" },
     //       pipeline: [
-    //         { match: { $expr: { $eq: [ "$_id", "$$companyId" ] } } },
+           
     //         { $lookup: {
-    //           from: "inventories",
-    //           let: { "industry_id": "$_id" },
+    //           from: "purchaseinvoicedetails",
+    //         //   let: { "industry_id": "$_id" },
+    //         // localField:"_id",
+    //         // foreignField:"Product",
     //           pipeline: [
-    //             { match: { $expr: { $eq: [ "$_id", "$$industry_id" ] } } }
+    //             { $match: { $expr: { $eq: [ "$_id", "$$companyId" ] } } },
+    //             { 
+    //                 $lookup: {
+    //                     from: "purchaseinvoices",
+    //                     let: { "idsup":"$Supplier"},
+    //                     pipeline: [
+    //                     { $match: { $expr: { $eq: [ "$_id", "$$idsup" ] } } },
+
+    //                         {
+    //                             $lookup: {
+    //                                 from: "suppliers",
+    //                                 localField:"_id",
+    //                                 foreignField:"Supplier",
+    //                                 // pipeline: [
+    //                                 //     {
+    //                                 //         from: "suppliertypes",
+    //                                 //           localField:"_id",
+    //                                 //          foreignField:"SupplierType",
+    //                                 //          as: "tipo"
+    //                                 //     }
+    //                                 // ],
+    //                                 as:"supplier"
+    //                             }
+    //                         }
+    //                     ],
+    //                     as:"purchase"
+    //                 }
+    //             }
     //           ],
-    //           as: "industry"
+    //           as: "purchasedetail"
     //         }},
-    //         { $unwind: "$industry" }
+           
     //       ],
-    //       as: "company"
+    //       as: "entryDetail"
     //     }},
-    //     { $unwind: "$company" }
+      
     //   ])
-    .exec(function(err, entries) {
-        if(!entries){
-            res.status(404).send({message:"No hay "});
-        }else{
+    // .exec(function(err, entries) {
+    //     if(!entries){
+    //         res.status(404).send({message:"No hay d"});
+    //     }else{
             
-            res.status(200).send({entries})
-        }
-    });
+    //         res.status(200).send({entries})
+    //     }
+    // });
+    .then(entries =>{
+        res.status(200).send({entries})
+    })
 }
 
 async function createProductEntry(req, res){
@@ -62,7 +103,7 @@ async function createProductEntry(req, res){
     let detalles=req.body.entries;
     let inventaryUpdate={};
 
-    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId} = req.body;
+    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId,SupplierName} = req.body;
       //para generar el correctivo del ingreso en caso de que sea requerido
       let codEntry=await productEntry.findOne({Company:Company}).sort({CodEntry:-1})
       .then(function(doc){
@@ -103,7 +144,7 @@ async function createProductEntry(req, res){
     entryData.CodEntry=codigoEntradas;
     entryData.Company=Company;
     entryData.PurchaseInvoice=null;
-
+    entryData.Supplier=SupplierName;
     entryData.save(async (err, entryStored)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
@@ -268,7 +309,7 @@ async function createProductEntryWithoutInvoice(req, res){
     let detalles=req.body.entries;
     let inventaryUpdate={};
 
-    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId} = req.body;
+    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId,SupplierName} = req.body;
       //para generar el correctivo del ingreso en caso de que sea requerido
       let codEntry=await productEntry.findOne({Company:Company}).sort({CodEntry:-1})
       .then(function(doc){
@@ -307,6 +348,10 @@ async function createProductEntryWithoutInvoice(req, res){
     entryData.CodEntry=codigoEntradas;
     entryData.Company=Company;
     entryData.PurchaseInvoice=null;
+    entryData.Supplier=SupplierName;
+  
+    entryData.InvoiceNumber='';
+
     entryData.save(async (err, entryStored)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
@@ -512,6 +557,11 @@ async function anularProductEntry(req, res){
                         inventory.findByIdAndUpdate({_id:item.Inventory},{
                             Stock:parseFloat(cantidad),
                         }).then(up=>{console.log(up)})
+                        .catch(err => {console.log(err);});
+
+                        productEntry.findByIdAndUpdate({_id:item.ProductEntry},{
+                            State:false,
+                        })
                         .catch(err => {console.log(err);});
                     }
                     

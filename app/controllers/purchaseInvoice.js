@@ -39,7 +39,7 @@ async function createSupplierInvoice(req, res){
     let diasEntrega=req.body.dias;
     let fechaInvoice=req.body.InvoiceDate;
     
-   
+    moment.locale();
     let nuevows = moment().format('L');
     let creacion = moment().format('L');
     
@@ -50,7 +50,7 @@ async function createSupplierInvoice(req, res){
     date.setDate(date.getDate() + diasEntrega);
    
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,CreationDate,Total,User,
-    DeliverDay,Description,InvoiceComments,PurchaseNumber,tipoProveedor} = req.body;
+    DeliverDay,Description,InvoiceComments,PurchaseNumber,tipoProveedor,SupplierName} = req.body;
 
     const invoiceDetails=req.body.details;
     const detalle=[];
@@ -149,6 +149,7 @@ async function createSupplierInvoice(req, res){
             }
             else{
                 invoiceId=invoiceStored._id;
+
                 //actualizar deuda 
                 supplier.findByIdAndUpdate({_id:Supplier},updateDeuda,(err,updateDeuda)=>{
                     if(err){
@@ -170,6 +171,7 @@ async function createSupplierInvoice(req, res){
                         State:false,
                         Measure:item.Measures,
                         CodProduct:item.codproducts,
+                        SupplierName:SupplierName
                     })
                 })
                 }
@@ -187,6 +189,7 @@ async function createSupplierInvoice(req, res){
                         State:false,
                         Measure:item.Measure,
                         CodProduct:item.CodProduct,
+                        SupplierName:SupplierName
                        
                     })
                 }) 
@@ -235,7 +238,8 @@ async function createSupplierInvoice(req, res){
                         console.log(err);
                     });
                 }
-                if(!requiredIncome){   
+                if(!requiredIncome){  
+                    console.log('ide de la facuta',invoiceId); 
                     entryData1.EntryDate=creacion;
                     entryData1.User=User;
                     entryData1.Comments="Ingreso automatico "+creacion;
@@ -243,6 +247,8 @@ async function createSupplierInvoice(req, res){
                     entryData1.CodEntry=codigoEntradas;
                     entryData1.Company=companyId;
                     entryData1.PurchaseInvoice=invoiceId;
+                    entryData1.Supplier=SupplierName;
+                    entryData1.InvoiceNumber=InvoiceNumber;
                     entryData1.save((err, entryStored)=>{
                         if(err){
                             console.log(err);
@@ -387,14 +393,14 @@ async function createNewSupplierInvoice(req, res){
     let fechaInvoice=req.body.InvoiceDate;
     
     let now= new Date();
-    let creacion=now.getTime();
+    let creacion = moment().format('L');
     var date = new Date(fechaInvoice);
    
     console.log('INGRESO000000000000000000000000000');
     
     date.setDate(date.getDate() + diasEntrega);
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,Total,User
-        ,Description,InvoiceComments,PurchaseNumber,tipoProveedor} = req.body;
+        ,Description,InvoiceComments,PurchaseNumber,tipoProveedor,SupplierName} = req.body;
     //para generar el correctivo del ingreso en caso de que sea requerido
     let codEntry=await productEntry.findOne({Company:companyId}).sort({CodEntry:-1})
     .then(function(doc){
@@ -454,7 +460,7 @@ async function createNewSupplierInvoice(req, res){
     let details=[];
     let impuestos=[];
     let entryDataDetail=[];
-    invoice.PurchaseOrder=PurchaseOrder;
+    invoice.PurchaseOrder=PurchaseOrder?PurchaseOrder:null;
     invoice.InvoiceDate=InvoiceDate;
     invoice.Supplier=Supplier;
     invoice.InvoiceNumber=InvoiceNumber;
@@ -501,6 +507,7 @@ async function createNewSupplierInvoice(req, res){
                         State:0,
                         Measure:item.Measures,
                         CodProduct:item.codproducts,
+                        SupplierName:SupplierName
                     })
                 })
                 }
@@ -545,6 +552,8 @@ async function createNewSupplierInvoice(req, res){
                     entryData.CodEntry=codigoEntradas;
                     entryData.Company=companyId;
                     entryData.PurchaseInvoice=invoiceId;
+                    entryData.Supplier=SupplierName;
+                    entryData.InvoiceNumber=InvoiceNumber;
                     entryData.save((err, entryStored)=>{
                         if(err){
                             console.log(err);
@@ -957,43 +966,143 @@ async function updateInvoicePurchase(req, res){
 }
 async function changeInvoiceState(req, res){
     let purchaseId = req.params.id;
+    let companyId=req.params.company
     let state=req.body;
     console.log(state);
     console.log(purchaseId);
+    let requiredIncome=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(income => {
+        if(!income){
+            res.status(404).send({message:"No hay "});
+        }else{
+           return(income.RequieredIncome) 
+        }
+    });
     let existPago=await PaymentToSupplier.findOne({PurchaseInvoice:purchaseId}).catch(err => {console.log(err);});
     let existIngreso=await productEntry.findOne({PurchaseInvoice:purchaseId}).catch(err => {console.log(err);});
 
     console.log(existIngreso);
     console.log(existPago);
-    if(existPago!==null || existIngreso!==null ){
-        console.log('tiene pafgos');
+    // if(existPago!==null || existIngreso!==null ){
+    //     console.log('tiene pagos');
+    //     if(existPago!==null){
+    //          res.status(500).send({message: "Esta factura contiene pagos registrados"});
+    //     }
+    //     if(existIngreso!==null){
+    //         res.status(500).send({message: "Esta factura ha registrado ingresos"});
+    //    }
+       
+    // }
+    if(existPago!==null  ){
+        console.log('tiene pagos');
         if(existPago!==null){
              res.status(500).send({message: "Esta factura contiene pagos registrados"});
         }
-        if(existIngreso!==null){
-            res.status(500).send({message: "Esta factura ha registrado ingresos"});
-       }
+     
        
-    }else{
-        purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,(err,purchaseUpdate)=>{
+    }
+    else{
+        purchaseInvoice.findByIdAndUpdate({_id:purchaseId},state,async (err,invoiceUpdate)=>{
             if(err){
                 res.status(500).send({message: "Error del Servidor."});
                 
             } else {
-                if(!purchaseUpdate){
+                if(!invoiceUpdate){
                     res.status(404).send({message: "No se actualizo registro"});
                 }
                 else{
-                    if(!purchaseUpdate.PurchaseOrder){
-                            purchaseOrder.findByIdAndUpdate({_id:purchaseUpdate.PurchaseOrder},{State:'Cerrda'},(err,updateDeuda)=>{
+                    
+                    if(invoiceUpdate.PurchaseOrder!==null){
+                            purchaseOrder.findByIdAndUpdate({_id:invoiceUpdate.PurchaseOrder},{State:'Cerrada'},(err,updateDeuda)=>{
                             if(err){
                                 res.status(500).send({message: "Error del Servidor."});
                                 console.log(err);
                             }
                         });
-                        }
+                    }
+                    if(!requiredIncome){
+                        let invoiceId=invoiceUpdate._id;
+                       
+                        let entry=await productEntry.findOne({PurchaseInvoice:invoiceId})
+                        .then(function(doc){
+                            if(doc){
+                                    return(doc);
+                            }
+                        });
+                        let entryDetail=await productEntryDetails.find({ProductEntry:entry._id})
+                        .then(function(doc){
+                            if(doc){
+                                    return(doc);
+                            }
+                        });
+                        entryDetail.map(async item => {
+                            let ingresados=null;
+                            let inStock=await inventory.findOne({_id:item.Inventory},'Stock')
+                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                            if(item.PurchaseInvoiceDetail!==null){
+                                ingresados=await purchaseInvoiceDetail.findOne({_id:item.PurchaseInvoiceDetail})
+                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            } 
+                        
+                            let cantidad=0.0;
+                            let ingresoUpdate=0.0;
+                            console.log('INGRESADOS');
+                            console.log(inStock);
+                            console.log('+++++++++++++++');
+                            if(ingresados!==null){
+                                console.log(ingresados.Ingresados);
+                                console.log(inStock.Stock);
+                                    if(inStock.Stock>=ingresados.Ingresados){
+                                        console.log('SE ACTUALIZO STOCK');
+                                        cantidad=parseFloat(inStock.Stock-item.Quantity); 
+                                        if(ingresados.Ingresados>=item.Quantity){
+                                            ingresoUpdate=parseFloat(ingresados.Ingresados-item.Quantity)
+                                        }
+                                        
+                                        console.log('cantidad',cantidad);
+                                        console.log('ingresos',ingresoUpdate);
+                                        inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                            Stock:parseFloat(cantidad),
+                                        })
+                                        .catch(err => {console.log(err);});
+
+                                        purchaseInvoiceDetail.findByIdAndUpdate({_id:item.PurchaseInvoiceDetail},{
+                                            Ingresados:parseFloat(ingresoUpdate),
+                                            State:false
+                                        })
+                                        .catch(err => {console.log(err);});
+
+                                        purchaseInvoice.findByIdAndUpdate({_id:ingresados.PurchaseInvoice},{
+                                            Recibida:false,
+                                        })
+                                        .catch(err => {console.log(err);});
+
+                                        productEntry.findByIdAndUpdate({_id:item.ProductEntry},{
+                                            State:false,
+                                        })
+                                        .catch(err => {console.log(err);});
+                                }
+                        
+                            }
+                            else{
+                                cantidad=parseFloat(inStock.Stock-item.Quantity); 
+                                inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                    Stock:parseFloat(cantidad),
+                                }).then(up=>{console.log(up)})
+                                .catch(err => {console.log(err);});
+
+                                productEntry.findByIdAndUpdate({_id:item.ProductEntry},{
+                                    State:false,
+                                })
+                                .catch(err => {console.log(err);});
+                            }
+                            
+                    })
+                                console.log(entryDetail);
+                            }
                     
-                    res.status(200).send(purchaseUpdate)
+                    res.status(200).send(invoiceUpdate)
                 }
             }
        
