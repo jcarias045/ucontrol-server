@@ -103,23 +103,64 @@ function getSysUserOptions(req, res){
         // ])
         // Grupos.aggregate.model() === SysOptions;
         // Grupos.aggregate.model() === ProfileOptions;
+        console.log(rolId);
+        var ObjectID = require('mongodb').ObjectID
         Grupos.aggregate([
             {
                 "$lookup": {
                     "from": "opmenus",
-                    "let": {"idsysop": "$_id"},
+                    "let": {"idgrupo": "$_id"},
                     "pipeline": [
-                        //{"$match": {"$expr": {"$eq":["$OpMenu", "$$idsysop"] }}},
+                        {"$match": {"$expr": {"$eq":["$Grupos", "$$idgrupo"] }}},
+                      
                         { "$lookup": {
                             "from": "profileoptions",
-                            "let": {"id": "$Rol"},
+                            "let": {"opmenuid": "$_id"},
                             "pipeline": [
+                                { $match: {  Rol:ObjectID(rolId)} },
+                                {"$match": {"$expr": {"$eq":["$OpMenu", "$$opmenuid"] }}},
+                                // { $match:
+                                //     { $expr:
+                                //        { $and:
+                                //           [
+                                //             { $eq: [ "$OpMenu",  "$$opmenuid" ] },
+                                //             {  $eq: [ "$Checked", true ] }
+                                //           ]
+                                //        }
+                                //     }
+                                //  },
                                //     {"$match": { "$expr": { "$eq": [ "$Rol" , rolId ] } }},
+                                // { $match: { _id: rolId } },
+
+                            //    { $match:
+                            //     { $expr:
+                            //        { $and:
+                            //           [
+                            //             { $eq: [ "$OpMenu",  "$$idsysop" ] },
+                            //             { $eq: [ "$_id", rolId ] },
+                            //           ]
+                            //        }
+                            //     }
+                            //   },
+                            
                                    {"$lookup": {
-                                        "from": "rols" , 
-                                        "localField": "_id",
-                                        "foreignField": "Rol",
-                                        "as": "profile"}}
+                                        "from": "rols" ,
+                                        "let": {"profileoptions": "$_id"}, 
+                                        "pipeline": [
+                                            { $match: { _id: rolId } },
+                                            {
+                                                "$lookup": {
+                                                    "from": "companies" ,
+                                                    localField: "_id",
+                                                     foreignField: "Company",
+                                                     as:'company'
+                                                }
+
+                                            }
+                                        ],
+                                        "as": "profile"
+                                    }
+                                    }
                                         
                             ],
                             "as": "opmenu"
