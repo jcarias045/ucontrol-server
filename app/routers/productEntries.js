@@ -12,7 +12,7 @@ router.post('/add-entries/:id', entries.createProductEntry);
 router.get('/get-entriesdetails/:id', entries.getProductEntries);
 router.put('/update-changestateentry/:id', entries.anularProductEntry);
 router.post('/add-entrieswithoutinvoice/:id', entries.createProductEntryWithoutInvoice);
-router.get('/add-productsentry/:id', entries.getListProductIngresadoSinFactura);
+// router.get('/add-productsentry/:id', entries.getListProductIngresadoSinFactura);
 
 
 

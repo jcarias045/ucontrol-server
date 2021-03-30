@@ -27,25 +27,11 @@ module.exports =  moongose.model('OpMenu', OpMenuModelSchema );
 // 	  Name: {
 // 			type: Sequelize.STRING,
       
-<<<<<<< HEAD
-      },
-      ID_Grupo:{
-        type: Sequelize.INTEGER,
-        foreignKey: true
-      },
-      URL:{
-        type: Sequelize.STRING,
-      },
-      State:{
-        type: Sequelize.BOOLEAN,
-      }
-=======
 //       },
 //       ID_Grupo:{
 //         type: Sequelize.INTEGER,
 //         foreignKey: true
 //       }
->>>>>>> mongodb
    
 // 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
 //         freezeTableName: true,

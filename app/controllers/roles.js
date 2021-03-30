@@ -1,14 +1,3 @@
-<<<<<<< HEAD
-const db = require('../config/db.config.js');
-const { Op } = require("sequelize");
-
-const sequelize = require('sequelize');
-const Roles = db.Roles;
-const Company = db.Company;
-const ProfileOptions=db.ProfileOptions;
-const SysOptions = db.SysOptions;
-const Grupos = db.Grupos;
-=======
 // const db = require('../config/db.config.js');
 // const { Op } = require("sequelize");
 
@@ -20,7 +9,6 @@ const Grupos = db.Grupos;
 const Roles = require('../models/rol.model');
 const SysOptions = require('../models/systemOp.model');
 const profileOptions = require('../models/profileOptions.model')
->>>>>>> mongodb
 
 function getRolesByCompany(req, res){
     // Buscamos informacion para llenar el modelo de 
@@ -119,36 +107,9 @@ function getOptionsSystemRol(req, res){
    
     let rolId=req.params.id;
     try{
-<<<<<<< HEAD
-        SysOptions.findAll({
-            include: [
-            {
-                model: ProfileOptions,
-                required: true,
-                on:{
-                   
-                    ID_OptionMenu: sequelize.where(sequelize.col("sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenu.ID_OptionMenu")),
-                    ID_Rol:sequelize.where(sequelize.col("sys_profileoption.ID_Rol"), "=", rolId),
-                 }
-            },
-            {
-                model:  Grupos,
-                attributes:['Name'],
-                required: true,
-                on:{
-                    
-                    ID_Grupo: sequelize.where(sequelize.col("sys_optionmenu.ID_Grupo"), "=", sequelize.col("sys_grupo.ID_Grupo")),
-                    
-                }
-            }
-        
-        ]
-        })
-=======
         profileOptions.find({Rol: rolId})
         .populate({path: 'Rol', model: 'Rol'})
         .populate({path: 'OpMenu', populate: {path:'Grupos'}})
->>>>>>> mongodb
         .then(roles => {
             res.status(200).send({roles});
           

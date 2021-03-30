@@ -1,17 +1,8 @@
 const supplier = require('../models/supplier.model')
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
-<<<<<<< HEAD
-const { Op } = require("sequelize");
-const { Company } = require('../config/db.config.js');
-const sequelize = require('sequelize');
-
-const Supplier = db.Supplier;
-const SupplierType = db.SupplierTypes;
-=======
 
 function createSupplier(req, res){
->>>>>>> mongodb
 
     const Supplier = new supplier();
 
@@ -127,23 +118,8 @@ function getSuppliersInfo(req, res){
     console.log('proveedores');
     console.log(companyId);
     try{
-<<<<<<< HEAD
-        Supplier.findAll({where: {ID_Company: companyId},
-            attributes:['ID_Supplier','Name','ID_SupplierType'],
-            include: [{
-                model:SupplierType,
-                on:{
-          
-                   ID_SupplierType: sequelize.where(sequelize.col("crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
-                
-                },
-                attributes: ['Name']
-            }]
-        })
-=======
         supplier.find({Company: companyId})
         .populate({path: 'SupplierType', model: 'SupplierType'})
->>>>>>> mongodb
         .then(suppliers => {
             res.status(200).send(suppliers);          
         })
@@ -165,27 +141,7 @@ function getSuppliersDetails(req, res){
     console.log('detalle proveedor');
     console.log(companyId);
     try{
-<<<<<<< HEAD
-        Supplier.findAll({
-
-            attributes:['ID_Supplier','Name','ID_SupplierType','deliveryDays','PaymentTime','DebsToPay'],
-            where: {
-                ID_Supplier:supplierId,
-                ID_Company: companyId
-            },
-            include: [{
-                model:SupplierType,
-                on:{
-          
-                   ID_SupplierType: sequelize.where(sequelize.col("crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
-                
-                },
-                attributes: ['Name']
-            }]
-        })
-=======
         supplier.find({Company: companyId,_id:supplierId}).populate({path: 'SupplierType', model: 'SupplierType'})
->>>>>>> mongodb
         .then(suppliers => {
             res.status(200).send(suppliers);
           

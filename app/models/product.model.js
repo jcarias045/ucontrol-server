@@ -56,32 +56,6 @@ module.exports = moongose.model('Product', ProductSchema );
 // 	  Name: {
 // 			type: Sequelize.STRING,
       
-<<<<<<< HEAD
-      Logo:{
-        type: Sequelize.STRING
-      },
-      MinStock:{
-          type: Sequelize.DECIMAL
-      },
-      MaxStock:{
-        type: Sequelize.DECIMAL
-      },
-      Active:{
-        type: Sequelize.BOOLEAN
-      },
-      BuyPrice:{
-        type: Sequelize.DECIMAL
-      },
-      codproducts:{
-        type: Sequelize.STRING
-      },
-      AverageCost:{
-        type: Sequelize.DECIMAL
-      }
-      // Inventary:{
-      //   type: Sequelize.DECIMAL
-      // }
-=======
 //       },
 //       ID_Brand:{
 //         type: Sequelize.INTEGER,
@@ -132,7 +106,6 @@ module.exports = moongose.model('Product', ProductSchema );
 //       // Inventary:{
 //       //   type: Sequelize.DECIMAL
 //       // }
->>>>>>> mongodb
  
 // 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
 //         freezeTableName: true,

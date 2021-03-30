@@ -1,25 +1,15 @@
-<<<<<<< HEAD
 const db = require('../config/db.config.js');
 const { Op } = require("sequelize");
 
 const sequelize = require('sequelize');
 const { PurchaseInvoice, PurchaseInvoiceDetails } = require('../config/db.config.js');
-const PurchaseOrder = db.PurchaseOrder;
-const PurchaseDetails= db.PurchaseDetails;
-const Supplier = db.Supplier;
-const Inventory = db.Inventory;
-const Product = db.Product;
-const Measure = db.Measure;
-const User=db.User;
-const SupplierType = db.SupplierTypes;
-=======
+
 const moment=require("moment");
 const PurchaseOrder = require("../models/purchaseOrder.model");
 const PurchaseOrderDetail = require("../models/purchaseDetail.model");
 const Inventory = require("../models/inventory.model");
 const Product=require("../models/product.model");
 const Measure = require("../models/measure.model")
->>>>>>> mongodb
 
 function getPurchaseOrders(req, res){
     const { id,company } = req.params;
@@ -752,24 +742,6 @@ module.exports={
 //     let companyId = req.params.company;
 //     let antCod=0;
     
-<<<<<<< HEAD
-    try{
-        PurchaseOrder.findAll({    
-             include: [
-            {
-                 model: Supplier,
-                 attributes: ['ID_Supplier','Name'],
-                 where: {ID_Company:companyId},
-                 include: [{
-                    model:SupplierType,
-                    on:{
-              
-                       ID_SupplierType: sequelize.where(sequelize.col("crm_supplier.crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
-                    
-                    },
-                    attributes: ['Name']
-                }]
-=======
 //     try{
 //         PurchaseOrder.findAll({    
 //              include: [
@@ -777,7 +749,6 @@ module.exports={
 //                  model: Supplier,
 //                  attributes: ['ID_Supplier','Name'],
 //                  where: {ID_Company:companyId},
->>>>>>> mongodb
                  
 //              }
 //             ],
@@ -808,23 +779,6 @@ module.exports={
 //     let id=req.params.id;
 //     let antCod=0;
     
-<<<<<<< HEAD
-    try{
-        PurchaseOrder.findAll({    
-             include: [
-             {
-                 model: Supplier,
-                 attributes: ['ID_Supplier','Name','deliveryDays'],
-                 include: [{
-                    model:SupplierType,
-                    on:{
-              
-                       ID_SupplierType: sequelize.where(sequelize.col("crm_supplier.crm_suppliertype.ID_SupplierType"), "=", sequelize.col("crm_supplier.ID_SupplierType")),
-                    
-                    },
-                    attributes: ['Name']
-                }]
-=======
 //     try{
 //         PurchaseOrder.findAll({    
 //              include: [
@@ -832,7 +786,6 @@ module.exports={
 //                  model: Supplier,
 //                  attributes: ['ID_Supplier','Name','deliveryDays'],
                  
->>>>>>> mongodb
                  
 //              },
 //              { 
