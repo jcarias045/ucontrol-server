@@ -1,20 +1,9 @@
-module.exports = (sequelize, Sequelize) => {
-    const PaymentMethods = sequelize.define('ec_paymentmethods',{
-        ID_PaymentMethods : {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-        },
-        Name: {
-            type: Sequelize.STRING,
-        },
-        Description	:{
-            type: Sequelize.STRING,
-        }
-    },{
-		freezeTableName: true,
-		timestamps: false,
-	});
-	
-	return PaymentMethods;
-}
+const moongose = require('mongoose');
+const Schema = moongose.Schema
+
+const PaymentMethodsSchema = Schema({
+  Name: String,
+  Description: String, 
+})
+
+module.exports = moongose.model('PaymentMethods', PaymentMethodsSchema)

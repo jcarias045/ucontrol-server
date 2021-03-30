@@ -1,43 +1,19 @@
-module.exports = (sequelize, Sequelize) => {
-	const BookingSupplier = sequelize.define('crm_appointmentsupplier', {	
-    ID_AppointmentSupplier	: {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-    },
-    StartDate: {
-			type: Sequelize.STRING
-      },
-      EndDate:{
-        type: Sequelize.STRING
-      },
-      Description:{
-        type: Sequelize.STRING
-      },
-      State:{
-        type: Sequelize.BOOLEAN
-      },
-      ID_User:{
-        type: Sequelize.INTEGER,
-        foreign_key:true,
-      },
-      ID_Supplier:{
-        type: Sequelize.INTEGER,
-        foreign_key:true,
-      },
-      Name:{
-        type: Sequelize.INTEGER,
-      },
-      StartTime:{
-          type: Sequelize.STRING,
-      },
-      EndTime:{
-          type: Sequelize.STRING,
-      }      
-	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
-        freezeTableName: true,
-        timestamps: false,
-	  });
-	
-	return BookingSupplier;
-}
+const moongose = require('mongoose');
+const Schema = moongose.Schema
+const User = require('../models/user.model')
+const Supplier = require('../models/supplier.model')
+  
+  const BookingSupplierSchema = Schema({
+      Description: String,
+      StartDate: Date,
+      EndDate: Date,
+      //State: Boolean,
+      User: { type: Schema.ObjectId, ref: "User"},
+      Supplier: { type: Schema.ObjectId, ref: "Supplier"},
+      Name: String,
+      StartTime: Date,
+      EndTime: Date,
+    })
+    
+ module.exports = moongose.model('BookingSupplier', BookingSupplierSchema)
+  

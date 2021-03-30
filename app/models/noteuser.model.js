@@ -1,27 +1,12 @@
-module.exports = (sequelize, Sequelize) => {
-	const NoteUser = sequelize.define('crm_noteuser', {	
-	  ID_NoteUser: {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-    },
-	  Subject: {
-			type: Sequelize.STRING
-      },
-      Text:{
-        type: Sequelize.STRING
-      },
-      CreationDate:{
-        type: Sequelize.DATE
-      },
-      ID_User:{
-        type: Sequelize.INTEGER,
-        foreign_key:true,
-      }   
-	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
-        freezeTableName: true,
-        timestamps: false,
-	  });
-	
-	return NoteUser;
-}
+const moongose = require('mongoose');
+const Schema = moongose.Schema
+const User = require('../models/user.model')
+
+const NoteUserSchema = Schema({
+    Subject: String,
+    Text: String,
+    CreationDate: Date,
+    User: {type: Schema.ObjectId, ref: "User", },
+  })
+  
+  module.exports = moongose.model('NoteUser', NoteUserSchema)

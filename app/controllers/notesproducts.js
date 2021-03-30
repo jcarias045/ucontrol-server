@@ -1,155 +1,86 @@
-const db = require('../config/db.config.js');
+const noteProduct = require('../models/noteproduct.model')
 const fs =require("fs");
 const path=require("path");
-const NoteProduct = db.NoteProduct;
-const User = db.User;
-const Product = db.Product;
 const moment=require("moment");
 const jwt= require('../services/jwt');
 
 function getNotesProduct(req, res) {
-    let userId = req.params.id;
-    let productId = req.params.product;
-    console.log(userId);
-    console.log(productId);
-    try{
-        NoteProduct.findAll({
-            include:[
-                {
-                    model: Product,
-                    attributes: ['ID_Products', 'Name' ,  'ShortName'],
-                    where: {ID_Products: productId},
-                }
-            ],
-            where: {ID_User: userId},
-            attributes:['ID_NoteProduct','Subject','Text','Date','Time']
-        })
-        .then(notes => {
-            res.status(200).send({notes});          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    noteProduct.find({User: req.params.id, Product: req.params.product})
+    .populate({path: 'User', model: 'User'})
+    .populate({path: 'Product', model: 'Product'})
+    .then(noteProduct => {
+        if(!noteProduct){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({noteProduct})
+        }
+    });
 }
 
 function createNoteProduct(req,res){
-    let note = {};
-    let CreationDate = moment().format('LT');
-    console.log(CreationDate);
+    const NoteProduct = new noteProduct();
     let date = moment().format('L');
-    // let time = new Date();
-    // let dateActual = date.getDate;
-    // let HoraActual = date.getTime;
-    // console.log(dateActual);
+    let CreationDate = moment().format('LT');
     console.log(date);
-    // console.log(HoraActual);
-    // console.log(time);
-    // console.log('La fecha actual es',date);
-    // console.log('UNIX time:',date.getTime(date));
+    console.log(CreationDate);
+    const {Subject, Text, User, Product} = req.body
 
-    try{
-        // Construimos el modelo del objeto company para enviarlo como body del reques
-        note.Subject = req.body.Subject;
-        note.Text=req.body.Text;
-        note.Date= date;
-        note.ID_User=req.body.ID_User;
-        note.ID_Products= req.body.ID_Products;
-        note.Time = CreationDate;
- 
-        // Save to MySQL database
-       NoteProduct.create(note)
-      .then(result => {    
-        res.status(200).json(result);    
-      });  
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
-        });
-    }
+    NoteProduct.Subject= Subject
+    NoteProduct.Text= Text;
+    NoteProduct.CreationDate= CreationDate;
+    NoteProduct.date = date;
+    NoteProduct.User=User;
+    NoteProduct.Product=Product;
+    
+    console.log(NoteProduct);
+    NoteProduct.save((err, NoteProductStored)=>{
+        if(err){
+            res.status(500).send({message: err});
+        }else{
+            if(!NoteProductStored){
+                res.status(500).send({message: "Error"});
+            }else{
+                res.status(200).send({NoteProduct: NoteProductStored})
+            }
+        }
+    });
 }
 
 async function updateNote(req, res){
-   
-    let noteID = req.params.id; 
-    console.log(noteID); 
-    const { Subject, Text, Date, Time} = req.body;  //
-    try{
-        let date = moment().format('L');
-        let CreationDate = moment().format('LT');
-        let note = await NoteProduct.findByPk(noteID,{
-            attributes: ['Subject','Text','ID_User','Date','Time']
-        });
-        console.log(note);
-        if(!note){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra la nota con ID = " + noteID,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Subject: Subject,
-                Text: Text,
-                Date: date,
-                Time: CreationDate      
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await NoteProduct.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_NoteProduct: noteID}
-                              }
-                            );
+    let noteProductData = req.body;
+    noteProductData.date = moment().format('L');
+    noteProductData.CreationDate = moment().format('LT')
+    const params = req.params;
 
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+    noteProduct.findByIdAndUpdate({_id: params.id}, noteProductData, (err, noteProductUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+        } else {
+            if(!noteProductUpdate){
+                res.status(404).send({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Nota Actualizada"})
             }
-
-            res.status(200).json(result);
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
 }
 
 async function deleteNote(req, res){
-    console.log(req.params.id);
-    try{
-        let noteID = req.params.id;
-        let note = await NoteProduct.findByPk(noteID);
-       
-        if(!note){
-            res.status(404).json({
-                message: "La Nota con este ID no existe = " + noteID,
-                error: "404",
-            });
+    const { id } = req.params;
+  
+    noteProduct.findByIdAndRemove(id, (err, noteProductDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!noteProductDeleted) {
+          res.status(404).send({ message: "Nota no encontrada." });
         } else {
-            await note.destroy();
-            res.status(200).send({
-                message:"Nota eliminada con exito"
-            });
+          res
+            .status(200)
+            .send({ message: "La Nota ha sido eliminada correctamente." });
         }
-    } catch(errr) {
-        res.status(500).json({
-            mesage: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+      }
+    });
 }
 
 module.exports = {

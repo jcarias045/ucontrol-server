@@ -9,3 +9,7 @@ router.delete('/delete-noteproduct/:id', notesproduct.deleteNote);
 
 
 module.exports = router;
+
+//http://localhost:3050/api/create-user
+//http://localhost:3050/api/users
+//http://localhost:3050/api/delete-user/6050281607b30d61f02f1e46

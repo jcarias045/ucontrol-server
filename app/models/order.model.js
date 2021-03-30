@@ -1,42 +1,21 @@
-module.exports = (sequelize, Sequelize) => {
-	const Order = sequelize.define('ec_order', {	
-	  ID_Order: {
-            type: Sequelize.INTEGER,
-            autoIncrement: true,
-            primaryKey: true
-    },
-    ID_User:
-    {
-        type: Sequelize.INTEGER,
-        foreign_key: true,
-        null: true,
-    },
-    ID_Customer:
-    {
-        type: Sequelize.INTEGER,
-        foreign_key: true,
-    },
-    CreationDate:
-    {
-        type: Sequelize.DATE
-    },
-    Total:
-    {
-        type: Sequelize.DECIMAL
-    },
-    Active:
-    {
-        type: Sequelize.STRING
-    },
-    State:
-    {
-        type: Sequelize.STRING,
-    } 
-   
-	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
-        freezeTableName: true,
-        timestamps: false,
-	  });
-	
-	return Order;
-}
+const moongose = require('mongoose');
+const Schema = moongose.Schema
+const User = require('./company.model');
+const Costumer = require('./customer.model');
+
+const OrderSchema = Schema({
+    User:  { type: Schema.ObjectId, 
+             ref: "User",
+             // autopopulate: true,
+           },
+    CreationDate: Date, 
+    Total: Schema.Types.Decimal128,
+    Active: Boolean,
+    Costumer: { type: Schema.ObjectId, 
+               ref: "Costumer",
+              // autopopulate: true,
+             },
+    State: Boolean
+  })
+  
+  module.exports = moongose.model('Order', OrderSchema)
