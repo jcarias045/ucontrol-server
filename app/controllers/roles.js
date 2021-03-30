@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const db = require('../config/db.config.js');
 const { Op } = require("sequelize");
 
@@ -7,63 +8,49 @@ const Company = db.Company;
 const ProfileOptions=db.ProfileOptions;
 const SysOptions = db.SysOptions;
 const Grupos = db.Grupos;
+=======
+// const db = require('../config/db.config.js');
+// const { Op } = require("sequelize");
+
+// const sequelize = require('sequelize');
+// const Roles = db.Roles;
+// const Company = db.Company;
+// const ProfileOptions=db.ProfileOptions;
+// const SysOptions = db.SysOptions;
+const Roles = require('../models/rol.model');
+const SysOptions = require('../models/systemOp.model');
+const profileOptions = require('../models/profileOptions.model')
+>>>>>>> mongodb
 
 function getRolesByCompany(req, res){
     // Buscamos informacion para llenar el modelo de 
+    Roles.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
+    .then(roles => {
+        if(!roles){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({roles})
+        }
+    });
    
-    let companyId=req.params.id;
-    try{
-        Roles.findAll({
-            where: {
-                ID_Company:companyId
-            }
-        })
-        .then(roles => {
-            res.status(200).send({roles});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
 }
 
 function getRolesSystem(req, res){
-    // Buscamos informacion para llenar el modelo de 
-   
-    let companyId=req.params.company;
-    try{
-        Roles.findAll({
-            include: [{
-                model: Company,
-                attributes: ['ID_Company','Name']
-            }]
-        })
-        .then(roles => {
-            res.status(200).send({roles});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
 
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    Roles.find().populate({path: 'Company', model: 'Company'})
+    .then(roles => {
+        if(!roles){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({roles})
+        }
+    });
 }
 
-
 async function createRol(req, res){
-    let rol = {};
     
-    console.log();
+    const rol = new Roles();
+    const sysOp = new profileOptions();
     let opciones=req.body.opciones;
     let noCheck=req.body.nocheck;
     console.log(opciones);
@@ -74,21 +61,21 @@ async function createRol(req, res){
         // Construimos el modelo del objeto
         rol.Name = req.body.Name;
         rol.Description=req.body.Description;
-        rol.ID_Company=req.body.ID_Company;
+        rol.Company=req.body.Company;
         rol.State=true;
         let rolId="";
         
-        Roles.create(rol)
+        rol.save(rol)
         .then(async result => {    
         res.status(200).json(result);
-          rolId=result.ID_Rol;
+          rolId=result._id;
           if(opciones.length>0){
               for(let item of opciones){   
-                sysOp.ID_Rol=rolId;
-                sysOp.ID_OptionMenu=item.id;
+                sysOp.Rol=rolId;
+                sysOp.OpMenu=item.id;
                 sysOp.Checked=item.checked;
                 console.log(sysOp);
-                 await ProfileOptions.create(sysOp).then(async result=>{
+                 await profileOptions.insertMany(sysOp).then(async result=>{
                      console.log(result);
                  }).catch(err=>{
                      console.log(err);
@@ -101,11 +88,11 @@ async function createRol(req, res){
 
           if(noCheck.length>0){
             for(let item of noCheck){   
-                sysOp.ID_Rol=rolId;
-                sysOp.ID_OptionMenu=item.id;
+                sysOp.Rol=rolId;
+                sysOp.OpMenu=item.id;
                 sysOp.Checked=item.checked;
                 console.log(sysOp);
-                 await ProfileOptions.create(sysOp).then(async result=>{
+                 await profileOptions.insertMany(sysOp).then(async result=>{
                      console.log(result);
                  }).catch(err=>{
                      console.log(err);
@@ -132,6 +119,7 @@ function getOptionsSystemRol(req, res){
    
     let rolId=req.params.id;
     try{
+<<<<<<< HEAD
         SysOptions.findAll({
             include: [
             {
@@ -156,6 +144,11 @@ function getOptionsSystemRol(req, res){
         
         ]
         })
+=======
+        profileOptions.find({Rol: rolId})
+        .populate({path: 'Rol', model: 'Rol'})
+        .populate({path: 'OpMenu', populate: {path:'Grupos'}})
+>>>>>>> mongodb
         .then(roles => {
             res.status(200).send({roles});
           
@@ -171,21 +164,20 @@ function getOptionsSystemRol(req, res){
     }
 }
 
-
-
 async function updateRol(req, res){
    
-    let rolId = req.params.id; 
-    
+    let rolId = req.params.id;     
     let habilitados=req.body.check;
     let deshabilitados=req.body.noCheck;
-    
-    const { Name,Description,ID_Company} = req.body;  
-    try{
-        let sysOp={};
-        let rol = await Roles.findByPk(rolId);
-        let options=await ProfileOptions.findAll({where:{ID_Rol:rolId}});
-        if(!rol){
+
+
+
+    let sysOp = new profileOptions();
+    let rol = await Roles.findById(rolId);
+    let options = await profileOptions.find({Rol: rolId});
+    console.log(rol);
+    console.log(options);
+    if(!rol){
            // retornamos el resultado al cliente
             res.status(404).json({
                 message: "No se encuentra el cliente con ID = " + rolId,
@@ -193,26 +185,22 @@ async function updateRol(req, res){
             });
         } else {    
             // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name:Name,
-                Description:Description,
-                ID_Company: ID_Company
-               
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await Roles.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Rol: rolId}
-                              }
-                            ).then( ProfileOptions.destroy({where:{ID_Rol:rolId}}));
+            // let updateObject = rol;
+            // let updatedObject = {             
+            //     Name:Name,
+            //     Description:Description,
+            //     Company: Company               
+            // }
+            // console.log(updatedObject);    //agregar proceso de encriptacion
+            let result = await Roles.findByIdAndUpdate({_id: rolId}, rol, (err, updateObject)=>
+                            ( profileOptions.findByIdAndUpdate({Rol: rolId})));
             if(habilitados.length>0){
                 for  (const cartItem of habilitados) {
-                sysOp.ID_Rol=rolId;
-                sysOp.ID_OptionMenu=cartItem.id;
+                sysOp.Rol=rolId;
+                sysOp.OpMenu=cartItem.id;
                 sysOp.Checked=cartItem.checked;
                 console.log(sysOp);
-                await ProfileOptions.create(sysOp).then(async result=>{}).catch(err=>{
+                await profileOptions.insertMany(sysOp).then(async result=>{}).catch(err=>{
                     console.log(err);
                     return err.message;
                 });
@@ -220,86 +208,61 @@ async function updateRol(req, res){
             }
             if(deshabilitados.length>0){
                 for  (const cartItem of deshabilitados) {
-                sysOp.ID_Rol=rolId;
-                sysOp.ID_OptionMenu=cartItem.id;
+                sysOp.Rol=rolId;
+                sysOp.OpMenu=cartItem.id;
                 sysOp.Checked=cartItem.checked;
                 console.log(sysOp);
-                await ProfileOptions.create(sysOp).then(async result=>{}).catch(err=>{
+                await profileOptions.insertMany(sysOp).then(async result=>{}).catch(err=>{
                     console.log(err);
                     return err.message;
                 });
             }
             }
-            
-
-            
+    
             // retornamos el resultado al cliente
             if(!result) {
+                console.log(rol);
+                 console.log(options);
                 res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+                    message: "Error Resultado = " + req.params.id,
                     error: "No se puede actualizar",
                 });
             }
 
             res.status(200).json(result);
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    // } catch(error){
+    //     res.status(500).json({
+    //         message: "Error en Catch: " + req.params.id,
+    //         error: error.message
+    //     });
+    // }
 }
-
 
 async function changeStateRol(req,res){
+    
     let rolId = req.params.id; 
-    
-    const {State} = req.body; 
-    
-    const { Name,Description,ID_Company} = req.body;  
+  
+    const {State} = req.body;  //
     try{
-        let sysOp={};
-        let rol = await Roles.findByPk(rolId);
         
-        if(!rol){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + rolId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-               
-                State: State
-               
+        await Roles.findByIdAndUpdate(rolId, {State}, (supplierStored) => {
+            if (!supplierStored) {
+                res.status(404).send({ message: "No se ha encontrado el proveedor." });
             }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await Roles.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Rol: rolId}
-                              }
-                            );
-            
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+            else if (Active === false) {
+                res.status(200).send({ message: "Proveedor desactivado correctamente." });
             }
-
-            res.status(200).json(result);
-        }
+        })
+        
     } catch(error){
         res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
+            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
             error: error.message
         });
     }
 }
+
 module.exports={
     getRolesByCompany,
     getRolesSystem,

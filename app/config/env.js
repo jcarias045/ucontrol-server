@@ -1,6 +1,7 @@
 //Pruebas directas al servidor
+
 const env = {
-    database: 'local_ucontrol',
+    database: 'ucontrol_local',
     username: 'root',
     password: '',
     host: 'localhost',
@@ -12,6 +13,7 @@ const env = {
       idle: 10000
     }
   };
+
   //Pruebas locales
 /*   const env = {
     database: 'test',

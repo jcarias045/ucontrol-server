@@ -1,129 +1,74 @@
-const db = require('../config/db.config.js');
+const brand = require('../models/brand.model')
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
-const { Op } = require("sequelize");
-//Se utiliza DiscountObj porque el parametro Discount y el nombre del objeto no pueden ser iguales.
-const Brand = db.Brand;
-const Company = db.Company;
+
 
 function getBrands(req,res){
-    let companyId = req.params.id; 
-    try{
-        Brand.findAll({    
-             include: [
-            {
-                 model: Company,
-                 attributes: ['ID_Company','Name','ShortName']
-             }
-            ],
-            where: {ID_Company: companyId}
-          })
-        .then(brand => {
-            res.status(200).json({brand});            
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error!",
-            error: error
-        });
-    }
+    brand.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
+    .then(brand => {
+        if(!brand){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({brand})
+        }
+    });
 }
 
 function createBrands(req,res){
-    console.log("hola");
-    let brand = {};
-    try{
-        // Construimos el modelo del objeto company para enviarlo como body del reques
-        brand.Name = req.body.Name;
-        brand.Description = req.body.Description;
-        brand.ID_Company=req.body.ID_Company;
-        console.log(brand);
-        // Save to MySQL database
-        Brand.create(brand)
-      .then(result => {    
-        res.status(200).json(result);
-    
-      });  
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
-        });
-    }
+    const Brand = new brand()
+    const { Name, Description, Company } = req.body
+
+    Brand.Name= Name
+    Brand.Description= Description;
+    Brand.Company=Company;
+
+    console.log(Brand);
+    Brand.save((err, BrandStored)=>{
+        if(err){
+            res.status(500).send({message: err});
+        }else{
+            if(!BrandStored){
+                res.status(500).send({message: "Error"});
+            }else{
+                res.status(200).send({Brand: BrandStored})
+            }
+        }
+    });
 }
 
 async function updateBrand(req,res){
-    let brandId = req.params.id; 
-    console.log(brandId);
-    const { Name, Description} = req.body;  //
-    console.log(Name);
-    console.log(Description);
-    try{
-        let brand = await Brand.findByPk(brandId);
-        console.log(brand);
-        if(!brand){
-           // retornamos el resultado al descuento
-            res.status(404).json({
-                message: "No se encuentra el banco con ID = " + brandId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name: Name,
-                Description: Description    
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await brand.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Brand: brandId}
-                              }
-                            );
+    let brandData = req.body;
+    const params = req.params;
 
-            // retornamos el resultado al descuento
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el descuento con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+    brand.findByIdAndUpdate({_id: params.id}, brandData, (err, brandUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+        } else {
+            if(!brandUpdate){
+                res.status(404).send({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Marca Actualizada"})
             }
-            res.status(200).json(result);
         }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el descuento con ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
 }
 
 async function deleteBrand(req, res){
-    console.log(req.params.id);
-    try{
-        let brandId = req.params.id;
-        let brand = await Brand.findByPk(brandId);
-       
-        if(!brand){
-            res.status(404).json({
-                message: "La Marca con este ID no existe = " + bankId,
-                error: "404",
-            });
+    const { id } = req.params;
+  
+    brand.findByIdAndRemove(id, (err, brandDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!brandDeleted) {
+          res.status(404).send({ message: "Marca no encontrada." });
         } else {
-            await brand.destroy();
-            res.status(200).send({
-                message:"La Marca fue eliminad con exito"
-            });
+          res
+            .status(200)
+            .send({ message: "La Marca ha sido eliminada correctamente." });
         }
-    } catch(errr) {
-        res.status(500).json({
-            mesage: "Error -> No se puede eliminar el banco con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+      }
+    });
 }
 
 function getBrandId (req, res){
@@ -148,10 +93,33 @@ function getBrandId (req, res){
     }
 }
 
+function getBrand (req, res){
+    let brandId = req.params.id;
+
+    try{
+        Brand.findByPk(brandId,{
+            attributes:['ID_Brand','Name','Description'],
+            where: {ID_Brand: brandId}
+        })
+        .then(brand => {
+            res.status(200).json({brand});            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
 module.exports={
     getBrands,
     getBrandId,
     createBrands,
     deleteBrand,
-    updateBrand
+    updateBrand,
+    getBrand
 }

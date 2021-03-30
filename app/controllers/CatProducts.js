@@ -1,128 +1,78 @@
-const db = require('../config/db.config.js');
+const catproduct = require('../models/catpoduct.model')
 const fs =require("fs");
 const path=require("path");
-const CatProduct = db.CatProduct;
-const Company = db.Company;
 
 function getCatProducts(req,res){
-    console.log("Categorias");
-    let companyId = req.params.id; 
-    try{
-                 CatProduct.findAll(
-                     {
-                    include:[
-                        {
-                            model: Company,
-                            attributes: ['ID_Company','Name','ShortName']
-                        }
-                    ],
-                    where:{ID_Company: companyId}
-                 }
-                 )
-                 .then(catproducts => {
-                     res.status(200).send({catproducts});
-                  
-                 })
-             }catch(error) {
-                 // imprimimos a consola
-                 console.log(error);
-                 res.status(500).json({
-                     message: "Error en query!",
-                     error: error
-                 });
-             }
-    }
-
-function creatCatProduct(req, res){
-            let catproduct = {};
-        
-            try{
-                // Construimos el modelo del objeto catproduct para enviarlo como body del request
-                catproduct.Name = req.body.Name;
-                catproduct.Description=req.body.Description;
-                catproduct.ID_Company = req.body.ID_Company;
-            
-                // Save to MySQL database
-               CatProduct.create(catproduct)
-              .then(result => {    
-                res.status(200).json(result);
-            
-              });  
-            }catch(error){
-                res.status(500).json({
-                    message: "Fail!",
-                    error: error.message
-                });
-            }
+    const {id} = req.params;
+    console.log(req.params.id);
+    console.log(id);
+    catproduct.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
+    .then(CatProduct => {
+        if(!CatProduct){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({CatProduct})
         }
+    })
+}
+
+function createCatProduct(req, res){
+    console.log(req.body);
+    const CatProduct = new catproduct()
+
+    const {Name, Description, Company} = req.body
+
+         CatProduct.Name= Name;
+         CatProduct.Description= Description;
+         CatProduct.Company= Company;
+
+         console.log(CatProduct);
+            CatProduct.save((err, CatProductStored)=>{
+                if(err){
+                    res.status(500).send({message: err});
+                }else{
+                    if(!CatProductStored){
+                        res.status(500).send({message: "Error"});
+                    }else{
+                        res.status(200).send({CatProduct: CatProductStored})
+                    }
+                }
+            });
+}
 
 async function deleteCatProduct(req, res){
-            console.log(req.params.id);
-            try{
-                let catproductID = req.params.id;
-                let catproduct = await CatProduct.findByPk(catproductID);
-               
-                if(!catproduct){
-                    res.status(404).json({
-                        message: "La Categoria con este ID no existe = " + catproductID,
-                        error: "404",
-                    });
-                } else {
-                    await catproduct.destroy();
-                    res.status(200).send({
-                        message:"Categoria eliminada con exito"
-                    });
-                }
-            } catch(error) {
-                res.status(500).json({
-                    message: "Error -> No se puede eliminar la categoria con el ID = " + req.params.id,
-                    error: error.message
-                });
-            }
+    const { id } = req.params;
+  
+    catproduct.findByIdAndRemove(id, (err, catproductDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!catproductDeleted) {
+          res.status(404).send({ message: "Categoría no encontrada." });
+        } else {
+          res
+            .status(200)
+            .send({ message: "La Categoría ha sido eliminada correctamente." });
+        }
+      }
+    });
 }
 
 async function updateCatProduct(req, res){
-            let catproductID = req.params.id; 
-            console.log(catproductID); 
-            const { Name,Description} = req.body;  //
-            try{
-                let catproduct = await CatProduct.findByPk(catproductID);
-                console.log(catproduct);
-                if(!catproduct){
-                // retornamos el resultado al cliente
-                    res.status(404).json({
-                        message: "No se encuentra el cliente con ID = " + catproductID,
-                        error: "404"
-                    });
-                } else {    
-                    // actualizamos nuevo cambio en la base de datos, definición de
-                    let updatedObject = {             
-                        Name:Name,
-                        Description: Description              
-                    }
-                    console.log(updatedObject);    //agregar proceso de encriptacion
-                    let result = await catproduct.update(updatedObject,
-                                    { 
-                                        returning: true,                
-                                        where: {ID_CatProduct: catproductID}
-                                    }
-                                    );
+    let catproductData = req.body;
+    const params = req.params;
 
-                    // retornamos el resultado al cliente
-                    if(!result) {
-                        res.status(500).json({
-                            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                            error: "No se puede actualizar",
-                        });
-                    }
-                    res.status(200).json(result);
-                }
-            } catch(error){
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: error.message
-                });
+    catproduct.findByIdAndUpdate({_id: params.id}, catproductData, (err, catproductUpdate)=>{
+        if(err){
+            res.status(500).sen({message: "Error del Servidor."});
+        } else {
+            if(!catproductUpdate){
+                res.status(404).sen({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Categoría  Actualizado"})
+            }
         }
+    })
 }
 
 function getCatProductsId(req, res){
@@ -149,7 +99,7 @@ function getCatProductsId(req, res){
 
 module.exports={
     getCatProducts,
-    creatCatProduct,
+    createCatProduct,
     deleteCatProduct,
     updateCatProduct,
     getCatProductsId

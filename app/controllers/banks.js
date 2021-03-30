@@ -1,157 +1,91 @@
-const db = require('../config/db.config.js');
+const Bank = require('../models/bank.model')
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
-const { Op } = require("sequelize");
-//Se utiliza DiscountObj porque el parametro Discount y el nombre del objeto no pueden ser iguales.
-const Bank = db.Bank;
-const Company = db.Company;
+
 
 function getBanks(req, res) {
-    console.log("Descuento");
-    console.log("Probando endpoint");
-    let companyId = req.params.id; 
-    try{
-        Bank.findAll({    
-             include: [
-            {
-                 model: Company,
-                 attributes: ['ID_Company','Name','ShortName']
-             }
-            ],
-            where: {ID_Company: companyId}
-          })
-        .then(bank => {
-            res.status(200).json({bank});            
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error!",
-            error: error
-        });
-    }
+    Bank.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'})
+    .then(bank => {
+        if(!bank){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bank})
+        }
+    });
 }
 
 function createBank(req, res){
-    console.log("hola");
-    let bank = {};
-    try{
-        // Construimos el modelo del objeto company para enviarlo como body del reques
-        bank.Name = req.body.Name;
-        bank.Phone = req.body.Phone;
-        bank.Address= req.body.Address;
-        bank.ID_Company=req.body.ID_Company
-        console.log(bank);
-        // Save to MySQL database
-        Bank.create(bank)
-      .then(result => {    
-        res.status(200).json(result);
     
-      });  
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
+   const bank = new Bank()
+
+   const {Name, Phone, Address, Company} = req.body
+
+   bank.Name = Name;
+   bank.Phone = Phone;
+   bank.Address = Address;
+   bank.Company = Company;
+
+   console.log(bank);
+        bank.save((err, bankStored)=>{
+            if(err){
+                res.status(500).send({message: err});
+            }else{
+                if(!bankStored){
+                    res.status(500).send({message: "Error"});
+                }else{
+                    res.status(200).send({bank: bankStored})
+                }
+            }
         });
-    }
+
+    
 }
 
+ function updateBank(req, res){
+    let BankData = req.body;
+    const params = req.params;
 
-async function updateBank(req, res){
-   
-    let bankId = req.params.id; 
-    console.log(bankId);
-    const { Name, Phone, Address} = req.body;  //
-    console.log(Name);
-    console.log(Phone);
-    try{
-        let bank = await Bank.findByPk(bankId);
-        console.log(bank);
-        if(!bank){
-           // retornamos el resultado al descuento
-            res.status(404).json({
-                message: "No se encuentra el banco con ID = " + bankId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name: Name,
-                Phone: Phone,
-                Address:Address    
-            }
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await bank.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Bank: bankId}
-                              }
-                            );
-
-            // retornamos el resultado al descuento
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el descuento con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
-            }
-            res.status(200).json(result);
-        }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el descuento con ID = " + req.params.id,
-            error: error.message
-        });
-    }
-}
-
-async function deleteBank(req, res){
-    console.log(req.params.id);
-    try{
-        let bankId = req.params.id;
-        let bank = await Bank.findByPk(bankId);
-       
-        if(!bank){
-            res.status(404).json({
-                message: "El banco con este ID no existe = " + bankId,
-                error: "404",
-            });
+    Bank.findByIdAndUpdate({_id: params.id}, BankData, (err, BankUpdate)=>{
+        if(err){
+            res.status(500).sen({message: "Error del Servidor."});
         } else {
-            await bank.destroy();
-            res.status(200).send({
-                message:"El Banco fue eliminad con exito"
-            });
+            if(!BankUpdate){
+                res.status(404).sen({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Banca Actualizado"})
+            }
         }
-    } catch(errr) {
-        res.status(500).json({
-            mesage: "Error -> No se puede eliminar el banco con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    })
+}
+
+function deleteBank(req, res){
+    const { id } = req.params;
+  
+    Bank.findByIdAndRemove(id, (err, BankDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!BankDeleted) {
+          res.status(404).send({ message: "Banca no encontrado." });
+        } else {
+          res
+            .status(200)
+            .send({ message: "La Banca ha sido eliminada correctamente." });
+        }
+      }
+    });
 }
 
 function getBankId (req, res){
-    
-    let companyId = req.params.id;
-
-    try{
-        Bank.findAll({
-            where:{ID_Company: companyId},
-            attributes: ['ID_Bank', 'Name']
-        })
-        .then(banks =>{
-            res.status(200).json({banks});
-            
-        })
-    }catch(error){
-        console.log(error);
-        res.status(500).json({
-            message: "Error en el query!",
-            error: error
-        })
-    }
+    let company = req.params.id
+    Bank.find({Company: company}).populate({path: 'Company', model: 'Company'})
+    .then(bank => {
+        if(!bank){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bank})
+        }
+    });
 }
 
 

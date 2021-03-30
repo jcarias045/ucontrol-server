@@ -1,8 +1,8 @@
-const db = require('../config/db.config.js');
+const User = require('../models/user.model');
 const jwt= require('../services/jwt');
 const moment= require('moment');
-const User = db.User;
-const Customer = db.Customer;
+
+// const User=require('../models/user.model');
 
 
 function willExpiredToken(token){
@@ -16,7 +16,7 @@ function willExpiredToken(token){
 }
 
 function resfreshAccessToken(req,res){
-
+    console.log(req.body);
     const {refreshToken} =req.body;
     console.log(refreshToken);
     const isTokenExpired= willExpiredToken(refreshToken);
@@ -24,8 +24,8 @@ function resfreshAccessToken(req,res){
          res.status(404).send({message:"El Refresh token ha expirado"});
      }
      else{
-        const {ID_User}=jwt.decodedToken(refreshToken);        
-        User.findOne({attributes: ['Email','Password','Name','LastName','ID_User'],where:{ID_User:ID_User}})
+        const {id}=jwt.decodedToken(refreshToken);        
+        User.findById({id})
         .then(function (userStored){
             console.log(userStored); 
                 if(!userStored){

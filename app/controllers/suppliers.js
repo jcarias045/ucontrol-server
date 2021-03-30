@@ -1,213 +1,119 @@
-
-const db = require('../config/db.config.js');
+const supplier = require('../models/supplier.model')
 const bcrypt=require("bcrypt-nodejs");
 const jwt=require('../services/jwt');
+<<<<<<< HEAD
 const { Op } = require("sequelize");
 const { Company } = require('../config/db.config.js');
 const sequelize = require('sequelize');
 
 const Supplier = db.Supplier;
 const SupplierType = db.SupplierTypes;
-
-
+=======
 
 function createSupplier(req, res){
-    let supplier = {};
-    console.log(req);
-     const idCompany = req.body.ID_Company
-    try{
-        // Construimos el modelo del objeto supplier para enviarlo como body del request
-        // supplier.ID_supplier = req.body.ID_supplier;
-        supplier.Name=req.body.Name;
-        supplier.Web= req.body.Web;
-        supplier.Email=req.body.Email;
-        supplier.Phone=req.body.Phone;
-        supplier.Adress=req.body.Adress;
-        supplier.DebsToPay=req.body.DebsToPay;
-        supplier.Active=true;
-        supplier.codsupplier=req.body.codsupplier;
-        supplier.PaymentTime=req.body.PaymentTime;
-        supplier.ID_Company=idCompany;
-        supplier.ID_User = req.body.ID_User;
-        supplier.deliveryDays=req.body.deliveryDays;
-        
-        Supplier.findOne({ attributes:['ID_supplier','Name','Web','Email',
-        'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
-        'deliveryDays'],
-            where:{[Op.or]: [
-            { Email: supplier.Email},
-            { Name: supplier.Name}
-          ]}}).then(function(exist){
-              if(!exist){
-                Supplier.create(supplier)
-                .then(result => {    
-                  res.status(200).json(result);
-              
-                });  
-              }
-              else{
-                res.status(505).send({message:"El proveedor ya existe"})
+>>>>>>> mongodb
 
-              }
-            });
-    }catch(error){
-        res.status(500).json({
-            message: "Fail!",
-            error: error.message
-        });
-    }
+    const Supplier = new supplier();
+
+    const {Name, Web, Email, Phone, Address, DebsToPay, Active,
+    codsupplier, PaymentTime, Company, deliveryDays, SupplierType} = req.body
+
+    Supplier.Name= Name
+    Supplier.Web= Web;
+    Supplier.Email= Email;
+    Supplier.Phone=Phone;
+    Supplier.Address=Address;
+    Supplier.DebsToPay=DebsToPay;
+    Supplier.Active=Active;
+    Supplier.codsupplier=codsupplier;
+    Supplier.PaymentTime=PaymentTime;
+    Supplier.Company=Company;
+    Supplier.deliveryDays=deliveryDays;
+    Supplier.SupplierType= SupplierType
+
+
+    console.log(Supplier);
+    Supplier.save((err, SupplierStored)=>{
+        if(err){
+            res.status(500).send({message: err});
+        }else{
+            if(!SupplierStored){
+                res.status(500).send({message: "Error"});
+            }else{
+                res.status(200).send({Supplier: SupplierStored})
+            }
+        }
+    });
+    
 }
 
 
 function getSuppliers(req, res){
- 
-    let companyId = req.params.id;
-    try{
-        Supplier.findAll({
-            include:[{
-                model:Company,
-                attributes: ['ID_Company','Name','ShortName']
-            }
-            ],
-            attributes:['ID_supplier','Name','Web','Email',
-        'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
-        'deliveryDays','Phone','DebsToPay'],
-        where: {ID_Company: companyId}})
-        .then(suppliers => {
-            res.status(200).send({suppliers});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
-}
-
-async function updateSupplier(req, res){
-   
-    let supplierId = req.params.id;
-  
-    
-    const { Name,Web,Email,Phone,Adress, DebsToPay, Active,codsupplier,UserName,PaymentTime,deliveryDays} = req.body;  //
-   
-    try{
-        let supplier = await Supplier.findByPk(supplierId);
-        console.log(supplier);
-        if(!supplier){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + supplierId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {             
-                Name:Name,
-                Web: Web,
-                Email: Email,
-                Phone:Phone,
-                Adress:Adress,
-                Active: Active,
-                PaymentTime: PaymentTime,
-                DebsToPay:DebsToPay,
-                codsupplier:codsupplier,
-                deliveryDays:deliveryDays
-            }
-            
-            console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await supplier.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Supplier: supplierId}
-                              }
-                            );
-
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
-            }
-
-            res.status(200).json(result);
-        }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-            error: error.message
-        });
-    }
-}
-
-async function deleteSupplier(req, res){
+    const {id} = req.params;
     console.log(req.params.id);
-    try{
-        let supplierId = req.params.id;
-        let supplier = await Supplier.findByPk(supplierId);
-       
+    console.log(id);
+    supplier.find({Company:req.params.id}).populate({path: 'Company', model: 'Company'}).
+    populate({path: 'SupplierType', model: 'SupplierType'})
+    .then(supplier => {
         if(!supplier){
-            res.status(404).json({
-                message: "La compañia con este ID no existe = " + supplierId,
-                error: "404",
-            });
-        } else {
-            await supplier.destroy();
-            res.status(200).send({
-                message:"Compañia eliminada con exito"
-            });
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({supplier})
         }
-    } catch(error) {
-        res.status(500).json({
-            message: "Error -> No se puede eliminar el cliente con el ID = " + req.params.id,
-            error: error.message
-        });
-    }
+    });
+}
+
+ function updateSupplier(req, res){
+    let supplierData = req.body;
+    const params = req.params;
+
+    supplier.findByIdAndUpdate({_id: params.id}, supplierData, (err, supplierUpdate)=>{
+        if(err){
+            res.status(500).send({message: "Error del Servidor."});
+        } else {
+            if(!supplierUpdate){
+                res.status(404).send({message: "No hay"});
+            }else{
+                res.status(200).send({message: "Trabajo Actualizado"})
+            }
+        }
+    })
+}
+
+
+function deleteSupplier(req, res){
+    const { id } = req.params;
+  
+    supplier.findByIdAndRemove(id, (err, supplierDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!supplierDeleted) {
+          res.status(404).send({ message: "Proveedor no encontrado." });
+        } else {
+          res
+            .status(200)
+            .send({ message: "El Proveedor ha sido eliminado correctamente." });
+        }
+      }
+    });
 }
 
 async function desactivateSupplier(req, res){
-   
     let supplierId = req.params.id; 
   
     const {Active} = req.body;  //
     try{
-        let supplier = await Supplier.findByPk(supplierId);
         
-        if(!supplier){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + supplierId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = {      
-                Active:Active          
+        await supplier.findByIdAndUpdate(supplierId, {Active}, (supplierStored) => {
+            if (!supplierStored) {
+                res.status(404).send({ message: "No se ha encontrado el proveedor." });
             }
-               //agregar proceso de encriptacion
-            let result = await supplier.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_Supplier: supplierId},
-                                attributes:['Active' ]
-                              }
-                            );
-
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
+            else if (Active === false) {
+                res.status(200).send({ message: "Proveedor desactivado correctamente." });
             }
-
-            res.status(200).json(result);
-        }
+        })
+        
     } catch(error){
         res.status(500).json({
             message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
@@ -218,7 +124,10 @@ async function desactivateSupplier(req, res){
 
 function getSuppliersInfo(req, res){
     let companyId = req.params.id;
+    console.log('proveedores');
+    console.log(companyId);
     try{
+<<<<<<< HEAD
         Supplier.findAll({where: {ID_Company: companyId},
             attributes:['ID_Supplier','Name','ID_SupplierType'],
             include: [{
@@ -231,9 +140,12 @@ function getSuppliersInfo(req, res){
                 attributes: ['Name']
             }]
         })
+=======
+        supplier.find({Company: companyId})
+        .populate({path: 'SupplierType', model: 'SupplierType'})
+>>>>>>> mongodb
         .then(suppliers => {
-            res.status(200).send({suppliers});
-          
+            res.status(200).send(suppliers);          
         })
     }catch(error) {
         // imprimimos a consola
@@ -250,7 +162,10 @@ function getSuppliersDetails(req, res){
  
     let supplierId = req.params.id;
     let companyId = req.params.company;
+    console.log('detalle proveedor');
+    console.log(companyId);
     try{
+<<<<<<< HEAD
         Supplier.findAll({
 
             attributes:['ID_Supplier','Name','ID_SupplierType','deliveryDays','PaymentTime','DebsToPay'],
@@ -268,6 +183,9 @@ function getSuppliersDetails(req, res){
                 attributes: ['Name']
             }]
         })
+=======
+        supplier.find({Company: companyId,_id:supplierId}).populate({path: 'SupplierType', model: 'SupplierType'})
+>>>>>>> mongodb
         .then(suppliers => {
             res.status(200).send(suppliers);
           
@@ -311,6 +229,20 @@ function Suppliers(req, res){
     }
 }
 
+function getSuppliersAll(req, res){
+    const {id} = req.params;
+    console.log(req.params.id);
+    console.log(id);
+    supplier.find({Company:id}).populate({path: 'Company', model: 'Company'}).
+    populate({path: 'SupplierType', model: 'SupplierType'})
+    .then(supplier => {
+        if(!supplier){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({supplier})
+        }
+    });
+}
 // function getImages(req,res){
 //     const logoName=req.params.logoName;
 //     const filePath="./app/uploads/avatar/"+logoName;
@@ -384,8 +316,8 @@ function Suppliers(req, res){
 
 function getSupplierInfo(req, res){
     console.log("gola");
-    Supplier.findByPk(req.params.id,{
-        attributes:['ID_supplier','Name','Web','Email',
+    supplier.findByPk(req.params.id,{
+        attributes:['Name','Web','Email',
         'Adress', 'Active','codsupplier','PaymentTime','ID_Company',
         'deliveryDays','Phone','DebsToPay']})
         .then(supplier => {
@@ -411,5 +343,6 @@ module.exports={
     getSuppliersInfo,
     getSuppliersDetails,
     Suppliers,
-    getSupplierInfo
+    getSuppliersAll
+    // getSupplierInfo
 }
