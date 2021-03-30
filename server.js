@@ -2,6 +2,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+require("dotenv").config({
+    path: "./config.env"
+})   
+
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
 let authRoutes = require('./app/routers/auth');
@@ -46,9 +50,21 @@ const app=express();
 
 const cors = require('cors');
 const corsOptions = {
-    origin: 'http://localhost:3000',
+    origin: 'https://zen-hodgkin-aa5b05.netlify.app',
     optionsSuccessStatus: 200
 }
+
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Method"
+    );
+    res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+    res.header("Allow", "GET, POST, OPTIONS, PUT, DELETE");
+    next();
+  });
+
 
 app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({extended:false}));
@@ -101,6 +117,17 @@ app.use('/api', SupplierType);
 app.use('/api', notePersonal);
 app.use('/api',bankAccount);
 
+if(process.env.NODE_ENV === 'production'){
+    app.use('/api',express.static('./ucontrol-front_end/build'));
+    // app.get('*',(req, res)=>{
+    //     res.sendFile(path.join(__dirname,'ucontrol-front_end','build','index.html'))
+    // })
+}else{
+    res.send(403, 'Sorry! you cant see that.');
+}
+
+
+
 // Create a Server
 // const server = app.listen(3050, function () {
  
@@ -109,11 +136,11 @@ app.use('/api',bankAccount);
 
 //   console.log("App listening at http://%s:%s", host, port); 
 // })
-const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
-
-// const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
-mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then( () => app.listen(3050, () => {
+// const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
+const PORT = process.env.PORT || 3050 ;
+const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
+mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then( () => app.listen(PORT, () => {
         console.log(`Server Running on Port: http://localhost:3050`)
     }))
     .catch((error) => console.log(`${error} did not connect`))

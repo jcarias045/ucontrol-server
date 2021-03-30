@@ -1,7 +1,6 @@
 const SysOptions = require('../models/systemOp.model');
 const ProfileOptions = require('../models/profileOptions.model');
 const Grupos = require('../models/grupos.model');
-const Roles = require('../models/rol.model');
 
 // const db = require('../config/db.config.js');
 // const { Op } = require("sequelize");
@@ -54,7 +53,7 @@ function createProfileOptions(req, res){
 
 function getSysUserOptions(req, res){
     let rolId = req.params.id;
-    
+    try{
         // ({
         //     model:  ProfileOptions,
         //     include: [
@@ -98,7 +97,6 @@ function getSysUserOptions(req, res){
         //             from: "profileoptions",
         //             localField: "_id",
         //             foreignField: "OpMenu",
-
         //             as: "menu",
         //         }
         //     }
@@ -164,62 +162,29 @@ function getSysUserOptions(req, res){
                                     }
                                     }
                                         
-                    //         ],
-                    //         "as": "opmenu"
-                    //       }}
-                    // ],
-                    // "as": "grupos"
-               
-        
-            //  ProfileOptions.find({Checked: true, Rol: rolId})
-            // .populate({path:'Rol', model: "Rol"})
-            // .populate({path:'OpMenu', model: "OpMenu", populate: ({path:"Grupos", model: "Grupos"})})
-            .then(options => {
+                            ],
+                            "as": "opmenu"
+                          }}
+                    ],
+                    "as": "grupos"
+                }
+            }
+        ])
+        .then(options => {
             res.status(200).send(options);
+          
         }).catch(err => {
             console.log(err);
         })
-    //     .exec((err, products) => {
-    //     if (err) {
-    //         console.log(err);
-    //         return res.send(err.message);
-    //       }
-    //       if(!products){
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
 
-    //       }else{
-    //           console.log(products);
-    //           const productsByCourse = products.filter(
-    //             (product) => {
-                    
-                        
-    //                     let roles=product.roles;
-    //                     let id=null;
-    //                     roles.map(item=>{id=item._id;});
-    //                     if(roles){
-    //                         console.log('id de rol',id);
-    //                      return( product.Rol===rolId ) 
-    //                     }else{
-    //                         return null;
-    //                     }
-                        
-                    
-                   
-    //             }
-    //         );
-    //         console.log(productsByCourse);
-  
-    //       res.status(200).send(productsByCourse);
-    //       }
-    // })
-    // .catch(error) {
-    //     // imprimimos a consola
-    //     console.log(error);
-
-    //     res.status(500).json({
-    //         message: "Error en query!",
-    //         error: error
-    //     });
-    // }
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
 }
 
 function getGrupos(req, res){
