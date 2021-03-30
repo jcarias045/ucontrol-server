@@ -50,7 +50,7 @@ const app=express();
 
 const cors = require('cors');
 const corsOptions = {
-    origin: 'http://localhost:3050/api/',
+    origin: 'https://gracious-kalam-e77950.netlify.app',
     optionsSuccessStatus: 200
 }
 
