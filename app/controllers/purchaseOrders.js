@@ -1,3 +1,9 @@
+const db = require('../config/db.config.js');
+const { Op } = require("sequelize");
+
+const sequelize = require('sequelize');
+const { PurchaseInvoice, PurchaseInvoiceDetails } = require('../config/db.config.js');
+
 const moment=require("moment");
 const PurchaseOrder = require("../models/purchaseOrder.model");
 const PurchaseOrderDetail = require("../models/purchaseDetail.model");

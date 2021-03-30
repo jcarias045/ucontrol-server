@@ -705,405 +705,495 @@ module.exports={
 //                                 ],
 //                                 attributes: ['Stock'],
 //                                 where: {ID_Inventory:item.ID_Inventory}
-//                             }).then(orders => {
-//                                 return orders
-//                             });
-//                             let proIngresados = await  PurchaseInvoiceDetails.findAll({          
-//                                 attributes: ['Ingresados'],
-//                                 where: {ID_PurchaseInvoiceDetail:item.ID_PurchaseInvoiceDetail}
-//                             }).then(orders => {
-//                                 return orders
-//                             });
+// //                             }).then(orders => {
+// //                                 return orders
+// //                             });
+// //                             let proIngresados = await  PurchaseInvoiceDetails.findAll({          
+// //                                 attributes: ['Ingresados'],
+// //                                 where: {ID_PurchaseInvoiceDetail:item.ID_PurchaseInvoiceDetail}
+// //                             }).then(orders => {
+// //                                 return orders
+// //                             });
 
-//                             var cantidad=0.0;
-//                             var ingresos=0.0;
-//                             console.log(invenrotyExist);
-//                             cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) + parseFloat(item.Quantity);
-//                             ingresos=parseFloat(proIngresados[0].dataValues.Ingresados) + parseFloat(item.Quantity);
-//                             let updateIngresados={};
+// //                             var cantidad=0.0;
+// //                             var ingresos=0.0;
+// //                             console.log(invenrotyExist);
+// //                             cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) + parseFloat(item.Quantity);
+// //                             ingresos=parseFloat(proIngresados[0].dataValues.Ingresados) + parseFloat(item.Quantity);
+// //                             let updateIngresados={};
                             
-//                             console.log(parseFloat(ingresos));
-//                             if(parseFloat(ingresos)===parseFloat(item.Cantidad)){
-//                                 // let purchase={
-//                                 //    Recibida:1
-//                                 // };
-//                                 // let result2 = await PurchaseInvoice.update(purchase,
-//                                 //     {             
-//                                 //       where: {ID_PurchaseInvoice : item.PuchaseInvoice},
-//                                 //       attributes: ['ID_PurchaseInvoice']
-//                                 //     }
-//                                 //   );
-//                                   updateIngresados={
-//                                     Ingresados:parseFloat(ingresos),
-//                                     State:1
-//                                 };
-//                                 let resul = await PurchaseInvoiceDetails.update(updateIngresados,
-//                                     {             
-//                                       where: {ID_PurchaseInvoiceDetail : item.ID_PurchaseInvoiceDetail},
-//                                       attributes: ['ID_PurchaseInvoiceDetail']
-//                                     }
-//                                   )
-//                             }
-//                             else{
-//                                 updateIngresados={
-//                                     Ingresados:parseFloat(ingresos),
-//                                     State:0
-//                                 };
-//                                 let result2 = await PurchaseInvoiceDetails.update(updateIngresados,
-//                                     {             
-//                                       where: {ID_PurchaseInvoiceDetail : item.ID_PurchaseInvoiceDetail},
-//                                       attributes: ['ID_PurchaseInvoiceDetail']
-//                                     }
-//                                   )
-//                             }
+// //                             console.log(parseFloat(ingresos));
+// //                             if(parseFloat(ingresos)===parseFloat(item.Cantidad)){
+// //                                 // let purchase={
+// //                                 //    Recibida:1
+// //                                 // };
+// //                                 // let result2 = await PurchaseInvoice.update(purchase,
+// //                                 //     {             
+// //                                 //       where: {ID_PurchaseInvoice : item.PuchaseInvoice},
+// //                                 //       attributes: ['ID_PurchaseInvoice']
+// //                                 //     }
+// //                                 //   );
+// //                                   updateIngresados={
+// //                                     Ingresados:parseFloat(ingresos),
+// //                                     State:1
+// //                                 };
+// //                                 let resul = await PurchaseInvoiceDetails.update(updateIngresados,
+// //                                     {             
+// //                                       where: {ID_PurchaseInvoiceDetail : item.ID_PurchaseInvoiceDetail},
+// //                                       attributes: ['ID_PurchaseInvoiceDetail']
+// //                                     }
+// //                                   )
+// //                             }
+// //                             else{
+// //                                 updateIngresados={
+// //                                     Ingresados:parseFloat(ingresos),
+// //                                     State:0
+// //                                 };
+// //                                 let result2 = await PurchaseInvoiceDetails.update(updateIngresados,
+// //                                     {             
+// //                                       where: {ID_PurchaseInvoiceDetail : item.ID_PurchaseInvoiceDetail},
+// //                                       attributes: ['ID_PurchaseInvoiceDetail']
+// //                                     }
+// //                                   )
+// //                             }
                                      
-//                            let updateStock={
-//                                  Stock :parseFloat(cantidad)
+// //                            let updateStock={
+// //                                  Stock :parseFloat(cantidad)
                                     
-//                              }
+// //                              }
                             
-//                               console.log(updateStock);
+// //                               console.log(updateStock);
                            
-//                               let inventario = await Inventory.update(updateStock,
-//                                 {             
-//                                   where: {ID_Inventory : item.ID_Inventory, ID_Bodega:8},
-//                                   attributes: ['Stock','inventory']
-//                                 }
-//                               );
-//                               //contando 
-//                               let completados=await  PurchaseInvoiceDetails.count({ where: {'State': {[Op.gt]: 0}, 'ID_PurchaseInvoice':item.PuchaseInvoice} }).then(c => {
-//                                 return c
-//                               });
-//                               let todos=await  PurchaseInvoiceDetails.count({ where: {'ID_PurchaseInvoice':item.PuchaseInvoice} }).then(c => {
-//                                 return c
-//                               });
-//                               console.log(completados);
-//                               console.log(todos);
-//                               if(parseInt(completados)===parseInt(todos)){
-//                                   console.log("cambiando");
-//                                 let purchase={
-//                                     Recibida:1
-//                                  };
-//                                  let result2 = await PurchaseInvoice.update(purchase,
-//                                      {             
-//                                        where: {ID_PurchaseInvoice : item.PuchaseInvoice},
-//                                        attributes: ['ID_PurchaseInvoice']
-//                                      }
-//                                    );
-//                               }
-//                         }
-//                        }).catch(err=>{
-//                         console.log(err);
-//                      return err.message;
-//                  });
-//                  }
-//             }
+// //                               let inventario = await Inventory.update(updateStock,
+// //                                 {             
+// //                                   where: {ID_Inventory : item.ID_Inventory, ID_Bodega:8},
+// //                                   attributes: ['Stock','inventory']
+// //                                 }
+// //                               );
+// //                               //contando 
+// //                               let completados=await  PurchaseInvoiceDetails.count({ where: {'State': {[Op.gt]: 0}, 'ID_PurchaseInvoice':item.PuchaseInvoice} }).then(c => {
+// //                                 return c
+// //                               });
+// //                               let todos=await  PurchaseInvoiceDetails.count({ where: {'ID_PurchaseInvoice':item.PuchaseInvoice} }).then(c => {
+// //                                 return c
+// //                               });
+// //                               console.log(completados);
+// //                               console.log(todos);
+// //                               if(parseInt(completados)===parseInt(todos)){
+// //                                   console.log("cambiando");
+// //                                 let purchase={
+// //                                     Recibida:1
+// //                                  };
+// //                                  let result2 = await PurchaseInvoice.update(purchase,
+// //                                      {             
+// //                                        where: {ID_PurchaseInvoice : item.PuchaseInvoice},
+// //                                        attributes: ['ID_PurchaseInvoice']
+// //                                      }
+// //                                    );
+// //                               }
+// //                         }
+// //                        }).catch(err=>{
+// //                         console.log(err);
+// //                      return err.message;
+// //                  });
+// //                  }
+// //             }
            
-//         });          
+// //         });          
         
 
-//         // Save to MySQL database
+// //         // Save to MySQL database
        
-//     }catch(error){
+// //     }catch(error){
+// //         res.status(500).json({
+// //             message: "Fail!",
+// //             error: error.message
+// //         });
+// //     }
+// // }
+
+// function getProductEntriccces(req,res){
+//     let invoiceId = req.params.id; 
+//     try{
+//         Inventory.findAll({
+//             include: [
+//                 {
+//                     model: PurchaseInvoiceDetails,
+//                     include:[{
+//                         model:InvoiceEntriesDetails,
+//                         attributes: ['ID_ProductEntry'],
+//                         on:{
+                   
+//                             ID_PurchaseInvoiceDetail: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_PurchaseInvoiceDetail"), "=", sequelize.col("ec_purchaseinvoicedetail->ec_invoiceentry.ID_PurchaseInvoiceDetail")),
+//                          //    Ingresados:{[Op.gt]: 0}
+//                          },
+//                          include:[{
+//                              model:ProductEntries,
+//                              on:{
+                   
+//                                 ID_ProductEntry: sequelize.where(sequelize.col("ec_purchaseinvoicedetail->ec_invoiceentry.ID_ProductEntry"), 
+//                                 "=", sequelize.col("ec_purchaseinvoicedetail->ec_invoiceentry->ec_productentries.ID_ProductEntry")),
+//                              //    Ingresados:{[Op.gt]: 0}
+//                              },
+//                          }]
+//                     }],
+//                     attributes: ['ID_PurchaseInvoiceDetail','ID_PurchaseInvoice','Quantity','Discount','ProductName','SubTotal','ID_Inventory','Ingresados','State'],
+//                     on:{
+                   
+//                        ID_Inventory: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_Inventory"), "=", sequelize.col("ec_inventory.ID_Inventory")),
+//                     //    Ingresados:{[Op.gt]: 0}
+//                     },
+                   
+                
+//                 },
+//                 {
+//                     model: Product,
+//                     include: [
+//                         {
+//                             model:Measure,
+//                             attributes: ['Name'],
+//                             on: {
+//                                ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_products->crm_measures.ID_Measure")),
+                              
+//                            }
+//                         }
+//                     ],
+//                     attributes: ['codproducts','ID_Measure','BuyPrice','ID_Products'],
+//                     on:{
+//                         ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products")),
+//                     },
+                    
+                    
+//                 }
+//             ],
+//             attributes: ['ID_Inventory'],
+//             where:{
+//                 ID_PurchaseInvoice: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_PurchaseInvoice"), "=", invoiceId),
+//                 ID_Bodega:8
+//             }
+//         })
+//         .then(details => {
+//             res.status(200).send({details});
+            
+//         })
+//     }catch(error) {
+//         // imprimimos a consola
+//         console.log(error);
+
 //         res.status(500).json({
-//             message: "Fail!",
+//             message: "Error!",
+//             error: error
+//         });
+//     }
+// }
+
+
+// async function anularggggProductEntry(req,res){
+//     let entryId = req.params.id; 
+//     console.log(entryId);
+   
+//     try{
+//         let entry = await ProductEntries.findByPk(entryId,{
+//             attributes: ['ID_ProductEntry']});
+    
+
+//         if(!entry){
+//            // retornamos el resultado al cliente
+//             res.status(404).json({
+//                 message: "No se encuentra el cliente con ID = " + entryId,
+//                 error: "404"
+//             });
+//         } else {    
+//             let invoiceEntryD=await InvoiceEntriesDetails.findAll({where: {ID_ProductEntry: entryId}}).then(function(result){return result});
+            
+//             // actualizamos nuevo cambio en la base de datos, definición de
+//             let updatedObject = { 
+               
+//                 State:0          
+//             }
+//              //agregar proceso de encriptacion
+//             let result = await entry.update(updatedObject,
+//                               { 
+//                                 returning: true,                
+//                                 where: {ID_ProductEntry  : entryId},
+//                                 attributes:['ID_ProductEntrys' ]
+//                               }
+//                             );
+
+//             // retornamos el resultado al cliente
+//             if(!result) {
+//                 res.status(500).json({
+//                     message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+//                     error: "No se puede actualizar",
+//                 });
+//             }
+//             if(result){
+//                 let invoiceDetailId=null;
+//                for(var i=0; i<invoiceEntryD.length; i++){
+//                    invoiceDetailId =await invoiceEntryD[i].dataValues.ID_PurchaseInvoiceDetail;
+//                   console.log(invoiceDetailId);
+//                   let invoiceDetails=await PurchaseInvoiceDetails.findAll({ where:{ID_PurchaseInvoiceDetail:invoiceDetailId}})
+//                   .then(await function(result){return result});
+//                     for(var j=0; j<invoiceDetails.length; j++){
+//                       let purchaseInvoiceId = await invoiceDetails[j].dataValues.ID_PurchaseInvoice;
+//                       let inventoryId= await invoiceDetails[j].dataValues.ID_Inventory;
+//                       let ingresados= await invoiceDetails[j].dataValues.Ingresados;
+//                       let cantidad=0;
+//                       console.log(ingresados);
+//                       let invenrotyExist = await  Inventory.findAll({
+//                         include: [
+//                             {
+//                                model:Product,
+//                                attributes: [],
+//                                on: {
+//                                 ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
+//                                }
+//                             }
+//                         ],
+//                         attributes: ['Stock'],
+//                         where: {ID_Inventory:inventoryId}
+//                     }).then(orders => {
+//                         return orders
+//                     });
+//                     console.log(invenrotyExist[0].dataValues.Stock);
+//                     console.log(ingresados);
+//                     cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) - parseFloat(ingresados);
+//                     console.log(cantidad);
+//                     //CAMBIO DE ESTADO DE ORDEN DE DETALLE DE FACTURA
+//                     updateIngresados={
+//                         Ingresados:0,
+//                         State:0
+//                     };
+//                     let resul = await PurchaseInvoiceDetails.update(updateIngresados,
+//                         {             
+//                           where: {ID_PurchaseInvoiceDetail : invoiceDetailId},
+//                           attributes: ['ID_PurchaseInvoiceDetail']
+//                         }
+//                       );
+//                     //editar estado de la FACTURAS
+//                     let updateInvoice={
+//                         Recibida:0
+//                     };
+//                     let invoiceEditado = await PurchaseInvoice.update(updateInvoice,
+//                         {             
+//                           where: {ID_PurchaseInvoice : purchaseInvoiceId},
+//                           attributes: ['ID_PurchaseInvoice']
+//                         }
+//                       );
+//                       let updateStock={
+//                         Stock :cantidad
+                           
+//                     }
+//                     let inventario = await Inventory.update(updateStock,
+//                         {             
+//                           where: {ID_Inventory : inventoryId, ID_Bodega:8},
+//                           attributes: ['Stock']
+//                         }
+//                       );
+//                   }
+//                }
+//             }
+
+//             res.status(200).json(result);
+//         }
+//     } catch(error){
+//         res.status(500).json({
+//             message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
 //             error: error.message
 //         });
 //     }
 // }
 
-function getProductEntriccces(req,res){
-    let invoiceId = req.params.id; 
-    try{
-        Inventory.findAll({
-            include: [
-                {
-                    model: PurchaseInvoiceDetails,
-                    include:[{
-                        model:InvoiceEntriesDetails,
-                        attributes: ['ID_ProductEntry'],
-                        on:{
-                   
-                            ID_PurchaseInvoiceDetail: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_PurchaseInvoiceDetail"), "=", sequelize.col("ec_purchaseinvoicedetail->ec_invoiceentry.ID_PurchaseInvoiceDetail")),
-                         //    Ingresados:{[Op.gt]: 0}
-                         },
-                         include:[{
-                             model:ProductEntries,
-                             on:{
-                   
-                                ID_ProductEntry: sequelize.where(sequelize.col("ec_purchaseinvoicedetail->ec_invoiceentry.ID_ProductEntry"), 
-                                "=", sequelize.col("ec_purchaseinvoicedetail->ec_invoiceentry->ec_productentries.ID_ProductEntry")),
-                             //    Ingresados:{[Op.gt]: 0}
-                             },
-                         }]
-                    }],
-                    attributes: ['ID_PurchaseInvoiceDetail','ID_PurchaseInvoice','Quantity','Discount','ProductName','SubTotal','ID_Inventory','Ingresados','State'],
-                    on:{
-                   
-                       ID_Inventory: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_Inventory"), "=", sequelize.col("ec_inventory.ID_Inventory")),
-                    //    Ingresados:{[Op.gt]: 0}
-                    },
-                   
-                
-                },
-                {
-                    model: Product,
-                    include: [
-                        {
-                            model:Measure,
-                            attributes: ['Name'],
-                            on: {
-                               ID_Measure: sequelize.where(sequelize.col("crm_products.ID_Measure"), "=", sequelize.col("crm_products->crm_measures.ID_Measure")),
-                              
-                           }
-                        }
-                    ],
-                    attributes: ['codproducts','ID_Measure','BuyPrice','ID_Products'],
-                    on:{
-                        ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products")),
-                    },
-                    
-                    
-                }
-            ],
-            attributes: ['ID_Inventory'],
-            where:{
-                ID_PurchaseInvoice: sequelize.where(sequelize.col("ec_purchaseinvoicedetail.ID_PurchaseInvoice"), "=", invoiceId),
-                ID_Bodega:8
-            }
-        })
-        .then(details => {
-            res.status(200).send({details});
+
+// async function createProductEntryWifggthoutInvoice(req,res){
+//     let entry = {};
+//     let userId = req.body.ID_User; 
+//     let codigo=0;
+//     let detalles=req.body.entries;
+//     let companyId = req.body.ID_Company;
+//     console.log(companyId);
+//     let averageCost=await Company.findAll({attributes:['AverageCost'], where:{RequiredIncome:true,ID_Company:companyId}}).
+//     then(function(result){return result});
+//     console.log(averageCost);
+//     let entrycod=await ProductEntries.max('codentry',{ 
             
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error!",
-            error: error
-        });
-    }
-}
-
-
-async function anularggggProductEntry(req,res){
-    let entryId = req.params.id; 
-    console.log(entryId);
-   
-    try{
-        let entry = await ProductEntries.findByPk(entryId,{
-            attributes: ['ID_ProductEntry']});
-    
-
-        if(!entry){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + entryId,
-                error: "404"
-            });
-        } else {    
-            let invoiceEntryD=await InvoiceEntriesDetails.findAll({where: {ID_ProductEntry: entryId}}).then(function(result){return result});
-            
-            // actualizamos nuevo cambio en la base de datos, definición de
-            let updatedObject = { 
-               
-                State:0          
-            }
-             //agregar proceso de encriptacion
-            let result = await entry.update(updatedObject,
-                              { 
-                                returning: true,                
-                                where: {ID_ProductEntry  : entryId},
-                                attributes:['ID_ProductEntrys' ]
-                              }
-                            );
-
-            // retornamos el resultado al cliente
-            if(!result) {
-                res.status(500).json({
-                    message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
-            }
-            if(result){
-                let invoiceDetailId=null;
-               for(var i=0; i<invoiceEntryD.length; i++){
-                   invoiceDetailId =await invoiceEntryD[i].dataValues.ID_PurchaseInvoiceDetail;
-                  console.log(invoiceDetailId);
-                  let invoiceDetails=await PurchaseInvoiceDetails.findAll({ where:{ID_PurchaseInvoiceDetail:invoiceDetailId}})
-                  .then(await function(result){return result});
-                    for(var j=0; j<invoiceDetails.length; j++){
-                      let purchaseInvoiceId = await invoiceDetails[j].dataValues.ID_PurchaseInvoice;
-                      let inventoryId= await invoiceDetails[j].dataValues.ID_Inventory;
-                      let ingresados= await invoiceDetails[j].dataValues.Ingresados;
-                      let cantidad=0;
-                      console.log(ingresados);
-                      let invenrotyExist = await  Inventory.findAll({
-                        include: [
-                            {
-                               model:Product,
-                               attributes: [],
-                               on: {
-                                ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
-                               }
-                            }
-                        ],
-                        attributes: ['Stock'],
-                        where: {ID_Inventory:inventoryId}
-                    }).then(orders => {
-                        return orders
-                    });
-                    console.log(invenrotyExist[0].dataValues.Stock);
-                    console.log(ingresados);
-                    cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) - parseFloat(ingresados);
-                    console.log(cantidad);
-                    //CAMBIO DE ESTADO DE ORDEN DE DETALLE DE FACTURA
-                    updateIngresados={
-                        Ingresados:0,
-                        State:0
-                    };
-                    let resul = await PurchaseInvoiceDetails.update(updateIngresados,
-                        {             
-                          where: {ID_PurchaseInvoiceDetail : invoiceDetailId},
-                          attributes: ['ID_PurchaseInvoiceDetail']
-                        }
-                      );
-                    //editar estado de la FACTURAS
-                    let updateInvoice={
-                        Recibida:0
-                    };
-                    let invoiceEditado = await PurchaseInvoice.update(updateInvoice,
-                        {             
-                          where: {ID_PurchaseInvoice : purchaseInvoiceId},
-                          attributes: ['ID_PurchaseInvoice']
-                        }
-                      );
-                      let updateStock={
-                        Stock :cantidad
-                           
-                    }
-                    let inventario = await Inventory.update(updateStock,
-                        {             
-                          where: {ID_Inventory : inventoryId, ID_Bodega:8},
-                          attributes: ['Stock']
-                        }
-                      );
-                  }
-               }
-            }
-
-            res.status(200).json(result);
-        }
-    } catch(error){
-        res.status(500).json({
-            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
-            error: error.message
-        });
-    }
-}
-
-
-async function createProductEntryWifggthoutInvoice(req,res){
-    let entry = {};
-    let userId = req.body.ID_User; 
-    let codigo=0;
-    let detalles=req.body.entries;
-    let companyId = req.body.ID_Company;
-    console.log(companyId);
-    let entrycod=await ProductEntries.max('codentry',{ 
-            
-            where: {ID_Company:companyId},
+//             where: {ID_Company:companyId},
             
         
-    }).then(function(orden) {
+//     }).then(function(orden) {
         
-       return orden;
-    });
+//        return orden;
+//     });
     
-    if(!entrycod){
-        codigo =1;
-    }else {codigo=entrycod+1}
+//     if(!entrycod){
+//         codigo =1;
+//     }else {codigo=entrycod+1}
     
-    try{
-        let addEntry={};
+//     try{
+//         let addEntry={};
         
-        // Construimos el modelo del objeto company para enviarlo como body del request
-        entry.EntryDate = req.body.EntryDate;
-        entry.ID_User =req.body.ID_User;
-        entry.Comments = req.body.Comments;
-        entry.codentry=codigo;
-        entry.ID_Company=req.body.ID_Company;
-        entry.State=1;
+//         // Construimos el modelo del objeto company para enviarlo como body del request
+//         entry.EntryDate = req.body.EntryDate;
+//         entry.ID_User =req.body.ID_User;
+//         entry.Comments = req.body.Comments;
+//         entry.codentry=codigo;
+//         entry.ID_Company=req.body.ID_Company;
+//         entry.State=1;
        
     
-        ProductEntries.create(entry)
-        .then(result => {  
-          let entryId=result.ID_ProductEntry;
-          console.log(entryId);
-          if(detalles.length>0){
-            for(const item of detalles){
-                let inventario=item.ID_Inventory;
-                addEntry.ID_ProductEntry=entryId;
-                addEntry.Quantity =item.Quantity;
-                addEntry.ID_Inventory=item.ID_Inventory;
-                console.log(addEntry);
-                InvoiceEntriesDetails.create(addEntry).then(async result=>{                   
-                    if(!result){
-                        res.status(500).send({message:"Error al ingresar el detalle de la orden"});
+//         ProductEntries.create(entry)
+//         .then(result => {  
+//           let entryId=result.ID_ProductEntry;
+//           console.log(entryId);
+//           if(detalles.length>0){
+//             for(const item of detalles){
+//                 let inventario=item.ID_Inventory;
+//                 addEntry.ID_ProductEntry=entryId;
+//                 addEntry.Quantity =item.Quantity;
+//                 addEntry.ID_Inventory=item.ID_Inventory;
+//                 console.log(addEntry);
+//                 InvoiceEntriesDetails.create(addEntry).then(async result=>{                   
+//                     if(!result){
+//                         res.status(500).send({message:"Error al ingresar el detalle de la orden"});
                        
-                    }else{
-                        let invenrotyExist = await  Inventory.findAll({
-                            include: [
-                                {
-                                   model:Product,
-                                   attributes: [],
-                                   on: {
-                                    ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
-                                   }
-                                }
-                            ],
-                            attributes: ['Stock'],
-                            where: {ID_Inventory:inventario}
-                        }).then(orders => {
-                            return orders
-                        });
-                        console.log(invenrotyExist);
-                        let cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) + parseFloat(item.Quantity);
-                        console.log(cantidad);
+//                     }else{
+//                         let invenrotyExist = await  Inventory.findAll({
+//                             include: [
+//                                 {
+//                                    model:Product,
+//                                    attributes: [],
+//                                    on: {
+//                                     ID_Products: sequelize.where(sequelize.col("ec_inventory.ID_Products"), "=", sequelize.col("crm_products.ID_Products"))
+//                                    }
+//                                 }
+//                             ],
+//                             attributes: ['Stock'],
+//                             where: {ID_Inventory:inventario}
+//                         }).then(orders => {
+//                             return orders
+//                         });
+//                         console.log(invenrotyExist);
+//                         let cantidad=parseFloat(invenrotyExist[0].dataValues.Stock) + parseFloat(item.Quantity);
+//                         console.log(cantidad);
 
-                        let updateStock={
-                            Stock :parseFloat(cantidad)
+//                         let updateStock={
+//                             Stock :parseFloat(cantidad)
                                
-                        }
+//                         }
                        
-                         console.log(updateStock);
+//                          console.log(updateStock);
                       
-                         let actInventario = await Inventory.update(updateStock,
-                           {             
-                             where: {ID_Inventory : inventario, ID_Bodega:8},
-                             attributes: ['Stock']
-                           }
-                         );
-
-                    }
-                }).catch(error=>{console.log(error);})
-            }
-        }
-         }).catch(err => {console.log(err);})
-
-    }
-    catch(err) {
-        console.log(err);
-    }
-}
+//                          let actInventario = await Inventory.update(updateStock,
+//                            {             
+//                              where: {ID_Inventory : inventario, ID_Bodega:8},
+//                              attributes: ['Stock']
+//                            }
+//                          );
 
 
-// module.exports={
-//     getEntries,
-//     createProductEntry,
-//     getProductEntries,
-//     anularProductEntry,
-//     createProductEntryWithoutInvoice
+//                          if(averageCost.length > 0){
+//                             console.log('COSTO PROMEDIO');
+//                             console.log(item.proveedorType);
+//                             console.log(item.totalImpuestos);
+//                             console.log(item.total);
+//                             console.log(item.Price);
+//                             console.log(item.Stock);
+//                             console.log(item.ID_Products);
+                            
+//                             let facturaProveedor=item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total;
+//                             console.log();
+//                             let fact1=(item.Stock*item.Price)+facturaProveedor;
+//                             let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
+//                             console.log(fact2);
+//                             console.log(fact1);
+//                             costo=parseFloat((fact1)/(fact2));
+                            
+//                         console.log('COSTO PROMEDIO');
+//                            console.log(costo);
+//                           let costoprom={
+//                             AverageCost : parseFloat(averageCost.length>0?parseFloat(costo): 
+//                             (item.proveedorType==='CreditoFiscal'? item.totalImpuestos:item.total )) 
+                               
+//                         }
+                       
+//                          console.log(costoprom);
+                      
+//                          let updProduct = await Product.update(costoprom,
+//                            {             
+//                              where: {ID_Products : item.ID_Products},
+//                              attributes: ['AverageCost']
+//                            }
+//                          );
+//                          console.log(updProduct);
+//                         }
+
+//                     }
+//                 }).catch(error=>{console.log(error);})
+//             }
+//         }
+//          }).catch(err => {console.log(err);})
+
+//     }
+//     catch(err) {
+//         console.log(err);
+//     }
 // }
+
+// async function getListProductIngresadoSinFactura(req, res){
+//      // Buscamos informacion para llenar el modelo de 
+//      let emtryId=req.params.id;
+//      try{
+//         InvoiceEntriesDetails.findAll({
+//              where: {
+//                 ID_ProductEntry: emtryId
+//              },
+//              include: [{
+//                  model: Inventory,
+//                  attributes: ['ID_Inventory'],
+//                  on:{
+                   
+//                     ID_Inventory: sequelize.where(sequelize.col("ec_invoiceentry.ID_Inventory"), "=", sequelize.col("ec_inventories.ID_Inventory")),
+//                  },
+//                  include:[
+//                      {
+//                          model:Product,
+//                          attributes: ['ID_Products','Name','MinStock','MaxStock','BuyPrice','codproducts'],  
+//                          include: [
+//                             {
+//                                 model:Measure,
+//                                 attributes: ['Name'],
+//                                 on: {
+//                                    ID_Measure: sequelize.where(sequelize.col("ec_inventories.crm_products.crm_measures.ID_Measure"), "=", sequelize.col("ec_inventories.crm_products.ID_Measure")),
+//                                }
+//                             }
+//                         ]   
+//                      }
+//                  ]
+//                  }]
+//              }
+         
+ 
+//          )
+//          .then(entries => {
+//              res.status(200).send({entries});
+           
+//          })
+//      }catch(error) {
+//          // imprimimos a consola
+//          console.log(error);
+ 
+//          res.status(500).json({
+//              message: "Error en query!",
+//              error: error
+//          });
+//      }
+// }
+
+
+// // module.exports={
+// //     getEntries,
+// //     createProductEntry,
+// //     getProductEntries,
+// //     anularProductEntry,
+// //     createProductEntryWithoutInvoice
+// // }

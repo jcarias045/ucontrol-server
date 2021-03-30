@@ -12,30 +12,10 @@ const Grupos = require('../models/grupos.model');
 
 function getSystemOptions(req, res){
 
-    try{
-        SysOptions.find().populate({path: "Grupos", model: "Grupos"})
-        .then(sysOptions => {
-            res.status(200).send({sysOptions});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
-
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
-}
-
-function createProfileOptions(req, res){
-    let profileOptions = {};
-
+    
     try{
         // Construimos el modelo del objeto
         profile.Name = req.body.Name;
-        profile.Description=req.body.Description;
     
         // Save to MySQL database
        Profile.create(profile)
@@ -70,29 +50,8 @@ function getSysUserOptions(req, res){
         //         include:[
         //               {
                          
-        //         model:  ProfileOptions,
-        //         on:{
-                   
-        //             ID_OptionMenu: sequelize.where(sequelize.col("sys_optionmenus->sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenus.ID_OptionMenu")),
-        //             ID_Rol: rolId
-        //         },
-        //         required: true
-        //          },
-                 
-        //         ]
-        //     }
-        // ]
-        // 
-        // Grupos.find().populate({path: 'SysOptions', model: 'SysOptions', populate:{path: 'OpMenu', model: 'OpMenu'}})
-        // // .populate({path: 'ProfileOptions', populate:{path: 'OpMenu'} })
-        // Grupos.aggregate([
-        //     {
-        //         $lookup:{
-        //             from: "opmenus",
-        //             localField: "_id",
         //             foreignField: "Grupos",
         //             as: "opciones",
-        //         },
         //         $lookup1:{
         //             from: "profileoptions",
         //             localField: "_id",
@@ -312,7 +271,6 @@ async function changeStateOption(req, res){
         });
     }
 }
-
 module.exports={
     getSystemOptions,
     getSysUserOptions,
