@@ -50,7 +50,7 @@ const app=express();
 
 const cors = require('cors');
 const corsOptions = {
-    origin: 'https://zen-hodgkin-aa5b05.netlify.app',
+    origin: 'http://localhost:3050/api/',
     optionsSuccessStatus: 200
 }
 

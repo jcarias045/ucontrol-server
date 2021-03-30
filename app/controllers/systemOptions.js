@@ -14,19 +14,17 @@ function getSystemOptions(req, res){
 
     
     try{
-        // Construimos el modelo del objeto
-        profile.Name = req.body.Name;
-    
-        // Save to MySQL database
-       Profile.create(profile)
-      .then(result => {    
-        res.status(200).json(result);
-    
-      });  
-    }catch(error){
+        SysOptions.find().populate({path: "Grupos", model: "Grupos"})
+        .then(Grupos => {
+            res.status(200).send({Grupos});          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
         res.status(500).json({
-            message: "Fail!",
-            error: error.message
+            message: "Error en query!",
+            error: error
         });
     }
 }
