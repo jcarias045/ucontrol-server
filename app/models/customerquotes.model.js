@@ -20,4 +20,4 @@ const CustomerQuoteSchema = Schema({
   Description:String,
 })
 
-module.exports = mongoose.model('CustomerQuote', PurchaseOrderSchema)
+module.exports = mongoose.model('CustomerQuote', CustomerQuoteSchema)
