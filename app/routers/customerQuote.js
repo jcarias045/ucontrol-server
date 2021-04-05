@@ -5,7 +5,7 @@ let router = express.Router();
 const quotes = require('../controllers/customerQuotes');
 
 
-router.get('/get-customerquotes/:id/:company', quotes.getCustomerQuote);
+router.get('/get-customerquotes/:id', quotes.getCustomerQuote);
 
 
 module.exports = router;
