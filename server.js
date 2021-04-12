@@ -48,6 +48,10 @@ let notePersonal = require('./app/routers/notepersonal');
 let bankAccount = require('./app/routers/bankaccount');
 
 let customerQuoteRoutes= require('./app/routers/customerQuote');
+let saleOrderRoutes= require('./app/routers/saleOrder.route');
+let movementTypeRoutes= require('./app/routers/movementtype.route');
+let customerInvoicesRoutes= require('./app/routers/customerInvoice.route');
+
 const app=express();
 
 const cors = require('cors');
@@ -119,6 +123,9 @@ app.use('/api', SupplierType);
 app.use('/api', notePersonal);
 app.use('/api',bankAccount);
 app.use('/api',customerQuoteRoutes);
+app.use('/api',saleOrderRoutes);
+app.use('/api',movementTypeRoutes);
+app.use('/api',customerInvoicesRoutes);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));

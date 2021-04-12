@@ -11,7 +11,7 @@ async function addPaymentToInvoice(req, res){
 
     let codigo=0;
     let now= new Date();
-    let creacion=now.getTime();
+    let creacion = moment().format('DD/MM/YYYY');
     const {Company,User,PurchaseInvoiceId,Supplierid,Monto,Total,Reason,
         PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
 

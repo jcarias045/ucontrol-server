@@ -12,14 +12,12 @@ const CompanySchema = Schema({
   RequieredIncome: Boolean,
   RequieredOutput: Boolean,
   CompanyRecords: Boolean,
-  AverageCost: Boolean,
-  members: {
-    type: Map,
-    of: {
-      type: 'ObjectId',
-      ref: 'Supplier'
-    }
-  }
+  WorksOpenQuote: Boolean,
+  DaysQuotationValidity: Number,
+  DaysOrderValidity: Number,
+  AvailableReservation:Boolean,
+  OrderWithWallet:Boolean,
+
   },
   // { 
   //       freezeTableName: true,
