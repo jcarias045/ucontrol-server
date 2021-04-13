@@ -8,7 +8,7 @@ const PaymentSupplierSchema = Schema({
                        ref: "PurchaseInvoice",
                        // autopopulate: true,
                      },
-    DatePayment: Date,
+    DatePayment: String,
     Saldo: Number,
     codpayment: Number,
     User: { type: Schema.ObjectId, ref:"User"}

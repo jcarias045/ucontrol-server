@@ -1,3 +1,5 @@
+const moment = require("moment");
+
 const PaymentToSupplier=require('../models/paymentstoSuppliers.model');
 const PaymnetToSupplierDetails=require('../models/paymenttoSupplierDetail.model');
 const PurchaseInvoice=require('../models/purchaseInvoice.model');
@@ -99,6 +101,8 @@ async function addPaymentToInvoice(req, res){
                                 res.status(500).send({message: err});
                             }
                             else{
+                                console.log("DETALLLESS!");
+                                console.log(detailStored);
                                 let paymentDetailId=detailStored._id;
                              
                                 if(paymentDetailId){
@@ -181,12 +185,13 @@ async function addPaymentToInvoice(req, res){
                     }
                     paymentDetails.save(async (err, detailStored)=>{
                         if(err){
-                            res.status(500).send({message: err});
+                            // res.status(500).send({message: err});
                             console.log(err);
                 
                         }else {
                             if(!detailStored){
-                                res.status(500).send({message: err});
+                                // res.status(500).send({message: err});
+                                console.log(err);
                             }
                             else{
                                 let paymentDetailId=detailStored._id;

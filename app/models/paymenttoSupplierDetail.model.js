@@ -11,7 +11,7 @@ const PaymentSupplierDetailSchema = Schema({
                      },
     NumberAccount: String,
     BankName: String,
-    CreationDate: Date,
+    CreationDate: String,
     PaymentSupplier: { type: Schema.ObjectId, ref:"PaymentSupplier"},
     Amount: Number,
     Reason: String,
