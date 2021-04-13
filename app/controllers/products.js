@@ -571,12 +571,9 @@ module.exports={
     getRecommendedProducts,
     // getImages
     getRecommendedProductsInventory,
-<<<<<<< HEAD
-    ExportProductList
+    ExportProductList,
     // getProduct
-=======
     // getProduct,
     getProductByInventory
->>>>>>> mongodb
 
 }
