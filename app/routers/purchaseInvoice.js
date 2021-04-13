@@ -12,6 +12,7 @@ router.get('/get-invoicesupplier-details/:id', purchaseInvoice.getInvoiceDetails
 router.put('/update-invoicesupplier/:id', purchaseInvoice.updateInvoicePurchase);
 router.delete('/delete-invoicedetail/:id', purchaseInvoice.deleteInvoiceDetail);
 router.put('/change-invoicestate/:id/:company', purchaseInvoice.changeInvoiceState);
+router.get('/export-getinvoicesupplier', purchaseInvoice.getInvoiceSupplierExport);
 // // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 // // router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
 

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const PurchaseInvoice = require('./purchaseInvoice.model');
 const Inventory = require('./inventory.model');
+const Supplier = require('./supplier.model')
 
 
 const PurchaseInvoiceDetailSchema = Schema({

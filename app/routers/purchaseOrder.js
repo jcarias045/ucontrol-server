@@ -13,7 +13,7 @@ router.put('/update-purchaseorder/:id', purchase.updatePurchaseOrder);
 router.put('/change-purchasestate/:id', purchase.changePurchaseState);
 // router.get('/get-lastmonthpurchase/:id', purchase.getLastMonthPurchase);
 // router.get('/get-thismonthpurchase/:id', purchase.getThisMonthPurchase);
-
+router.get('/export-purchaseorders', purchase.exportPruchaseOrder);
 
 router.get('/get-closedorders/:id/:company', purchase.getPurchaseOrdersClosed);
 router.get('/get-closedordersdetails/:id', purchase.getClosedPurchaseDetails);

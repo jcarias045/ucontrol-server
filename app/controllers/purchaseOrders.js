@@ -1,15 +1,15 @@
 const db = require('../config/db.config.js');
 const { Op } = require("sequelize");
-
 const sequelize = require('sequelize');
 const { PurchaseInvoice, PurchaseInvoiceDetails } = require('../config/db.config.js');
-
 const moment=require("moment");
 const PurchaseOrder = require("../models/purchaseOrder.model");
 const PurchaseOrderDetail = require("../models/purchaseDetail.model");
 const Inventory = require("../models/inventory.model");
 const Product=require("../models/product.model");
-const Measure = require("../models/measure.model")
+const Measure = require("../models/measure.model");
+const Brand = require('../models/brand.model');
+const Supplier = require ('../models/supplier.model')
 
 function getPurchaseOrders(req, res){
     const { id,company } = req.params;
@@ -121,15 +121,14 @@ function getPurchaseDetails(req, res){
     PurchaseOrderDetail.find({PurchaseOrder:purchaseId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
-    
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
         }else{
             res.status(200).send({order})
         }
-    });
-}
+    })
+    }
 
 async function updatePurchaseOrder(req, res){
     let purchaseId = req.params.id;
@@ -256,6 +255,23 @@ function getClosedPurchaseDetails(req, res){
     });
 }
 
+function exportPruchaseOrder(req, res){
+   
+    PurchaseOrderDetail.find().populate({path: 'PurchaseOrder', model: 'PurchaseOrder', 
+    populate:({path: 'Supplier', model: 'Supplier'})
+    })
+    .then(order => {
+        if(!order){
+            res.status(404).send({message:"No hay "});
+        }else{                        
+            res.status(200).send({order})
+            console.log(order);
+        }
+        })  
+}
+
+
+
 module.exports={
     getPurchaseOrders,
     createPurchaseOrder,
@@ -266,6 +282,7 @@ module.exports={
     // getLastMonthPurchase,
     // getThisMonthPurchase,
     getPurchaseOrdersClosed,
+    exportPruchaseOrder,
     getClosedPurchaseDetails,
     // getPurchaseOrdersBySupplier,
     // getInvoicesBySupplier

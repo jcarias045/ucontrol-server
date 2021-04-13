@@ -68,10 +68,12 @@ async function deletePurchaseDetail(req, res){
 
 }
 
+
 module.exports={
     getPurchaseDetails,
     createPurchaseOrder,
-    deletePurchaseDetail
+    deletePurchaseDetail,
+
 }
 
 

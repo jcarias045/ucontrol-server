@@ -14,7 +14,8 @@ const Grupos = require('../models/grupos.model');
 function getSystemOptions(req, res){
 
     try{
-        SysOptions.find().populate({path: "Grupos", model: "Grupos"})
+        SysOptions.find({Grupos: req.params.id})
+        // .populate({path: "Grupos", model: "Grupos"})
         .then(sysOptions => {
             res.status(200).send({sysOptions});
           

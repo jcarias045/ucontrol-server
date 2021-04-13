@@ -491,7 +491,7 @@ function ExportProductList(req, res){
                 .text('Medida: ' + producto.Measure.Name)
                 .text('Minimo Establecido: '+ producto.MinStock)
                 .text('Maximo Permitido: '+producto.MaxStock)
-                .text('Estado Activo: '+producto.Active)
+                .text('Extado Activo: '+producto.Active)
                 .text('Precio de Compra: '+producto.BuyPrice)
                 .text('En Inventario: '+producto.Inventary)
                 .text('Costo Promedio: '+producto.AverageCost )

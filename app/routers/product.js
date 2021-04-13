@@ -13,6 +13,7 @@ router.delete('/product-delete/:id', products.deleteProduct);
 router.get('/get-product', products.getPoductsId);
 router.put('/desactive-product/:id', products.desactiveProduct);
 router.get('/get-productsall/:id', products.getPoducts);
+router.get('/get-pdfproductlist/:id', products.ExportProductList)
 // router.get('/product-info/:id',products.getProduct);
 
 

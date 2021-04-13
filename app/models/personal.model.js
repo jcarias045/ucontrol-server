@@ -33,7 +33,7 @@ const PersonalSchema = Schema({
     companyRef: String,
     addressRef: String,
     nameRef2: String,
-    phoneRef: String,
+    phoneRef2: String,
     companyRef2: String,
     addressRef2: String,
     nameRef3: String,

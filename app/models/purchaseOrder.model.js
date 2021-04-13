@@ -8,7 +8,6 @@ const PurchaseOrderSchema = Schema({
     ref: "Supplier",
     // autopopulate: true,
   },
-
   InvoiceNumber:String,
   Image:String,
   Total:Number,

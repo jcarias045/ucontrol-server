@@ -1,4 +1,4 @@
-const moment=require("moment");
+const moment = require("moment");
 const purchaseInvoice = require("../models/purchaseInvoice.model");
 const purchaseInvoiceDetail = require("../models/purchaseInvoiceDetails.model");
 const invoiceTaxes = require("../models/invoiceTaxes.model");
@@ -7,9 +7,10 @@ const productEntry = require("../models/productEntries.model");
 const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
-const PaymentToSupplier= require('../models/paymentstoSuppliers.model');
+const PaymentToSupplier = require('../models/paymentstoSuppliers.model');
 const product= require('../models/product.model');
 const inventory = require('../models/inventory.model')
+
 function getSuppliersInvoices(req, res){
     const { id,company } = req.params;
    purchaseInvoice.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
@@ -964,6 +965,7 @@ async function updateInvoicePurchase(req, res){
     }
    
 }
+
 async function changeInvoiceState(req, res){
     let purchaseId = req.params.id;
     let companyId=req.params.company
@@ -1145,6 +1147,7 @@ function getSuppliersInvoicesNoPagada(req, res){
         }
     });
 }
+
 function getInfoInvoice(req, res){
     let userId = req.params.id; 
     let invoiceid = req.params.invoice;
@@ -1163,6 +1166,7 @@ function getInfoInvoice(req, res){
     });
 
 }
+
 function getSuppliersInvoicesPendientes(req, res){
    
     console.log(req.params.id);
@@ -1172,12 +1176,27 @@ function getSuppliersInvoicesPendientes(req, res){
     .then(invoices => {
         if(!invoices){
             res.status(404).send({message:"No hay "});
-        }else{
-           
+        }else{          
             res.status(200).send({invoices})
         }
     });
 }
+
+function getInvoiceSupplierExport(req, res){
+    purchaseInvoiceDetail.find()
+    .populate({path: 'PurchaseInvoice', model:'PurchaseInvoice',
+     populate:({path: 'Supplier', model: 'Supplier'})
+    })
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({details})
+        }
+    });
+}
+
+
 module.exports={
     getSuppliersInvoices,
     createSupplierInvoice,
@@ -1188,7 +1207,8 @@ module.exports={
     changeInvoiceState,
     getSuppliersInvoicesPendientes,
     getSuppliersInvoicesNoPagada,
-    getInfoInvoice
+    getInfoInvoice,
+    getInvoiceSupplierExport
 }
 
 // const db = require('../config/db.config.js');;
