@@ -1,17 +1,16 @@
-const Document = require('../models/document')
+const DocumentProduct = require('../models/documentProduct')
 const fs =require("fs");
 const path=require("path");
 
 function uploadDocument(req,res) {
-    const documents = new Document();
+    const documents = new DocumentProduct();
     //const { Url } = req.files;
-    const { title, description, User, Customer} = req.body
+    const { title, description, User, Product} = req.body
    
     console.log(req.files)
     documents.title = title,
     documents.description = description,
-    documents.Customer = Customer,
-    documents.User = User
+    documents.Product = Product
 
     if (req.files) {
         let filePath = req.files.file.path;
@@ -75,7 +74,7 @@ function uploadDocument(req,res) {
 
 function getDocument(req, res) {
 
-    Document.find()
+    DocumentProduct.find()
     .then(Document => {
         if(!Document){
             res.status(404).send({message:"No hay "});
