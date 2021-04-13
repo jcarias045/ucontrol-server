@@ -1,7 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const fileUpload = require('express-fileupload');
 
 
 require("dotenv").config({
