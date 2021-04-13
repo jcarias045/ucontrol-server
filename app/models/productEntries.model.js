@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const User = require('./user.model');
-const Company = require('./company.model')
+const Company = require('./company.model');
+const Product = require('./product.model');
 
 const ProductEntrySchema = Schema({
   EntryDate:String,
@@ -18,7 +19,8 @@ const ProductEntrySchema = Schema({
   },
   PurchaseInvoice:String,
   Supplier:String,
-  InvoiceNumber:String
+  InvoiceNumber:String, 
+ 
  
 })
 

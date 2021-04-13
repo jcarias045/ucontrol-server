@@ -30,7 +30,7 @@ async function createPurchaseOrder(req,res){
     const orden= new PurchaseOrder();
 
     let now= new Date();
-    let creacion=now.getTime();
+    let creacion = moment().format('DD/MM/YYYY');
     let date = moment().format('L');
     let CreationDate = moment().format('LT');
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,

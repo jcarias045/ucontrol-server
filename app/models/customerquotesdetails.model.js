@@ -3,7 +3,7 @@ const Schema =  mongoose.Schema;
 const CustomerQuote = require('./customerquotes.model');
 const Inventory = require('./inventory.model');
 
-const QuoteDetailsSchema = Schema({
+const CustomerQuoteDetailsSchema = Schema({
   CustomerQuote: {type: Schema.ObjectId, 
     ref: "PurchaseOrder",
     // autopopulate: true,
@@ -11,6 +11,7 @@ const QuoteDetailsSchema = Schema({
   Quantity:Number,
   Discount:Number,
   Price:Number,
+  Priceiva:Number,
   ProductName:String,
   SubTotal:Number,
   Measure:String,
@@ -19,10 +20,13 @@ const QuoteDetailsSchema = Schema({
     ref: "Inventory",
     // autopopulate: true,
   },
-  CustomerName:String,
+ 
+  SubTotal:Number,
+  OnRequest:Boolean,
+
 
  
 })
 
-module.exports = mongoose.model('QuoteDetails', QuoteDetailsSchema)
+module.exports = mongoose.model('CustomerQuoteDetails', CustomerQuoteDetailsSchema)
 

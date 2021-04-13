@@ -1,3 +1,5 @@
+const moment=require("moment");
+
 const productEntry = require("../models/productEntries.model");
 const productEntryDetails = require("../models/invoiceEntriesDetails.model");
 const inventory = require("../models/inventory.model");
@@ -6,7 +8,8 @@ const purchaseInvoice= require("../models/purchaseInvoice.model");
 const supplier = require("../models/supplier.model");
 const company = require("../models/company.model");
 const product = require("../models/product.model");
-
+const inventoryTraceability = require("../models/inventorytraceability.model");
+const MovementTypes = require("../models/movementtype.model");
 
 function getEntries(req, res){
    const { id } = req.params;
@@ -33,7 +36,7 @@ function getEntries(req, res){
         }, 
        
 
-    ])
+    ]).sort({CodEntry:-1})
     // productEntry.aggregate([
     //     { $lookup: {
     //       from: "entrydetails",
@@ -99,6 +102,8 @@ function getEntries(req, res){
 async function createProductEntry(req, res){
     const entryData=new productEntry();
     const entryDataDetail=[];
+    let creacion = moment().format('DD/MM/YYYY');
+
     let companyId = req.params.company;
     let detalles=req.body.entries;
     let inventaryUpdate={};
@@ -169,6 +174,7 @@ async function createProductEntry(req, res){
                             Price:item.Price,
                             Measure:item.Measure,
                             CodProduct:item.codigo,
+                            Product:item.ID_Products
                              });
                          });
                          productEntryDetails.insertMany(entryDataDetail)
@@ -248,6 +254,36 @@ async function createProductEntry(req, res){
                                       
                                     }
                                 }
+                                //registro de movimiento
+                                console.log("movimiento de inventario");
+                               
+                                let movementId=await MovementTypes.findOne({Name:'ingreso'},['_id'])
+                                    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                const inventorytraceability= new inventoryTraceability();
+
+                                inventorytraceability.Quantity=item.Quantity;
+                                inventorytraceability.Product=item.Product;
+                                inventorytraceability.WarehouseDestination=item.Inventory; //destino
+                                inventorytraceability.MovementType=movementId._id;
+                                inventorytraceability.MovDate=creacion;
+                                inventorytraceability.WarehouseOrigin=null; //origen
+                                inventorytraceability.User=User;
+                                inventorytraceability.Company=companyId;
+                                inventorytraceability.DocumentId=entryid;
+
+                                inventorytraceability.save((err, traceabilityStored)=>{
+                                    if(err){
+                                          console.log(err);
+                                    }else {
+                                        if(!traceabilityStored){
+                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                            console.log(traceabilityStored);
+                                        }
+                                        else{
+                                            //   res.status(200).send({orden: traceabilityStored});
+                                        }
+                                    }
+                                 });
                             });
                       
                                
@@ -307,6 +343,8 @@ async function createProductEntryWithoutInvoice(req, res){
     const entryDataDetail=[];
     let companyId = req.params.company;
     let detalles=req.body.entries;
+    let creacion = moment().format('DD/MM/YYYY');
+
     let inventaryUpdate={};
 
     const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId,SupplierName} = req.body;
@@ -376,6 +414,7 @@ async function createProductEntryWithoutInvoice(req, res){
                                 Price:item.Price,
                                 Measure:item.Measures,
                                 CodProduct:item.codproducts,
+                                Product:item.ID_Products
                              });
                          });
                          productEntryDetails.insertMany(entryDataDetail)
@@ -408,7 +447,36 @@ async function createProductEntryWithoutInvoice(req, res){
                                 })
                                 .catch(err => {console.log(err);});
                                 //contando 
-                            
+                               
+                                console.log("movimiento de inventario");
+                               
+                                let movementId=await MovementTypes.findOne({Name:'ingreso'},['_id'])
+                                    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                const inventorytraceability= new inventoryTraceability();
+
+                                inventorytraceability.Quantity=item.Quantity;
+                                inventorytraceability.Product=item.Product;
+                                inventorytraceability.WarehouseDestination=item.Inventory; //destino
+                                inventorytraceability.MovementType=movementId._id;
+                                inventorytraceability.MovDate=creacion;
+                                inventorytraceability.WarehouseOrigin=null; //origen
+                                inventorytraceability.User=User;
+                                inventorytraceability.Company=companyId;
+                                inventorytraceability.DocumentId=entryid;
+
+                                inventorytraceability.save((err, traceabilityStored)=>{
+                                    if(err){
+                                          console.log(err);
+                                    }else {
+                                        if(!traceabilityStored){
+                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                            console.log(traceabilityStored);
+                                        }
+                                        else{
+                                            //   res.status(200).send({orden: traceabilityStored});
+                                        }
+                                    }
+                                 });
                             });
                       
                                

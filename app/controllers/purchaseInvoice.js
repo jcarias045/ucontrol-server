@@ -9,6 +9,9 @@ const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
 const PaymentToSupplier = require('../models/paymentstoSuppliers.model');
 const product= require('../models/product.model');
+const inventoryTraceability = require("../models/inventorytraceability.model");
+const MovementTypes = require("../models/movementtype.model");
+
 const inventory = require('../models/inventory.model')
 
 function getSuppliersInvoices(req, res){
@@ -42,14 +45,14 @@ async function createSupplierInvoice(req, res){
     
     moment.locale();
     let nuevows = moment().format('L');
-    let creacion = moment().format('L');
+    let creacion = moment().format('DD/MM/YYYY');
     
     console.log(creacion);
     var date = new Date(fechaInvoice);
-   console.log(date);
+   console.log("fecha factura",date);
     
     date.setDate(date.getDate() + diasEntrega);
-   
+    console.log("dia de entrega", date);
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,CreationDate,Total,User,
     DeliverDay,Description,InvoiceComments,PurchaseNumber,tipoProveedor,SupplierName} = req.body;
 
@@ -172,7 +175,8 @@ async function createSupplierInvoice(req, res){
                         State:false,
                         Measure:item.Measures,
                         CodProduct:item.codproducts,
-                        SupplierName:SupplierName
+                        SupplierName:SupplierName,
+                        Product:item.ProductId
                     })
                 })
                 }
@@ -190,7 +194,8 @@ async function createSupplierInvoice(req, res){
                         State:false,
                         Measure:item.Measure,
                         CodProduct:item.CodProduct,
-                        SupplierName:SupplierName
+                        SupplierName:SupplierName,
+                        Product:item.Inventory.Product._id
                        
                     })
                 }) 
@@ -277,9 +282,41 @@ async function createSupplierInvoice(req, res){
                                             Price:item.Price,
                                             Measure:item.Measure,
                                             CodProduct:item.CodProduct,
+                                            Product:item.Product
                                              });
                                          })
-                                        productEntryDetails.insertMany(entryDataDetail)
+                                        productEntryDetails.insertMany(entryDataDetail).then(async function (entries){
+                                            console.log("movimiento de inventario");
+                                            let movementId=await MovementTypes.findOne({Name:'ingreso'},['_id'])
+                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                            const inventorytraceability= new inventoryTraceability();
+                                            entries.map(async (item) =>{
+                                                inventorytraceability.Quantity=item.Quantity;
+                                                inventorytraceability.Product=item.Product;
+                                                inventorytraceability.WarehouseDestination=item.Inventory; //destino
+                                                inventorytraceability.MovementType=movementId._id;
+                                                inventorytraceability.MovDate=creacion;
+                                                 inventorytraceability.WarehouseOrigin=null; //origen
+                                                inventorytraceability.User=User;
+                                                inventorytraceability.Company=companyId;
+                                                inventorytraceability.DocumentId=productEntryID;
+
+                                                inventorytraceability.save((err, traceabilityStored)=>{
+                                                    if(err){
+                                                        console.log(err);
+                                                    }else {
+                                                        if(!traceabilityStored){
+                                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                            console.log(traceabilityStored);
+                                                        }
+                                                        else{
+                                                            //   res.status(200).send({orden: traceabilityStored});
+                                                        }
+                                                    }
+                                            });
+
+                                            })
+                                        })
                                         .catch(function (err) {
                                             console.log(err);
                                         });
@@ -393,13 +430,18 @@ async function createNewSupplierInvoice(req, res){
     let diasEntrega=req.body.dias;
     let fechaInvoice=req.body.InvoiceDate;
     
-    let now= new Date();
-    let creacion = moment().format('L');
+    moment.locale();
+    let nuevows = moment().format('L');
+    let creacion = moment().format('DD/MM/YYYY');
+    
+    console.log(invoiceDetalle);
     var date = new Date(fechaInvoice);
-   
+   console.log("fecha factura",date);
+   date.setDate(date.getDate() + diasEntrega);
+   console.log("dia de entrega", date);
     console.log('INGRESO000000000000000000000000000');
     
-    date.setDate(date.getDate() + diasEntrega);
+
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,Total,User
         ,Description,InvoiceComments,PurchaseNumber,tipoProveedor,SupplierName} = req.body;
     //para generar el correctivo del ingreso en caso de que sea requerido
@@ -508,7 +550,8 @@ async function createNewSupplierInvoice(req, res){
                         State:0,
                         Measure:item.Measures,
                         CodProduct:item.codproducts,
-                        SupplierName:SupplierName
+                        SupplierName:SupplierName,
+                        Product:item.ProductId 
                     })
                 })
                 }
@@ -579,7 +622,8 @@ async function createNewSupplierInvoice(req, res){
                                             Inventory:item.Inventory,
                                             Measure:item.Measure,
                                             CodProduct:item.CodProduct,
-                                            ProductName:item.ProductName
+                                            ProductName:item.ProductName,
+                                            Product:item.Product
                                              });
 
                                             purchaseInvoiceDetail.findByIdAndUpdate({_id: item._id},{
@@ -596,7 +640,41 @@ async function createNewSupplierInvoice(req, res){
                                             })
                                             .catch(err => {console.log(err);});
                                          })
-                                        productEntryDetails.insertMany(entryDataDetail)
+                                        productEntryDetails.insertMany(entryDataDetail).then(async function (entries) {
+                                            console.log("movimiento de inventario");
+                                            console.log(entries);
+                                            let movementId=await MovementTypes.findOne({Name:'ingreso'},['_id'])
+                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                            const inventorytraceability= new inventoryTraceability();
+                                            entries.map(async (item) =>{
+                                                inventorytraceability.Quantity=item.Quantity;
+                                                inventorytraceability.Product=item.Product;
+                                                inventorytraceability.WarehouseDestination=item.Inventory; //destino
+                                                inventorytraceability.MovementType=movementId._id;
+                                                inventorytraceability.MovDate=creacion;
+                                                 inventorytraceability.WarehouseOrigin=null; //origen
+                                                inventorytraceability.User=User;
+                                                inventorytraceability.Company=companyId;
+                                                inventorytraceability.DocumentId=productEntryID;
+
+                                                inventorytraceability.save((err, traceabilityStored)=>{
+                                                    if(err){
+                                                          console.log(err);
+                                                    }else {
+                                                        if(!traceabilityStored){
+                                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                            console.log(traceabilityStored);
+                                                        }
+                                                        else{
+                                                            //   res.status(200).send({orden: traceabilityStored});
+                                                        }
+                                                    }
+                                            });
+
+                                            })
+                                           
+                                            
+                                        })
                                         .catch(function (err) {
                                             console.log(err);
                                         });

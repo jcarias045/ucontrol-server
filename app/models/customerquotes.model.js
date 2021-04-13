@@ -9,7 +9,7 @@ const CustomerQuoteSchema = Schema({
     // autopopulate: true,
   },
 
-  CodQuote:Number,
+  CodCustomerQuote:Number,
   Total:Number,
   State:String,
   User: {type: Schema.ObjectId, 
@@ -18,6 +18,9 @@ const CustomerQuoteSchema = Schema({
   },
   CreationDate: String,
   Description:String,
+  Active:Boolean,
+  CustomerName:String,
+  DateUpdate:String
 })
 
 module.exports = mongoose.model('CustomerQuote', CustomerQuoteSchema)

@@ -414,16 +414,70 @@ function getRecommendedProductsInventory(req,res){
           }
           
     })
-    // .then(inventories => {
-    //     if(!inventories){
-    //         res.status(404).send({message:"No hay "});
-    //     }else{
-    //         console.log(inventories.Stock);
-            
-    //         res.status(200).send({inventories})
-    //     }
-    // });
+ 
+ }
+
+ function getProductByInventory(req,res){
+  
+    const { id,company } = req.params;
+    console.log('recomendados');
+    console.log(id);
+    console.log(company);
     
+    inventory.find().populate({path: 'Bodega', model: 'Bodega',match:{Name: { $eq: 'Principal' }}})
+    .populate({path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'},match:{Company: company}})
+    // inventory.aggregate([
+    //     {
+    //         $lookup: {
+    //             from: "bodegas",
+    //             let: { order_item: "$Bodega" },
+    //             pipeline: [
+    //                 { $match:
+    //                    { $expr:
+    //                       { $and:
+    //                          [
+    //                            { $eq: [ "$_id",  "$$order_item" ] },
+    //                            { $eq: [ "$Name", "Principal" ] }
+    //                          ]
+    //                       }
+    //                    }
+    //                 },
+    //                 // { $project: { $expr:{ Name:  { $in:"Principal" }} }}
+    //              ],
+    //             as:"bodega",
+                
+    //         }
+    //     }, 
+    //     {
+    //         $lookup: {
+    //             from:"products",
+    //             localField:"_id",
+    //             foreignField:"Product",
+    //             // let:{idiv:"Inventory" },
+    //             // pipeline:[
+    //             //     // { "$match": { "$expr": { "$eq": ["$_id", "$$idiv"] }}},,
+    //             //     {
+    //             //         $lookup: {
+    //             //             from:"inventories",
+    //             //             as:"children"
+    //             //         }
+    //             //     }
+    //             // ],
+    //             as:"detalles",
+                
+    //         }
+    //     }
+       
+
+    // ])
+    // // product
+    .then(product => {
+        if(!product){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({product})
+        }
+    });
  
  }
 
@@ -517,7 +571,12 @@ module.exports={
     getRecommendedProducts,
     // getImages
     getRecommendedProductsInventory,
+<<<<<<< HEAD
     ExportProductList
     // getProduct
+=======
+    // getProduct,
+    getProductByInventory
+>>>>>>> mongodb
 
 }

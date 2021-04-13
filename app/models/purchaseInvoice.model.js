@@ -3,7 +3,8 @@ const Schema =  mongoose.Schema;
 const PurchaseOrder = require('./purchaseOrder.model');
 const Supplier = require('./supplier.model');
 const User = require('./user.model');
-const PaymentSupplier=require('./paymentstoSuppliers.model')
+const PaymentSupplier=require('./paymentstoSuppliers.model');
+const Product=require('./product.model');
 
 const PurchaseInvoiceSchema = Schema({
   PurchaseOrder: {type: Schema.ObjectId, 
@@ -30,7 +31,7 @@ const PurchaseInvoiceSchema = Schema({
   Pagada: Boolean,
   State:String,
   InvoiceComments:String,
-
+  
  
 })
 

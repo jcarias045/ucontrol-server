@@ -3,6 +3,7 @@ const Schema =  mongoose.Schema;
 const Inventory = require('./inventory.model');
 const ProductEntry = require('./productEntries.model');
 const PurchaseInvoiceDetail= require('./purchaseInvoiceDetails.model');
+const Product = require('./product.model');
 
 const EntriesDetailSchema = Schema({
   PurchaseInvoiceDetail: {type: Schema.ObjectId, 
@@ -22,6 +23,11 @@ const EntriesDetailSchema = Schema({
     ref: "Inventory",
     // autopopulate: true,
   },
+  Product:{type: Schema.ObjectId, 
+    ref: "Product",
+    // autopopulate: true,
+  },
+
 
  
 })

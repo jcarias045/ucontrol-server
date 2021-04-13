@@ -2,8 +2,12 @@ const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const PurchaseInvoice = require('./purchaseInvoice.model');
 const Inventory = require('./inventory.model');
+<<<<<<< HEAD
 const Supplier = require('./supplier.model')
 
+=======
+const Product = require('./product.model');
+>>>>>>> mongodb
 
 const PurchaseInvoiceDetailSchema = Schema({
   PurchaseInvoice: {type: Schema.ObjectId, 
@@ -23,7 +27,11 @@ const PurchaseInvoiceDetailSchema = Schema({
     // autopopulate: true,
   },
   Ingresados:Number,
-  State:Boolean
+  State:Boolean,
+  Product:{type: Schema.ObjectId, 
+    ref: "Product",
+    // autopopulate: true,
+  },
 
  
 })

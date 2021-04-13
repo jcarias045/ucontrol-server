@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+
 require("dotenv").config({
     path: "./config.env"
 })   
@@ -46,13 +47,21 @@ let rolesRoutes= require('./app/routers/roles.route');
 let supplierTypeRoutes= require('./app/routers/supplierType.route');
 let notePersonal = require('./app/routers/notepersonal');
 let bankAccount = require('./app/routers/bankaccount');
+let document = require('./app/routers/document')
+let documentProduct = require('./app/routers/documentProduct')
+let documentPersonal = require('./app/routers/documentPersonal')
 
 let customerQuoteRoutes= require('./app/routers/customerQuote');
+let saleOrderRoutes= require('./app/routers/saleOrder.route');
+let movementTypeRoutes= require('./app/routers/movementtype.route');
+let customerInvoicesRoutes= require('./app/routers/customerInvoice.route');
+
 const app=express();
 
 const cors = require('cors');
 const corsOptions = {
-    origin: 'https://gracious-kalam-e77950.netlify.app',
+    //origin: 'https://gracious-kalam-e77950.netlify.app',
+    origin: 'http://localhost:3000',
     optionsSuccessStatus: 200
 }
 
@@ -66,6 +75,8 @@ app.use((req, res, next) => {
     res.header("Allow", "GET, POST, OPTIONS, PUT, DELETE");
     next();
   });
+
+
 
 
 app.use(cors(corsOptions));
@@ -119,6 +130,12 @@ app.use('/api', SupplierType);
 app.use('/api', notePersonal);
 app.use('/api',bankAccount);
 app.use('/api',customerQuoteRoutes);
+app.use('/api',saleOrderRoutes);
+app.use('/api',movementTypeRoutes);
+app.use('/api',customerInvoicesRoutes);
+app.use('/api',document);
+app.use('/api',documentProduct);
+app.use('/api',documentPersonal);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));
@@ -139,10 +156,10 @@ if(process.env.NODE_ENV === 'production'){
 
 //   console.log("App listening at http://%s:%s", host, port); 
 // })
-// const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
+const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
 const PORT = process.env.PORT || 3050 ;
-const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
-mongoose.connect(process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+// const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
+mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
     .then( () => app.listen(PORT, () => {
         console.log(`Server Running on Port: http://localhost:3050`)
     }))
