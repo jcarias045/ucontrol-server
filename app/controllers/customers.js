@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt-nodejs");
 const jwt = require("../services/jwt");
 const Customer = require("../models/customer.model");
+const company= require("../models/company.model");
+
 
 function createCustomer(req, res) {
 
@@ -113,11 +115,124 @@ async function updateCustomer(req,res){
     })
 }
 
+function getCustomersDetails(req, res){
+    const {id} = req.params;
+    console.log(id);
+        Customer.find({_id: id})
+            .populate({path: "Discount", model: "Discount"})
+        .then(customer => {
+            if(!customer){
+                res.status(404).send({message:"No hay "});
+            }else{
+                res.status(200).send({customer})
+            }
+        });
+}
+
+async function getCustomersforSaleOrder(req, res){
+
+    const {id,userid} = req.params;
+    let now= new Date();
+    let fechaAct=now.toISOString().substring(0, 10);
+    console.log(id);
+    let companyParams=await company.findById(id) //esta variable la mando a llamar luego que se ingreso factura
+    .then(params => {
+        if(!params){
+            res.status(404).send({message:"No hay "});
+        }else{
+            return(params) 
+        }
+    });
+    if(companyParams.OrderWithWallet){
+        Customer.find({Company: id , User: userid})
+            .populate({path: "User", model: "User"})
+            .populate({path: "Company", model: "Company"})
+            .populate({path: "Discount", model: "Discount"})
+        .then(customer => {
+            if(!customer){
+                res.status(404).send({message:"No hay wallet"});
+            }else{
+                res.status(200).send({customer})
+            }
+        });
+    }
+    else{
+        Customer.aggregate([
+            {$match:{ $expr:
+                { $and:
+                   [
+                     { Company: id},
+                     { User:userid},
+                    
+                   ]
+                }
+             }},
+            
+                {
+                    
+                    $lookup: {
+                        from: "customerinvoices",
+                        let: { customerId: "$_id" },
+                        pipeline: [
+                            { $match:
+                                { $expr:
+                                    { $and:
+                                       [
+                                         { $eq: [ "$Customer",  "$$customerId" ] },
+                                         { $gte: [fechaAct, "$CreationDate" ] },
+                                        //  { $eq: [ "$Pagada",  true ] },
+                                       ]
+                                    }
+                                 }
+                            },
+                           
+                           
+                         ],
+                        as:"invoice",
+                        
+                    },
+                    
+                },
+                //   {
+                //      $unwind:  "$invoice"
+                //   },
+                  
+            ])
+            .exec((err, customer) => {
+                    if(!customer){
+                        res.status(404).send({message:"No hay "});
+                    }else{
+                        let invo=null;
+                        customer.map(item =>{
+                            invo=item.invoice;
+                            // return invo.map(i=>{return i.Pagada})===false;
+                            invo.map(item => { console.log(item.Pagada) });
+                        })
+                        let index = invo.findIndex(item => { return item.Pagada === false});
+                        
+                        console.log(l);
+                        if(index > -1){
+                            invo.splice(index, 1);
+                            }
+                        // console.log(index);
+                            // if(index > -1){
+                            //     customer.splice(index, 1);
+                            //     }
+                                res.status(200).send({customer});
+                    }
+                });
+    }
+
+  
+}
+
 module.exports = {
     createCustomer,
     getCustomers,
     desactivateCustomer,
-    updateCustomer
+    updateCustomer,
+    getCustomersDetails,
+    getCustomersforSaleOrder
 }
 
 

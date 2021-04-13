@@ -30,7 +30,7 @@ async function createPurchaseOrder(req,res){
     const orden= new PurchaseOrder();
 
     let now= new Date();
-    let creacion=now.getTime();
+    let creacion = moment().format('DD/MM/YYYY');
     let date = moment().format('L');
     let CreationDate = moment().format('LT');
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,
@@ -121,7 +121,6 @@ function getPurchaseDetails(req, res){
     PurchaseOrderDetail.find({PurchaseOrder:purchaseId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
-    
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});

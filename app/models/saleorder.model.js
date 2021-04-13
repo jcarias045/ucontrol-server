@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const Customer = require('./customer.model');
-const User= require('./user.model')
+const User= require('./user.model');
+const CustomerQuote= require('./customerquotes.model');
 
-const CustomerQuoteSchema = Schema({
+const SaleOrderSchema = Schema({
   Customer: {type: Schema.ObjectId, 
     ref: "Customer",
     // autopopulate: true,
   },
-
+  CodSaleOrder:Number,
   CodCustomerQuote:Number,
   Total:Number,
   State:String,
@@ -17,10 +18,14 @@ const CustomerQuoteSchema = Schema({
     // autopopulate: true,
   },
   CreationDate: String,
-  Description:String,
+  Comments:String,
   Active:Boolean,
   CustomerName:String,
-  DateUpdate:String
+  CommentsofQuote:String,
+  CustomerQuote: {type: Schema.ObjectId, 
+    ref: "CustomerQuote",
+    // autopopulate: true,
+  },
 })
 
-module.exports = mongoose.model('CustomerQuote', CustomerQuoteSchema)
+module.exports = mongoose.model('SaleOrder', SaleOrderSchema)

@@ -9,6 +9,8 @@ const supplier = require("../models/supplier.model");
 const purchaseOrder = require("../models/purchaseOrder.model");
 const PaymentToSupplier= require('../models/paymentstoSuppliers.model');
 const product= require('../models/product.model');
+
+
 const inventory = require('../models/inventory.model')
 function getSuppliersInvoices(req, res){
     const { id,company } = req.params;
@@ -41,14 +43,14 @@ async function createSupplierInvoice(req, res){
     
     moment.locale();
     let nuevows = moment().format('L');
-    let creacion = moment().format('L');
+    let creacion = moment().format('DD/MM/YYYY');
     
     console.log(creacion);
     var date = new Date(fechaInvoice);
-   console.log(date);
+   console.log("fecha factura",date);
     
     date.setDate(date.getDate() + diasEntrega);
-   
+    console.log("dia de entrega", date);
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,CreationDate,Total,User,
     DeliverDay,Description,InvoiceComments,PurchaseNumber,tipoProveedor,SupplierName} = req.body;
 
@@ -392,13 +394,18 @@ async function createNewSupplierInvoice(req, res){
     let diasEntrega=req.body.dias;
     let fechaInvoice=req.body.InvoiceDate;
     
-    let now= new Date();
-    let creacion = moment().format('L');
+    moment.locale();
+    let nuevows = moment().format('L');
+    let creacion = moment().format('DD/MM/YYYY');
+    
+    console.log(creacion);
     var date = new Date(fechaInvoice);
-   
+   console.log("fecha factura",date);
+   date.setDate(date.getDate() + diasEntrega);
+   console.log("dia de entrega", date);
     console.log('INGRESO000000000000000000000000000');
     
-    date.setDate(date.getDate() + diasEntrega);
+
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,Total,User
         ,Description,InvoiceComments,PurchaseNumber,tipoProveedor,SupplierName} = req.body;
     //para generar el correctivo del ingreso en caso de que sea requerido

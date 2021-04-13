@@ -1,32 +1,36 @@
 const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
-const CustomerQuote = require('./customerquotes.model');
+const SaleOrder = require('./saleorder.model');
 const Inventory = require('./inventory.model');
+const Product = require('./product.model');
 
-const CustomerQuoteDetailsSchema = Schema({
-  CustomerQuote: {type: Schema.ObjectId, 
-    ref: "PurchaseOrder",
+const SaleOderDetailSchema = Schema({
+  SaleOrder: {type: Schema.ObjectId, 
+    ref: "SaleOrder",
     // autopopulate: true,
   },
   Quantity:Number,
+  iniQuantity:Number,
   Discount:Number,
   Price:Number,
-  Priceiva:Number,
   ProductName:String,
   SubTotal:Number,
   Measure:String,
   CodProduct:String,
+  Product:{type: Schema.ObjectId, 
+    ref: "Product",
+    // autopopulate: true,
+  },
   Inventory: {type: Schema.ObjectId, 
     ref: "Inventory",
     // autopopulate: true,
   },
  
-  SubTotal:Number,
-  OnRequest:Boolean,
+ 
 
 
  
 })
 
-module.exports = mongoose.model('CustomerQuoteDetails', CustomerQuoteDetailsSchema)
+module.exports = mongoose.model('SaleOrderDetail', SaleOderDetailSchema)
 
