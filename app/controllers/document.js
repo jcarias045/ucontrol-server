@@ -3,33 +3,61 @@ const fs =require("fs");
 const path=require("path");
 
 function uploadDocument(req,res) {
-        const document = new Document();
-        const { path } = req.files;
-        const { title, description, Customer} = req.body
-        //const {User, Customer } = req.body
+    const documents = new Document();
+    //const { Url } = req.files;
+    const { title, description, Customer} = req.body
+   
+    console.log(req.files)
+    documents.title = title,
+    documents.description = description
+    documents.Customer = Customer
 
-        document.Url = path
-        document.title = title,
-        document.description = description
-        document.Customer = Customer
-        //document.User = User
-        //document.Customer = Customer
+    if (req.files) {
+        let filePath = req.files.file.path;
+        console.log(filePath)
+        let fileSplit = filePath.split("\\");
+        let fileName = fileSplit[3];
 
-        console.log(document)
-        document.save((err, documentStored)=>{
-            if(err){
-                res.status(500).send({message: err});
-            }else{
-                if(!documentStored){
-                    res.status(500).send({message: "Error"});
-                }else{
-                    
-                    res.status(200).send({bank: documentStored})
-                }
-            }
-        });
-        
+
+        let extSplit = fileName.split(".");
+        let fileExt = extSplit[1];
+        documents.Url = fileName;
     }
+
+    console.log(documents)
+    documents.save((err, documentStored)=>{
+        if(err){
+            res.status(500).send({message: err});
+        }else{
+            if(!documentStored){
+                    res.status(500).send({message: "Error"});
+            }else{
+                    
+                res.status(200).send({bank: documentStored})
+            }
+        }
+    });
+
+
+    //   const { title, description } = req.body;
+    //   const { path, mimetype } = req.file;
+    //   const document = new Document({
+    //         title,
+    //         description,
+    //         file_path: path,
+    //         file_mimetype: mimetype
+    //     });
+
+
+   
+
+        
+       
+
+        
+        
+}
+
 
         // if (req.file) 
         // {
@@ -46,7 +74,7 @@ function uploadDocument(req,res) {
 
 function getDocument(req, res) {
 
-    Document.find({Customer: req.params.customer}).populate({path: 'Customer', model: 'Customer'})
+    Document.find()
     .then(Document => {
         if(!Document){
             res.status(404).send({message:"No hay "});
@@ -54,18 +82,25 @@ function getDocument(req, res) {
             res.status(200).send({Document})
         }
     });
-    // try {
-    //     const files = Document.find({});
-    //     const sortedByCreationDate = files.sort(
-    //       (a, b) => b.createdAt - a.createdAt
-    //     );
-    //     res.send(sortedByCreationDate);
-    //   } catch (error) {
-    //     res.status(400).send('Error while getting list of files. Try again later.');
-    //   }
+    
+}
+
+function getAvatar(req, res) {
+    const FileName = req.params.FileName;
+    const filePath = "./app/uploads/document/" + FileName;
+  
+    fs.exists(filePath, exists => {
+      if (!exists) {
+        res.status(404).send({ message: "El archivo que buscas no existe." });
+      } else {
+        res.sendFile(path.resolve(filePath));
+        console.log(path.resolve(filePath))
+      }
+    });
 }
 
 module.exports ={
    uploadDocument,
-   getDocument
+   getDocument,
+   getAvatar
 }
