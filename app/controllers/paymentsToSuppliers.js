@@ -91,6 +91,11 @@ async function addPaymentToInvoice(req, res){
                         paymentDetails.BankName= BankName;
                         paymentDetails.NoTransaction= NoTransaction;
                     }
+                    if(PaymentMethodName==='Contado'){
+                        paymentDetails.NumberAccount=null;
+                        paymentDetails.BankName= null;
+                        paymentDetails.NoTransaction= null;
+                    }
                     console.log(paymentDetails);
                     paymentDetails.save(async (err, detailStored)=>{
                         if(err){
@@ -182,6 +187,11 @@ async function addPaymentToInvoice(req, res){
                         paymentDetails.NumberAccount=NumberAccount;
                         paymentDetails.BankName= BankName;
                         paymentDetails.NoTransaction= NoTransaction;
+                    }
+                    if(PaymentMethodName==='Contado'){
+                        paymentDetails.NumberAccount=null;
+                        paymentDetails.BankName= null;
+                        paymentDetails.NoTransaction= null;
                     }
                     paymentDetails.save(async (err, detailStored)=>{
                         if(err){
