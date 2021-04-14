@@ -1,5 +1,4 @@
 const moment = require("moment");
-
 const PaymentToSupplier=require('../models/paymentstoSuppliers.model');
 const PaymnetToSupplierDetails=require('../models/paymenttoSupplierDetail.model');
 const PurchaseInvoice=require('../models/purchaseInvoice.model');
@@ -91,6 +90,11 @@ async function addPaymentToInvoice(req, res){
                         paymentDetails.BankName= BankName;
                         paymentDetails.NoTransaction= NoTransaction;
                     }
+                    // {
+                    //     paymentDetails.NumberAccount="NumberAccount";
+                    //     paymentDetails.BankName= "BankName";
+                    //     paymentDetails.NoTransaction= "NoTransaction";
+                    // }
                     console.log(paymentDetails);
                     paymentDetails.save(async (err, detailStored)=>{
                         if(err){
@@ -242,14 +246,15 @@ async function addPaymentToInvoice(req, res){
         })
     }
 
+    }
 
 
-}
 
 function getPaymentDetails(req, res){
     const { id} = req.params;
    
-    PaymnetToSupplierDetails.find({PurchaseInvoice:id}).populate({path: 'PaymentSupplier', model: 'PaymentSupplier',match:{PurchaseInvoice:id}})
+    PaymnetToSupplierDetails.find({PurchaseInvoice:id})
+    .populate({path: 'PaymentSupplier', model: 'PaymentSupplier',match:{PurchaseInvoice:id}})
     .populate({path: 'PaymentMethods', model: 'PaymentMethods'})
     .then(details => {
         if(!details){
@@ -490,12 +495,28 @@ async function getAllPayments(req, res){
     });
 }
 
+function exportPaymentSupplier(req, res){
+    PaymnetToSupplierDetails.find()
+    .populate({path: 'PaymentSupplier', model: 'PaymentSupplier'})
+    .populate({path: 'PaymentMethods', model: 'PaymentMethods'})
+    .populate({path:'PurchaseInvoice', model: 'PurchaseInvoice'})
+    .then(detailsExport => {
+        if(!detailsExport){
+            res.status(404).send({message:"No hay "});
+        }else{
+            
+            res.status(200).send({detailsExport})
+        }
+    });
+}
+
 module.exports={
     addPaymentToInvoice,
     getPaymentDetails,
     cancelledPaymentInvoice,
     updatePaymentInvoice,
-    getAllPayments
+    getAllPayments,
+    exportPaymentSupplier
 }
 
 // const db = require('../config/db.config.js');;
