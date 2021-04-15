@@ -17,8 +17,8 @@ async function addPaymentToInvoice(req, res){
         PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
 
     console.log(req.body);
-    let codigoPayment=await PaymentToSupplier.find().sort({codpayment:-1})
-    .populate({path: 'User', model: 'User', match:{_id: User},populate:{path:'Company',model: 'Company', match:{_id: Company}}}).then(function(doc){
+    let codigoPayment=await PaymentToSupplier.findOne().sort({codpayment:-1})
+    .populate({path: 'User', model: 'User' , match:{Company: Company}}).then(function(doc){
         if(doc){
             if(doc.codpayment!==null){
                 return(doc.codpayment)
@@ -26,11 +26,11 @@ async function addPaymentToInvoice(req, res){
         }
        
     });
-    
+    console.log("Obtenido",codigoPayment);
     if(!codigoPayment){
         codigo =1;
     }else {codigo=codigoPayment+1}
-    console.log(codigo);
+    console.log("CODIGO DEL PAGO",codigo);
     //obteniendo total de la factura, Para comprobar respecto al saldo
 
     let totalaPagarInvoice=await PurchaseInvoice.findOne({_id:PurchaseInvoiceId},'Total')

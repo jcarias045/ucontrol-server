@@ -8,7 +8,7 @@ const company = require("../models/company.model");
 const inventory=require("../models/inventory.model");
 const inventoryTraceability = require("../models/inventorytraceability.model");
 const MovementTypes = require("../models/movementtype.model");
-const customerInvoice = require("../models/customerinvoice.model");
+const customerInvoice = require("../models/saleorderinvoice.model");
 
 
 async function getSaleOrders(req, res){
