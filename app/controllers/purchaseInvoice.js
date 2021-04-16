@@ -996,59 +996,7 @@ async function updateInvoicePurchase(req, res){
                         console.log(entry);
                     })
 
-                    // if(!requiredIncome){  
-                    //     let entryDataDetail=[];
-                    //     productEntry.findOne({PurchaseInvoice:invoiceId})
-                    //     .then(entry=>{
-                    //         let =entry._id;
-                    //         invoiceDetalle.map(async item=>{
-                    //             entryDataDetail.push({
-                    //                 PurchaseInvoiceDetail:item._id,
-                    //                 ProductEntry:productEntryID,
-                    //                 Quantity:item.Quantity,
-                    //                 Inventory:item.Inventory
-                    //                  });
-                    //              })
-                    //         productEntryDetails.insertMany(entryDataDetail)
-                    //                         .catch(function (err) {
-                    //                             console.log(err);
-                    //                         });
-                    //     })
-                    //     .catch(err => {console.log(err);});
-                    //     entryData.EntryDate=creacion;
-                    //     entryData.User=User;
-                    //     entryData.Comments="Ingreso automatico "+creacion;
-                    //     entryData.State=true;
-                    //     entryData.CodEntry=codigoEntradas;
-                    //     entryData.Company=companyId;
-                    //     entryData.save((err, entryStored)=>{
-                    //         if(err){
-                    //             console.log(err);
-                    
-                    //         }else {
-                    //             if(!entryStored){
-                    //                 console.log('no se ingreso entrada');
-                    
-                    //             }
-                    //             else{
-                    //                 let productEntryID=entryStored._id;
-                    //                 purchaseInvoiceDetail.find({PurchaseInvoice: invoiceId})
-                    //                 .then(detalle => {
-                    //                     if(!detalle){
-                    //                         res.status(404).send({message:"No hay "});
-                    //                     }else{
-                                          
-                                            
-                    //                     }
-                    //                 });
-                                    
-                                    
-                                    
-                    //             }
-                    //         }
-                    //     });
-                                    
-                    //   }
+               
                     res.status(200).send({invoice: invoiceUpdate});
                     }
                 }

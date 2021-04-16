@@ -12,6 +12,7 @@ const SaleInvoiceDetailSchema = Schema({
     // autopopulate: true,
   },
   Quantity:Number,
+  iniQuantity:Number,
   Discount:Number,
   Price:Number,
   ProductName:String,
