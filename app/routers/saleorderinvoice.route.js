@@ -13,6 +13,8 @@ router.post('/create-saleorderinvoice', saleinvoice.createSaleOrderInvoiceWithOr
 router.post('/create-newsaleorderinvoice', saleinvoice.createSaleOrderInvoice);
 router.get('/get-saleorderinvoicedetails/:id', saleinvoice.getSaleInvoiceDetails);
 router.put('/update-saleorderinvoice/:id', saleinvoice.updateSaleOrderInvoice);
+router.put('/delete-saleorderinvoicedetails/:id', saleinvoice.deleteSaleInvoiceDetails);
+router.put('/anular-saleorderinvoice/:id', saleinvoice.anularSaleInovice);
 
 
 

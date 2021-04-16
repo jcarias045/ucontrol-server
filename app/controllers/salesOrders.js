@@ -1216,7 +1216,7 @@ async function deleteSaleOrderDetail(req,res){
           res.status(500).send({ message: "Error del servidor." });
         } else {
           if (!userDeleted) {
-            // res.status(404).send({ message: "Detalle no encontrado" });
+             res.status(404).send({ message: "Detalle no encontrado" });
           } else {
             console.log(userDeleted);
             if(quote!==null){

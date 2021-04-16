@@ -231,6 +231,12 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                     console.log(SaleOrderStored);
                     let  invoiceId=SaleOrderStored._id;
                     let quoteId=SaleOrderStored.CustomerQuote;
+                    //cambio de estado a orden de venta
+                    saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
+                        if(err){
+                            res.status(500).send({ message: "Error del servidor." });
+                        }
+                        if(update){}});
                     if(invoiceId){
                         console.log("INGRESANDO DETALLES");
                
@@ -892,10 +898,16 @@ async function updateSaleOrderInvoice(req, res){
     let invoiceDetalle=req.body.details;
     let detailsAnt=req.body.ordenAnt;
     let companyId=req.body.Company;
+    let Customer=req.body.Customer;
+    let User=req.body.User;
     let updateInvoice={};
     let tipoProveedor=req.body.tipoProveedor;
     let entryDataDetail=[];
-    
+    let now= new Date();
+    let fecha=now.getTime();
+   
+    let creacion=now.toISOString().substring(0, 10);
+        
     updateInvoice.Customer=req.body.Customer;
     updateInvoice.InvoiceNumber=req.body.InvoiceNumber;
     updateInvoice.Total=parseFloat((req.body.Total).toFixed(2));
@@ -916,6 +928,16 @@ async function updateSaleOrderInvoice(req, res){
                 return(params)
             }
         });
+
+            //Deuda ppor cobrar actual
+      let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
+        console.log(doc);
+            if(doc){
+                    if(doc.AccountsReceivable!==null){
+                return(doc.AccountsReceivable)
+            }
+        }
+    });
     //  let existPago=await PaymentToSupplier.findOne({SaleOrderInvoice:invoiceId}).catch(err => {console.log(err);});
     //  if(existPago!==null){
     //     console.log('tiene pafgos');
@@ -1127,7 +1149,7 @@ async function updateSaleOrderInvoice(req, res){
                                 inventorytraceability.WarehouseOrigin=item.Inventory; //origen
                                 inventorytraceability.User=User;
                                 inventorytraceability.Company=companyId;
-                                inventorytraceability.DocumentId=saleId;
+                                inventorytraceability.DocumentId=invoiceId;
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
@@ -1142,14 +1164,14 @@ async function updateSaleOrderInvoice(req, res){
                                             saleOrderInvoiceDetails.findByIdAndUpdate({_id: item._id },{
                                                 iniQuantity:parseFloat(item.Quantity),
                                             }).then(result=> {
-                                               console.log(result);
+                                                console.log("ini",result);
                                             })
                                             .catch(err => {console.log(err);});
                                         }
                                     }
                                 });
 
-                                res.status(200).send({orden: detalles});
+                               
                             }
                             else{
 
@@ -1168,6 +1190,321 @@ async function updateSaleOrderInvoice(req, res){
     // }
 }
 
+async function deleteSaleInvoiceDetails(req,res){
+    const {_id,Quantity,Inventory,User,Customer,TotalAct,Total,SubTotal}=req.body;
+    let now= new Date();
+    let fecha=now.getTime();
+    
+    let creacion=now.toISOString().substring(0, 10);
+    let companyId=Inventory.Company;
+    console.log(req.body);
+          //obteniendo informacion de la compañia para validar
+    let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(params => {
+        if(!params){
+            res.status(404).send({message:"No hay "});
+        }else{
+            return(params)
+        }
+    });
+     
+      //Deuda ppor cobrar actual
+      let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
+        console.log(doc);
+            if(doc){
+                    if(doc.AccountsReceivable!==null){
+                return(doc.AccountsReceivable)
+            }
+        }
+    });
+    console.log("deuda",deudaAct);
+    saleOrderInvoiceDetails.find({_id: _id}).then(function (detalles){    
+             //cuenta por cobrar
+             customer.findByIdAndUpdate({_id: Customer},{
+                AccountsReceivable:(parseFloat(deudaAct)-parseFloat(SubTotal)),
+            }).then(function(update){
+                if(!update){
+
+                }
+                else{}}).catch(err =>{console.log(err)});
+          detalles.map(async item =>{
+               //obteniendo stock de producto  (bodega principal)
+               let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+               .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+               console.log('EN STOCK:',infoInventary);
+
+               let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
+               .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+               .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+               console.log('BODEGA RESERVA');
+               console.log(productreserved);
+
+                //obteniendo id del movimiento de tipo reserva
+                let movementId=await MovementTypes.findOne({Name:'reversion'},['_id'])
+                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                if(!companyParams.AvailableReservation){
+                     //descontando cantidad que se reservara
+                     inventory.findByIdAndUpdate({_id:item.Inventory},{
+                        Stock:parseFloat((infoInventary.Stock + parseFloat(item.Quantity)) ),
+                    }).then(result=> console.log(result))
+                    .catch(err => {console.log(err);});
+
+                    //stock de bodega de reserva
+                    console.log(infoInventary.Product);
+                  
+                    console.log('id del moviminto de reserva', movementId);
+                    //registro de movimiento
+                    const inventorytraceability= new inventoryTraceability();
+                    inventorytraceability.Quantity=item.Quantity;
+                    inventorytraceability.Product=item.Product;
+                    inventorytraceability.WarehouseDestination=infoInventary._id; //destino
+                    inventorytraceability.MovementType=movementId._id;
+                    inventorytraceability.MovDate=creacion;
+                    inventorytraceability.WarehouseOrigin=null; //origen
+                    inventorytraceability.User=User;
+                    inventorytraceability.Company=companyId;
+                    inventorytraceability.DocumentId=item.SaleOrderInvoice;
+
+                    inventorytraceability.save((err, traceabilityStored)=>{
+                        if(err){
+                            // res.status(500).send({message: err});
+
+                        }else {
+                            if(!traceabilityStored){
+                                // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                console.log(traceabilityStored);
+                            }
+                            else{
+                                saleOrderInvoiceDetails.findByIdAndDelete(_id, (err, detailDeleted) => {
+                                    if (err) {
+                                      res.status(500).send({ message: "Error del servidor." });
+                                    } else {
+                                      if (!detailDeleted) {
+                                        res.status(404).send({ message: "Detalle no encontrado" });
+                                      } else {
+                                      
+                                        res.status(202).send({ deleted: detailDeleted});
+                                      }
+                                    }
+                                })
+
+                            }
+                        }
+                    });
+                 
+                }
+                if(companyParams.AvailableReservation){
+                        //descontando cantidad que se reservara
+                        inventory.findByIdAndUpdate({_id:productreserved._id},{
+                            Stock:parseFloat((productreserved.Stock + parseFloat(item.Quantity)) ),
+                        }).then(result=> console.log(result))
+                        .catch(err => {console.log(err);});
+
+                        //stock de bodega de reserva
+                        console.log(productreserved.Product);
+
+
+
+                        console.log('id del moviminto de reserva', movementId);
+                        //registro de movimiento
+                        const inventorytraceability= new inventoryTraceability();
+                        inventorytraceability.Quantity=item.Quantity;
+                        inventorytraceability.Product=item.Product;
+                        inventorytraceability.WarehouseDestination=productreserved._id; //destino
+                        inventorytraceability.MovementType=movementId._id;
+                        inventorytraceability.MovDate=creacion;
+                        inventorytraceability.WarehouseOrigin=null; //origen
+                        inventorytraceability.User=User;
+                        inventorytraceability.Company=companyId;
+                        inventorytraceability.DocumentId=item.SaleOrderInvoice;
+
+                        inventorytraceability.save((err, traceabilityStored)=>{
+                            if(err){
+                                // res.status(500).send({message: err});
+
+                            }else {
+                                if(!traceabilityStored){
+                                    // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                    console.log(traceabilityStored);
+                                }
+                                else{
+                                    saleOrderInvoiceDetails.findByIdAndDelete(_id, (err, detailDeleted) => {
+                                        if (err) {
+                                          res.status(500).send({ message: "Error del servidor." });
+                                        } else {
+                                          if (!detailDeleted) {
+                                            res.status(404).send({ message: "Detalle no encontrado" });
+                                          } else {
+                                          
+                                            res.status(202).send({ deleted: detailDeleted});
+                                          }
+                                        }
+                                    })
+                                }
+                            }
+                        });
+
+                }
+          })
+        
+    })
+    
+
+
+
+}
+
+async function anularSaleInovice(req,res){
+    let invoiceId=req.params.id;
+    let  companyId=req.body.Customer.Company;
+    let Customer=req.body.Customer._id;
+    let saleOrder=req.body.SaleOrder;
+    let User=req.body.User;
+    let Total=req.body.Total;
+    console.log(req.body);
+    const codigop=req.body.CodProduct;
+    let creacion = moment().format('DD/MM/YYYY');
+
+
+    let companyParams=await company.findById( companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(params => {
+        if(!params){
+            res.status(404).send({message:"No hay "});
+        }else{
+            return(params)
+        }
+    });
+    
+        //Deuda ppor cobrar actual
+        let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
+            console.log(doc);
+                if(doc){
+                        if(doc.AccountsReceivable!==null){
+                    return(doc.AccountsReceivable)
+                }
+            }
+        });
+
+
+    saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{State:"Anulada"},async (err,update)=>{
+        if(err){
+            res.status(500).send({ message: "Error del servidor." });
+        }
+        if(update){
+               //cuenta por cobrar
+            customer.findByIdAndUpdate({_id: Customer},{
+                AccountsReceivable:(parseFloat(deudaAct)-parseFloat(Total)),
+            }).then(function(update){
+                if(!update){
+
+                }
+            else{}}).catch(err =>{console.log(err)});
+            if(saleOrder!==null){
+                saleOrders.findByIdAndUpdate({_id:saleOrder},{State:"Cerrada"},async (err,update)=>{
+                    if(err){
+                        res.status(500).send({ message: "Error del servidor." });
+                    }
+                    if(update){}})
+            }
+            saleOrderInvoiceDetails.find({SaleOrderInvoice : invoiceId})
+            .then(function (detalles){
+              
+                    detalles.map(async item =>{
+                        //obteniendo stock de producto  (bodega principal)
+                        let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        console.log('EN STOCK:',infoInventary);
+
+                        let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
+                        .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        console.log('BODEGA RESERVA');
+                        console.log(productreserved);
+
+                            //obteniendo id del movimiento de tipo reserva
+                            let movementId=await MovementTypes.findOne({Name:'reversion'},['_id'])
+                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            if(!companyParams.AvailableReservation){
+                                                //descontando cantidad que se reservara
+                                inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                    Stock:parseFloat((infoInventary.Stock +  parseFloat(item.Quantity)) ),
+                                }).then(result=> console.log(result))
+                                .catch(err => {console.log(err);});
+
+                                //stock de bodega de reserva
+                                console.log(infoInventary.Product);
+                            
+                                console.log('id del moviminto de reserva', movementId);
+                                //registro de movimiento
+                                const inventorytraceability= new inventoryTraceability();
+                                inventorytraceability.Quantity=item.Quantity;
+                                inventorytraceability.Product=item.Product;
+                                inventorytraceability.WarehouseDestination=infoInventary._id; //destino
+                                inventorytraceability.MovementType=movementId._id;
+                                inventorytraceability.MovDate=creacion;
+                                inventorytraceability.WarehouseOrigin=null; //origen
+                                inventorytraceability.User=User;
+                                inventorytraceability.Company=companyId;
+                                inventorytraceability.DocumentId=item.SaleOrderInvoice;
+
+                                inventorytraceability.save((err, traceabilityStored)=>{
+                                    if(err){
+                                        // res.status(500).send({message: err});
+
+                                    }else {
+                                        if(!traceabilityStored){
+                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                            console.log(traceabilityStored);
+                                        }
+                                        else{}}})
+                     }
+                     if(companyParams.AvailableReservation){
+                                            //descontando cantidad que se reservara
+                            inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                Stock:parseFloat((productreserved.Stock + parseFloat(item.Quantity)) ),
+                            }).then(result=> console.log(result))
+                            .catch(err => {console.log(err);});
+
+                            //stock de bodega de reserva
+                            console.log(productreserved.Product);
+                        
+                            console.log('id del moviminto de reserva', movementId);
+                            //registro de movimiento
+                            const inventorytraceability= new inventoryTraceability();
+                            inventorytraceability.Quantity=item.Quantity;
+                            inventorytraceability.Product=item.Product;
+                            inventorytraceability.WarehouseDestination=productreserved._id; //destino
+                            inventorytraceability.MovementType=movementId._id;
+                            inventorytraceability.MovDate=creacion;
+                            inventorytraceability.WarehouseOrigin=null; //origen
+                            inventorytraceability.User=User;
+                            inventorytraceability.Company=companyId;
+                            inventorytraceability.DocumentId=item.SaleOrderInvoice;
+
+                            inventorytraceability.save((err, traceabilityStored)=>{
+                                if(err){
+                                    // res.status(500).send({message: err});
+
+                                }else {
+                                    if(!traceabilityStored){
+                                        // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                        console.log(traceabilityStored);
+                                    }
+                                    else{}}})
+                    }
+                })
+            })
+            .catch(err=>{console.log(err)});
+            res.status(202).send({ updated: update});
+
+        }else{
+            res.status(404).send({ message: "No se anulo factura" });
+
+        }
+    });
+}
+
 module.exports={
     getSaleOrderInvoices,
     getSaleOrdersClosed,
@@ -1176,6 +1513,8 @@ module.exports={
     createSaleOrderInvoiceWithOrder,
     createSaleOrderInvoice,
     getSaleInvoiceDetails,
-    updateSaleOrderInvoice
+    updateSaleOrderInvoice,
+    deleteSaleInvoiceDetails,
+    anularSaleInovice
     
 }

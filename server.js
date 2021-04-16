@@ -56,6 +56,7 @@ let saleOrderRoutes= require('./app/routers/saleOrder.route');
 let movementTypeRoutes= require('./app/routers/movementtype.route');
 let customerInvoicesRoutes= require('./app/routers/customerInvoice.route');
 let saleOrderInvoiceRoutes= require('./app/routers/saleorderinvoice.route');
+let customerPaymentRoutes= require('./app/routers/customerpayments.route');
 
 const app=express();
 
@@ -138,6 +139,7 @@ app.use('/api',document);
 app.use('/api',documentProduct);
 app.use('/api',documentPersonal);
 app.use('/api',saleOrderInvoiceRoutes);
+app.use('/api',customerPaymentRoutes);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));
