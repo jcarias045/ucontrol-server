@@ -4,8 +4,8 @@ const User= require('./user.model');
 const Schema =  mongoose.Schema;
 
 const AppointmenCustomerSchema = Schema({
-  StartDate: Date,
-  EndDate: Date, 
+  StartDate: String,
+  EndDate: String, 
   Description: String,
   //State: Boolean,
   User: {

@@ -8,7 +8,7 @@ const company = require("../models/company.model");
 const inventory=require("../models/inventory.model");
 const inventoryTraceability = require("../models/inventorytraceability.model");
 const MovementTypes = require("../models/movementtype.model");
-const customerInvoice = require("../models/customerinvoice.model");
+const customerInvoice = require("../models/saleorderinvoice.model");
 
 
 async function getSaleOrders(req, res){
@@ -1216,7 +1216,7 @@ async function deleteSaleOrderDetail(req,res){
           res.status(500).send({ message: "Error del servidor." });
         } else {
           if (!userDeleted) {
-            // res.status(404).send({ message: "Detalle no encontrado" });
+             res.status(404).send({ message: "Detalle no encontrado" });
           } else {
             console.log(userDeleted);
             if(quote!==null){
