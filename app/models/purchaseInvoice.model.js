@@ -31,8 +31,6 @@ const PurchaseInvoiceSchema = Schema({
   Pagada: Boolean,
   State:String,
   InvoiceComments:String,
-  
- 
 })
 
 

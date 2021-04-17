@@ -29,8 +29,6 @@ const PurchaseInvoiceDetailSchema = Schema({
     ref: "Product",
     // autopopulate: true,
   },
-
- 
 })
 
 module.exports = mongoose.model('PurchaseInvoiceDetail', PurchaseInvoiceDetailSchema)

@@ -20,8 +20,6 @@ const PurchaseOrderDetailSchema = Schema({
     // autopopulate: true,
   },
   SupplierName:String,
-
- 
 })
 
 module.exports = mongoose.model('PurchaseOrderDetail', PurchaseOrderDetailSchema)

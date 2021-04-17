@@ -1527,6 +1527,20 @@ async function changeSaleOrderState(req, res) {
     })
 }
 
+function getAllSaleOrderDetails(req, res){
+    saleOrderDetails.find().populate({path: 'Inventory', model: 'Inventory',
+    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
+    .populate({path: 'SaleOrder', model: 'SaleOrder'})
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({details})
+        }
+    });
+}
+
 module.exports = {
     getSaleOrders,
     getSelesOrderClosed,
@@ -1538,6 +1552,6 @@ module.exports = {
     updateSaleOrder,
     deleteSaleOrderDetail,
     anulaSaleOrder,
-    changeSaleOrderState
-
+    changeSaleOrderState,
+    getAllSaleOrderDetails
 }

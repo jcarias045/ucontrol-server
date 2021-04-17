@@ -241,11 +241,27 @@ async function changeQuoteState(req, res){
     })
 }
 
+function getCustomerAllQuotesDetails(req, res){
+
+    QuoteDetails.find().populate({path: 'Inventory', model: 'Inventory',
+    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
+    .populate({path: 'CustomerQuote', model: 'CustomerQuote'})
+    .then(quote => {
+        if(!quote){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({quote})
+        }
+    });
+}
+
 module.exports={
     getCustomerQuote,
     createCustomerQuote,
     getCustomerQuotesDetails,
     updateCustomerQuote,
     deleteQuoteDetail,
-    changeQuoteState
+    changeQuoteState,
+    getCustomerAllQuotesDetails
 }

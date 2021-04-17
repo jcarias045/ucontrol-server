@@ -4,7 +4,8 @@ const PurchaseInvoice = require('./purchaseInvoice.model');
 const Taxes = require('./taxes.model')
 
 const InvoiceTaxesSchema = Schema({
-  PurchaseInvoice: { type: Schema.ObjectId, 
+  PurchaseInvoice: { 
+                    type: Schema.ObjectId, 
                     ref: "PurchaseInvoice",
                    // autopopulate: true,
                   },

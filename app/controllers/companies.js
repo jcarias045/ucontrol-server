@@ -17,7 +17,9 @@ function createCompany (req, res){
     const company = new Company();
 
     const  { Name,Logo,ShortName,Web, AccessToCustomers,AccessToSuppliers,
-    RequieredIncome, RequieredOutput,CompanyRecords,AverageCost} = req.body;
+    RequieredIncome, RequieredOutput,CompanyRecords,AverageCost,
+    WorksOpenQuote, DaysQuotationValidity, DaysOrderValidity,
+    AvailableReservation, OrderWithWallet} = req.body;
 
     company.Name  =  Name;
     company.Logo = Logo;
@@ -29,6 +31,11 @@ function createCompany (req, res){
     company.RequieredIncome = RequieredIncome;
     company.RequieredOutput = RequieredOutput;
     company.CompanyRecords = CompanyRecords;
+    company.WorksOpenQuote = WorksOpenQuote;
+    company.DaysQuotationValidity = DaysQuotationValidity;
+    company.DaysOrderValidity =  DaysOrderValidity;
+    company.AvailableReservation = AvailableReservation;
+    company.OrderWithWallet = OrderWithWallet;
     company.AverageCost = AverageCost;
     console.log(company);
 
@@ -72,10 +79,10 @@ function updateCompany(req, res){
 
     Company.findByIdAndUpdate({_id: params.id}, companyData, (err, companyUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!companyUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "Compañia Actualizada"})
             }

@@ -12,6 +12,7 @@ router.get('/get-customerquotesinfo/:id', salesorder.getCustomerQuoteInfo);
 router.post('/create-saleorderwithquote', salesorder.createSaleOrderWithQuote);
 router.post('/create-saleorder', salesorder.createSaleOrder);
 router.get('/get-saleorderdetails/:id', salesorder.getSaleOrderDetails);
+router.get('/get-saleallorderdetails', salesorder.getAllSaleOrderDetails);
 router.put('/update-saleorder/:id', salesorder.updateSaleOrder);
 router.put('/delete-saleorderdetail/:id', salesorder.deleteSaleOrderDetail);
 router.put('/anular-saleorder/:id', salesorder.anulaSaleOrder);

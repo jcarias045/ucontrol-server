@@ -239,8 +239,7 @@ async function createSystemOption(req, res){
         sysOptions.URL=req.body.URL;
         sysOptions.Grupos = req.body.Grupos;
         sysOptions._id=req.body._id;
-        sysOptions.State=true;
-              
+        sysOptions.State=true;              
         SysOptions.create(sysOptions)
         .then(async result => {    
         res.status(200).json(result);

@@ -22,7 +22,7 @@ function createUser(req,res){
     user.Image=Image;
     user.UserName=UserName;
     user.Company = Company;
-    user.Rol = Rol,
+    user.Rol = Rol;
     user.Profile = Profile
     console.log(user);
     if (!Password) {

@@ -17,7 +17,7 @@ const CompanySchema = Schema({
   DaysOrderValidity: Number,
   AvailableReservation:Boolean,
   OrderWithWallet:Boolean,
-
+  AverageCost:Boolean
   },
   // { 
   //       freezeTableName: true,

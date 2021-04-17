@@ -23,8 +23,7 @@ async function addPaymentToInvoice(req, res){
             if(doc.codpayment!==null){
                 return(doc.codpayment)
             }
-        }
-       
+        }       
     });
     
     if(!codigoPayment){
@@ -187,6 +186,11 @@ async function addPaymentToInvoice(req, res){
                         paymentDetails.BankName= BankName;
                         paymentDetails.NoTransaction= NoTransaction;
                     }
+                    if(PaymentMethodName==='Cheque'){
+                        paymentDetails.NumberAccount=NumberAccount;
+                        paymentDetails.BankName= BankName;
+                        paymentDetails.NoTransaction= null;
+                    }
                     if(PaymentMethodName==='Contado'){
                         paymentDetails.NumberAccount=null;
                         paymentDetails.BankName= null;
@@ -251,9 +255,7 @@ async function addPaymentToInvoice(req, res){
         })
     }
 
-    }
-
-
+}
 
 function getPaymentDetails(req, res){
     const { id} = req.params;
