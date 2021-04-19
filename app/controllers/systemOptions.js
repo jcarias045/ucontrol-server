@@ -314,8 +314,29 @@ async function changeStateOption(req, res){
     }
 }
 
+function getSystemOptionsrol(req, res){
+
+    try{
+        SysOptions.find()
+        .populate({path: "Grupos", model: "Grupos"})
+        .then(sysOptions => {
+            res.status(200).json({sysOptions});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
 module.exports={
     getSystemOptions,
+    getSystemOptionsrol,
     getSysUserOptions,
     getGrupos,
     createSystemGroup,
