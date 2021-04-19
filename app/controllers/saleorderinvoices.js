@@ -11,6 +11,9 @@ const customerInvoice = require("../models/saleorderinvoice.model");
 const customer = require("../models/customer.model");
 const productOutput = require("../models/productoutput.model");
 const productOutputDetail = require("../models/productoutputdetail.model");
+const CustomerPayment=require('../models/customerpayments.model');
+const CustomerPaymentDetails=require('../models/customerpaymentsdetails.model');
+
 
 function getSaleOrderInvoices(req, res){
     const { id,company } = req.params;
@@ -90,6 +93,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
     const SaleOrderInvoice= new saleOrderInvoice();
     const ProductOuput= new productOutput();
+    const payment=new CustomerPayment();
+    const paymentDetails=new CustomerPaymentDetails();
     let messageError=false;
     const saledetails=req.body.details;
     
@@ -106,7 +111,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
    
     let creacion=now.toISOString().substring(0, 10);
 
-    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,diasCredito,InvoiceComments} = req.body;
+    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
+        diasCredito,InvoiceComments,condicionPago,Reason,PaymentMethodName,PaymentMethodId,Monto,NumberAccount,BankName,NoTransaction} = req.body;
 
     let details=[];
     let deOrden=[];
@@ -154,6 +160,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
             }
         }
     });
+    let deuda=deudaAct;
+
     console.log("Deuda cliente",deudaAct);
 
     //Creacion de correlativo de doc
@@ -214,7 +222,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     SaleOrderInvoice.Entregada=!companyParams.RequieredOutput?true:false;
     SaleOrderInvoice.InvoiceNumber=InvoiceNumber;
 
-
+    let  invoiceId=null;
     if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
        console.log("Si entro de condicion");
         SaleOrderInvoice.save((err, SaleOrderStored)=>{
@@ -229,7 +237,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                 else{
                     console.log("INGRESOO FACT ");
                     console.log(SaleOrderStored);
-                    let  invoiceId=SaleOrderStored._id;
+                    invoiceId=SaleOrderStored._id;
                     let quoteId=SaleOrderStored.CustomerQuote;
                     //cambio de estado a orden de venta
                     saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
@@ -476,7 +484,98 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                 }
             }
         })
-
+       
+        if(condicionPago==='Contado'){
+          console.log("PAGO DE CONTADO");
+            payment.save((err, paymentStored)=>{
+                if(err){
+                    res.status(500).send({message: err});
+        
+                }else {
+                    if(!paymentStored){
+                        res.status(500).send({message: "No se inserto registro"});
+        
+                    }
+                    else{
+                        let paymentid=paymentStored._id;
+                        console.log('METODO',PaymentMethodId);
+                        paymentDetails.CreationDate=creacion;
+                        paymentDetails.Reason=Reason;
+                        paymentDetails.PaymentMethods=PaymentMethodId;
+                        paymentDetails.Cancelled=false;
+                        paymentDetails.Amount=Monto;
+                        paymentDetails.CustomerPayment=paymentid;
+                        paymentDetails.SaleOrderInvoice=invoiceId;
+                      
+                        console.log(paymentDetails);
+                        if(PaymentMethodName!=='Contado'){
+                            paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
+                            paymentDetails.BankName= BankName;
+                            paymentDetails.NoTransaction= NoTransaction;
+                        }
+                        if(PaymentMethodName==='Contado'){
+                            paymentDetails.NumberAccount=null;
+                            paymentDetails.BankName= null;
+                            paymentDetails.NoTransaction= null;
+                        }
+                        paymentDetails.save(async (err, detailStored)=>{
+                            if(err){
+                                // res.status(500).send({message: err});
+                                console.log(err);
+                    
+                            }else {
+                                if(!detailStored){
+                                    // res.status(500).send({message: err});
+                                    console.log(err);
+                                }
+                                else{
+                                    let paymentDetailId=detailStored._id;
+                                    if(paymentDetailId){
+                                        let sumMontos=await CustomerPaymentDetails.aggregate([
+                                            {$match :{CustomerPayment: paymentid}},
+                                           
+                                            {
+                                                $group:{
+                                                   _id:null,
+                                                "sumAmount":{$sum: '$Amount'}
+                                            }
+                                           },
+                                          
+                                        ]);
+                                        let sumaMontos=0.0;
+                                        sumMontos.map(item =>{
+                                            sumaMontos=item.sumAmount;
+                                        })
+                                        //actualizando deuda con cliente
+                                        customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
+                                            if(err){
+                                               
+                                                console.log(err);
+                                            }else{console.log(updateDeuda) }
+                                        });
+                                        if(parseFloat(sumMontos)===parseFloat(totalFactura)){
+                                            console.log('SUMANDO MONTOS');
+                                            saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                                if(err){
+                                                 
+                                                    console.log(err);
+                                                }else{console.log(updateDeuda);}
+                                            });
+                                            
+                                            
+                                        }
+                                       
+                                    }
+                                   
+                                }
+                            }
+                        });
+                        
+                        res.status(200).send({ paymentStored});
+                    }
+                }
+            })
+        }
     }
  
     if(!companyParams.OrderWithWallet && deudor){
@@ -488,10 +587,12 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
 }
 
+
 async function createSaleOrderInvoice(req, res){
     const SaleOrderInvoice= new saleOrderInvoice();
     const ProductOuput= new productOutput();
-
+    const payment=new CustomerPayment();
+    const paymentDetails=new CustomerPaymentDetails();
     let messageError=false;
     const saledetails=req.body.details;
     
@@ -508,7 +609,8 @@ async function createSaleOrderInvoice(req, res){
    
     let creacion=now.toISOString().substring(0, 10);
 
-    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,diasCredito,InvoiceComments} = req.body;
+    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
+        diasCredito,InvoiceComments,condicionPago,Reason,PaymentMethodName,PaymentMethodId,Monto,NumberAccount,BankName,NoTransaction} = req.body;
 
     let details=[];
     let deOrden=[];
@@ -556,7 +658,7 @@ async function createSaleOrderInvoice(req, res){
         }
     });
     console.log("Deuda cliente",deudaAct);
-
+    let deuda=deudaAct;
     //Creacion de correlativo de doc
 
     if(!codigoSaleOrderInvoice){
@@ -612,7 +714,7 @@ async function createSaleOrderInvoice(req, res){
     SaleOrderInvoice.Pagada=false;
     SaleOrderInvoice.Entregada=!companyParams.RequieredOutput?true:false;
     SaleOrderInvoice.InvoiceNumber=InvoiceNumber;
-
+    let  invoiceId=null;
     if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
        console.log("Si entro de condicion");
         SaleOrderInvoice.save((err, SaleOrderStored)=>{
@@ -627,7 +729,7 @@ async function createSaleOrderInvoice(req, res){
                 else{
                     console.log("INGRESOO FACT ");
                     console.log(SaleOrderStored);
-                    let  invoiceId=SaleOrderStored._id;
+                    invoiceId=SaleOrderStored._id;
                     let quoteId=SaleOrderStored.CustomerQuote;
                     if(invoiceId){
                         console.log("INGRESANDO DETALLES");
@@ -657,7 +759,103 @@ async function createSaleOrderInvoice(req, res){
                         saleOrderInvoiceDetails.insertMany(deOrden)
                         .then(function (detalles) {
                             //si ingreso no requerido 
-
+                                                    
+                                if(condicionPago==='Contado'){
+                                    console.log("PAGO DE CONTADO");
+                                    payment.SaleOrderInvoice=invoiceId;
+                                    payment.DatePayment=creacion;
+                                    payment.User=User;
+                                    payment.codpayment=codigo;
+                                    payment.Saldo=0;
+                                
+                                    payment.save((err, paymentStored)=>{
+                                        if(err){
+                                            res.status(500).send({message: err});
+                                
+                                        }else {
+                                            if(!paymentStored){
+                                                res.status(500).send({message: "No se inserto registro"});
+                                
+                                            }
+                                            else{
+                                                let paymentid=paymentStored._id;
+                                                console.log('METODO',PaymentMethodId);
+                                                paymentDetails.CreationDate=creacion;
+                                                paymentDetails.Reason=Reason;
+                                                paymentDetails.PaymentMethods=PaymentMethodId;
+                                                paymentDetails.Cancelled=false;
+                                                paymentDetails.Amount=Monto;
+                                                paymentDetails.CustomerPayment=paymentid;
+                                                paymentDetails.SaleOrderInvoice=invoiceId;
+                                                
+                                                console.log(paymentDetails);
+                                                if(PaymentMethodName!=='Contado'){
+                                                    paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
+                                                    paymentDetails.BankName= BankName;
+                                                    paymentDetails.NoTransaction= NoTransaction;
+                                                }
+                                                if(PaymentMethodName==='Contado'){
+                                                    paymentDetails.NumberAccount=null;
+                                                    paymentDetails.BankName= null;
+                                                    paymentDetails.NoTransaction= null;
+                                                }
+                                                paymentDetails.save(async (err, detailStored)=>{
+                                                    if(err){
+                                                        // res.status(500).send({message: err});
+                                                        console.log(err);
+                                            
+                                                    }else {
+                                                        if(!detailStored){
+                                                            // res.status(500).send({message: err});
+                                                            console.log(err);
+                                                        }
+                                                        else{
+                                                            let paymentDetailId=detailStored._id;
+                                                            if(paymentDetailId){
+                                                                let sumMontos=await CustomerPaymentDetails.aggregate([
+                                                                    {$match :{CustomerPayment: paymentid}},
+                                                                    
+                                                                    {
+                                                                        $group:{
+                                                                            _id:null,
+                                                                        "sumAmount":{$sum: '$Amount'}
+                                                                    }
+                                                                    },
+                                                                    
+                                                                ]);
+                                                                let sumaMontos=0.0;
+                                                                sumMontos.map(item =>{
+                                                                    sumaMontos=item.sumAmount;
+                                                                })
+                                                                //actualizando deuda con cliente
+                                                                customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
+                                                                    if(err){
+                                                                        
+                                                                        console.log(err);
+                                                                    }else{console.log(updateDeuda) }
+                                                                });
+                                                                
+                                                                    saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                                                        if(err){
+                                                                        
+                                                                            console.log(err);
+                                                                        }else{console.log(updateDeuda);}
+                                                                    });
+                                                                    
+                                                                    
+                                                                
+                                                                
+                                                            }
+                                                            
+                                                        }
+                                                    }
+                                                });
+                                                
+                                                
+                                            }
+                                        }
+                                    })
+                                }
                             if(detalles){
                                 //cuenta por cobrar
                                 customer.findByIdAndUpdate({_id:Customer},{
@@ -867,6 +1065,7 @@ async function createSaleOrderInvoice(req, res){
                 }
             }
         })
+
 
     }
  

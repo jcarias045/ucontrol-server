@@ -32,7 +32,9 @@ const CustomerSchema = Schema({
   Discount: {
     type: Schema.Types.ObjectId,
     ref: "Discount"
-  }    
+  },
+  TypeofTaxpayer: String,
+  PaymentCondition:String
 })
 
 module.exports = moongose.model('Customer', CustomerSchema)
