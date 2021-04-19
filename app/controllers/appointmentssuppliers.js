@@ -19,18 +19,18 @@ function getBookingSupplier(req,res){
 function createBookingSupplier(req,res){
     const BookingSupplier = new bookingSupplier()
 
-   const {StartDate, EndDate, Description, State,
-    User, Supplier, Name, StartTime, EndTime } = req.body
-
-   BookingSupplier.StartDate = StartDate;
-   BookingSupplier.EndDate = EndDate,
-   BookingSupplier.Description = Description;
-   BookingSupplier.State = State;
-   BookingSupplier.User = User;
-   BookingSupplier.Supplier = Supplier;
-   BookingSupplier.Name= Name;
-   BookingSupplier.StartTime = StartTime;
-   BookingSupplier.EndTime = EndTime;
+    const {StartDate, EndDate, Description, State,
+        User, Customer,  Name, StartTime, EndTime } = req.body
+    
+       BookingSupplier.StartDate = StartDate;
+       BookingSupplier.EndDate = EndDate;
+       BookingSupplier.Description = Description;
+       BookingSupplier.State = State;
+       BookingSupplier.User = User;
+       BookingSupplier.Customer = Customer;
+       BookingSupplier.Name = Name;
+       BookingSupplier.StartTime = StartTime;
+       BookingSupplier.EndTime = EndTime;
 
    console.log(BookingSupplier);
    BookingSupplier.save((err, BookingSupplierStored)=>{

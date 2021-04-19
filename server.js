@@ -29,6 +29,7 @@ let JobsRoutes = require('./app/routers/job');
 let BrandsRoutes = require('./app/routers/brand');
 let BookingCustomerRoutes = require('./app/routers/bookingcustomer');
 let BookingSupplierRoutes = require('./app/routers/bookingsupplier');
+let BookingUserRoutes = require('./app/routers/bookinguser');
 let Bodega = require('./app/routers/bodega');
 let PurchaseDetails=require('./app/routers/purchaseDetail');
 let orderRoutes= require('./app/routers/purchaseOrder');
@@ -50,6 +51,7 @@ let bankAccount = require('./app/routers/bankaccount');
 let document = require('./app/routers/document')
 let documentProduct = require('./app/routers/documentProduct')
 let documentPersonal = require('./app/routers/documentPersonal')
+let documentUser = require('./app/routers/documentUser')
 
 let customerQuoteRoutes= require('./app/routers/customerQuote');
 let saleOrderRoutes= require('./app/routers/saleOrder.route');
@@ -125,6 +127,7 @@ app.use('/api', personalRoutes);
 app.use('/api', BrandsRoutes);
 app.use('/api', BookingCustomerRoutes);
 app.use('/api', BookingSupplierRoutes);
+app.use('/api',BookingUserRoutes)
 app.use('/api',rolesRoutes);
 app.use('/api', Bodega);
 app.use('/api',supplierTypeRoutes);
@@ -138,6 +141,7 @@ app.use('/api',customerInvoicesRoutes);
 app.use('/api',document);
 app.use('/api',documentProduct);
 app.use('/api',documentPersonal);
+app.use('/api',documentUser);
 app.use('/api',saleOrderInvoiceRoutes);
 app.use('/api',customerPaymentRoutes);
 
