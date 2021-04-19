@@ -14,7 +14,20 @@ function getBookingCustomer(req,res){
             res.status(200).send({bookingCustomer})
         }
     });
+} 
+
+function getBookingId (req, res){
+    let user = req.params.id
+    BookingCustomer.find({User: user}).populate({path: 'User', model: 'User'})
+    .then(bookingCustomer => {
+        if(!bookingCustomer){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bookingCustomer})
+        }
+    });
 }
+
 
 function createBookingCustomer(req,res){
 
@@ -87,5 +100,6 @@ module.exports={
     getBookingCustomer,
     createBookingCustomer,
     updateBookingCustomer,
-    deleteBookingCustomer    
+    deleteBookingCustomer,
+    getBookingId    
 }
