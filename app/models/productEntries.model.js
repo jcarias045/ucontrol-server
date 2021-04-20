@@ -25,7 +25,7 @@ const ProductEntrySchema = Schema({
 })
 
 
-module.exports = mongoose.model('ProductEntry', ProductEntrySchema)
+module.exports = mongoose.model('ProductEntry', ProductEntrySchema);
 // module.exports = (sequelize, Sequelize) => {
 // 	const productEntry = sequelize.define('ec_productentry', {	
 //     ID_ProductEntry : {

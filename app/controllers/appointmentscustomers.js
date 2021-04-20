@@ -1,7 +1,7 @@
 const BookingCustomer = require('../models/appointmentcustomer.modal');
 const fs =require("fs");
 const path=require("path");
-const moment=require("moment");
+const moment = require("moment-timezone");
 const jwt= require('../services/jwt');
 
 function getBookingCustomer(req,res){
@@ -26,7 +26,20 @@ function getBookingAllCustomer(req,res){
             res.status(200).send({bookingCustomer})
         }
     });
+} 
+
+function getBookingId (req, res){
+    let user = req.params.id
+    BookingCustomer.find({User: user}).populate({path: 'User', model: 'User'})
+    .then(bookingCustomer => {
+        if(!bookingCustomer){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bookingCustomer})
+        }
+    });
 }
+
 
 function createBookingCustomer(req,res){
 
@@ -65,10 +78,10 @@ function updateBookingCustomer(req,res){
 
    BookingCustomer.findByIdAndUpdate({_id: params.id}, bookingCustomerData, (err,bookingCustomerUpdate)=>{
         if(err){
-            res.status(500).sen({message: "Error del Servidor."});
+            res.status(500).send({message: "Error del Servidor."});
         } else {
             if(!bookingCustomerUpdate){
-                res.status(404).sen({message: "No hay"});
+                res.status(404).send({message: "No hay"});
             }else{
                 res.status(200).send({message: "bookingSupplier Actualizado"})
             }
@@ -100,5 +113,6 @@ module.exports={
     createBookingCustomer,
     updateBookingCustomer,
     deleteBookingCustomer,
-    getBookingAllCustomer    
+    getBookingAllCustomer,    
+    getBookingId    
 }
