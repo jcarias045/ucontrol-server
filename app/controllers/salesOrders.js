@@ -13,7 +13,6 @@ const customerInvoice = require("../models/customerinvoice.model");
 
 async function getSaleOrders(req, res){
     const { id,company } = req.params;
-
     saleOrder.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company},
      populate:{path:'Discount', model: 'Discount'}})
     .then(order => {
@@ -453,8 +452,6 @@ async function createSaleOrder(req, res){
 
 
 }
-
-
 
 async function createSaleOrderWithQuote(req, res){
 

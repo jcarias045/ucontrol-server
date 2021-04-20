@@ -109,7 +109,8 @@ function getOptionsSystemRol(req, res){
     try{
         profileOptions.find({Rol: rolId})
         .populate({path: 'Rol', model: 'Rol'})
-        .populate({path: 'OpMenu', populate: {path:'Grupos'}})
+        .populate({path: 'OpMenu', model: 'OpMenu',
+        populate: { path:'Grupos', model:'Grupos'}})
         .then(roles => {
             res.status(200).send({roles});
           
