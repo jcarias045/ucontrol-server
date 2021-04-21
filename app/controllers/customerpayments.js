@@ -18,8 +18,8 @@ async function addCustomerPayment(req, res){
         PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
 
     console.log(req.body);
-    let codigoPayment=await CustomerPayment.findOne().sort({codpayment:-1})
-    .populate({path: 'User', model: 'User' , match:{Company: Company}}).then(function(doc){
+    let codigoPayment=await CustomerPayment.findOne()
+    .populate({path: 'User', model: 'User' , match:{Company: Company}}).sort({codpayment:-1}).then(function(doc){
         if(doc){
             if(doc.codpayment!==null){
                 return(doc.codpayment)
@@ -161,7 +161,8 @@ async function addCustomerPayment(req, res){
         }
     }
     else{
-        if(parseFloat(totalaPagarInvoice.Total)< parseFloat(Monto)){
+        console.log("NUEVO PAGO DESDE CERO");
+        if(parseFloat(totalFactura).toFixed(2) < parseFloat(Monto).toFixed(2)){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
             payment.save((err, paymentStored)=>{
@@ -222,7 +223,8 @@ async function addCustomerPayment(req, res){
                                         let sumaMontos=0.0;
                                         sumMontos.map(item =>{
                                             sumaMontos=item.sumAmount;
-                                        })
+                                        });
+                                        console.log("summontos",sumaMontos);
                                         //actualizando deuda con cliente
                                         customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
                                             if(err){
@@ -230,7 +232,7 @@ async function addCustomerPayment(req, res){
                                                 console.log(err);
                                             }else{console.log(updateDeuda) }
                                         });
-                                        if(parseFloat(sumMontos)===parseFloat(totalFactura)){
+                                        if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalFactura).toFixed(2)){
                                             console.log('SUMANDO MONTOS');
                                             saleOrderInvoice.findByIdAndUpdate({_id:SaleOrderInvoiceId},{Pagada:true},(err,updateDeuda)=>{
                                                 if(err){
@@ -283,6 +285,8 @@ async function updatePaymentInvoice(req, res){
     let montoRegistrado=req.body.montoReg;
     let invoiceId= req.body.ID_PurchaseInvoice;
     let cambios=req.body.change;
+
+    console.log("cambios", req.body);
     const {Customer,idpayment,saldopendiente,Total,SaleOrderInvoiceId,_id}=req.body;
     
     //obteniendo total de la factura, Para comprobar respecto al saldo
@@ -439,9 +443,12 @@ async function cancelledPaymentInvoice(req, res){
     let detailPayment=await CustomerPaymentDetails.findById(detailId);
     
     if(detailPayment)
-    {
-        
-            //reversion del monto con el que se registro el pago
+    {       
+           let newTotal=parseFloat(deuda)+parseFloat(montoRegistrado);
+           if(parseFloat(totalaPagarInvoice) < parseFloat(newTotal)){
+            res.status(500).send({message: "No se inserto registro"});
+           }else{
+               //reversion del monto con el que se registro el pago
             customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable: parseFloat(deuda)+parseFloat(montoRegistrado)},(err,purchaseUpdate)=>{
                 if(err){
                     console.log(err);
@@ -501,12 +508,30 @@ async function cancelledPaymentInvoice(req, res){
                     res.status(200).json(detailUpdated);
                 }
             });
+           }
+            
         
     }
+}
+
+
+async function getAllPayments(req, res){
+    
+    CustomerPayment.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    .populate({path: 'SaleOrderInvoice', model: 'SaleOrderInvoice'}).sort({codpayment:-1})
+    .then(pagos => {
+        if(!pagos){
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(pagos);
+            res.status(200).send({pagos})
+        }
+    });
 }
 module.exports={
     addCustomerPayment,
     getPaymentDetails,
     updatePaymentInvoice,
-    cancelledPaymentInvoice
+    cancelledPaymentInvoice,
+    getAllPayments
 }

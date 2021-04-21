@@ -76,7 +76,7 @@ function getSaleOrderDetails(req, res){
     saleOrderDetails.find({SaleOrder:saleId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
-
+    
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
@@ -1082,7 +1082,7 @@ function getSaleInvoiceDetails(req, res){
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
     populate:{path: 'Measure',model:'Measure'}}
-    )})
+    )}).populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
     .then(details => {
         if(!details){
             res.status(404).send({message:"No hay "});
@@ -1704,6 +1704,61 @@ async function anularSaleInovice(req,res){
     });
 }
 
+
+async function getSaleInvoicesNoPagadas(req, res){
+    const { id,company } = req.params;
+     //verificar si compania tiene ingreso requerido
+    //  let quotesOpenop=await Companyreg.findById(company) //esta variable la mando a llamar luego que se ingreso factura
+    //  .then(income => {
+    //      if(!income){
+    //          res.status(404).send({message:"No hay "});
+    //      }else{
+    //          console.log(income);
+    //         return(income.WorksOpenQuote)
+    //      }
+    //  });
+
+
+    saleOrderInvoice.find({User:id,Pagada:false}).populate({path: 'Customer', model: 'Customer', match:{Company: company}})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+
+            res.status(200).send({invoices})
+        }
+    });
+}
+function getSaleInvoiceHeader(req, res){
+    let invoiceId = req.params.id; 
+    let userId = req.params.user; 
+    let companyId = req.params.company;
+    saleOrderInvoice.find({_id:invoiceId}).populate({path: 'User', model: 'User',match:{_id:userId}})
+    .populate({path: 'Customer', model: 'Customer',match:{Company:companyId}})
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({details})
+        }
+    });
+}
+
+
+function getSaleInvoicePendientesIngreso(req, res){
+   
+    console.log(req.params.id);
+    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    saleOrderInvoice.find({Entregada:false,User:req.params.id}).populate({path: 'Customer', model: 'Customer'})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{          
+            res.status(200).send({invoices})
+        }
+    });
+}
 module.exports={
     getSaleOrderInvoices,
     getSaleOrdersClosed,
@@ -1714,6 +1769,9 @@ module.exports={
     getSaleInvoiceDetails,
     updateSaleOrderInvoice,
     deleteSaleInvoiceDetails,
-    anularSaleInovice
+    anularSaleInovice,
+    getSaleInvoicesNoPagadas,
+    getSaleInvoiceHeader,
+    getSaleInvoicePendientesIngreso
     
 }

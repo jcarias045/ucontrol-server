@@ -15,6 +15,10 @@ router.get('/get-saleorderinvoicedetails/:id', saleinvoice.getSaleInvoiceDetails
 router.put('/update-saleorderinvoice/:id', saleinvoice.updateSaleOrderInvoice);
 router.put('/delete-saleorderinvoicedetails/:id', saleinvoice.deleteSaleInvoiceDetails);
 router.put('/anular-saleorderinvoice/:id', saleinvoice.anularSaleInovice);
+router.get('/get-saleinvoicesnopagadas/:id/:company', saleinvoice.getSaleInvoicesNoPagadas);
+router.get('/get-saleinvoiceheader/:id/:user/:company', saleinvoice.getSaleInvoiceHeader);
+router.get('/get-saleinvoicenoingresados/:id', saleinvoice.getSaleInvoicePendientesIngreso);
+
 
 
 
