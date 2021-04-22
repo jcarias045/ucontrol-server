@@ -2,6 +2,8 @@
 const SysOptions = require('../models/systemOp.model');
 const ProfileOptions = require('../models/profileOptions.model');
 const Grupos = require('../models/grupos.model');
+const roles=require('../models/rol.model');
+const profileOptions = require('../models/profileOptions.model')
 
 // const db = require('../config/db.config.js');
 // const { Op } = require("sequelize");
@@ -233,6 +235,7 @@ async function createSystemOption(req, res){
     // let option = {};
     console.log(req.body);
     const sysOptions = new SysOptions();
+    let sysOp={};
     try{
         // Construimos el modelo del objeto
         sysOptions.Name = req.body.Name;
@@ -241,7 +244,22 @@ async function createSystemOption(req, res){
         sysOptions._id=req.body._id;
         sysOptions.State=true;              
         SysOptions.create(sysOptions)
-        .then(async result => {    
+        .then(async result => {   
+             let opId=result._id;
+            roles.find().then(role =>{
+                role.map(async item=>{
+                    sysOp.Rol=item._id;
+                    sysOp.OpMenu=opId;
+                    sysOp.Checked=false;
+                    console.log(sysOp);
+                     await profileOptions.insertMany(sysOp).then(async result=>{
+                         console.log(result);
+                     }).catch(err=>{
+                         console.log(err);
+                        return err.message;
+                    });
+                })
+            })
         res.status(200).json(result);
     });  
     }     

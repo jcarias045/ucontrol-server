@@ -64,8 +64,8 @@ const app=express();
 
 const cors = require('cors');
 const corsOptions = {
-    origin: 'https://ucontrolsoftware.netlify.app',
-    // origin: 'http://localhost:3000',
+    //origin: 'https://ucontrolsoftware.netlify.app',
+    origin: 'http://localhost:3000',
     // origin:'https://master.d1qx17th3y62lk.amplifyapp.com',
     optionsSuccessStatus: 200
 }
