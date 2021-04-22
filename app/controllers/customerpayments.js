@@ -130,7 +130,7 @@ async function addCustomerPayment(req, res){
                                     })
                                     console.log('suma',sumaMontos);
                                     console.log('ttoal de facrur',totalFactura);
-                                    if(parseFloat(sumaMontos)===parseFloat(totalFactura)){
+                                    if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalFactura).toFixed(2)){
                                         console.log('FACTURA CANCELADA');
 
                                         saleOrderInvoice.findByIdAndUpdate({_id:SaleOrderInvoiceId},{Pagada:true},(err,updateDeuda)=>{

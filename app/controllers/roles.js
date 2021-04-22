@@ -224,11 +224,56 @@ async function changeStateRol(req,res){
     }
 }
 
+async function opciones(req, res){
+      // Buscamos informacion para llenar el modelo de 
+   
+      let rolId=req.params.id;
+      try{
+          profileOptions.find({Rol: rolId})
+          .populate({path: 'Rol', model: 'Rol'})
+          .populate({path: 'OpMenu', populate: {path:'Grupos'}})
+          .then(roles => {
+            var filtered = roles.filter(function (item) {
+                return item.Checked ===true;
+              });
+              let opciones=[];
+              filtered.map(item=>{
+                opciones.push(item.OpMenu);
+              })
+            
+              SysOptions.find()
+              .populate({path: "Grupos", model: "Grupos"})
+              .then(sysOptions => {
+                 opciones.push({sistema: sysOptions});
+                 opciones.map(item =>{
+                     console.log(item);
+                 })
+                 var filtered = roles.filter(function (item) {
+                    return item.Checked ===true;
+                  });
+                  res.status(200).send({opciones});
+              })
+              
+                
+              
+          })
+      }catch(error) {
+          // imprimimos a consola
+          console.log(error);
+  
+          res.status(500).json({
+              message: "Error en query!",
+              error: error
+          });
+      }
+}
+
 module.exports={
     getRolesByCompany,
     getRolesSystem,
     createRol,
     getOptionsSystemRol,
     updateRol,
-    changeStateRol
+    changeStateRol,
+    opciones
 }

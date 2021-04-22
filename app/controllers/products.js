@@ -1,6 +1,8 @@
 const product = require('../models/product.model');
 const measure = require('../models/measure.model');
 const inventory = require('../models/inventory.model');
+const bodega = require('../models/bodega.model');
+const company = require('../models/company.model');
 const fs =require("fs");
 const path=require("path");
 const PDFDocument=require('pdfkit'); 
@@ -23,12 +25,24 @@ function getPoducts(req, res){
     console.log(product);
 }
 
-function createProduct(req, res){
+async function createProduct(req, res){
     
     const Product = new product()
-
+    const Inventory=new inventory();
+    const InventoryReserva=new inventory();
     const { Name, Brand, SellPrice, ShortName, Company, CatProduct, Supplier,
     Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, AverageCost} = req.body
+
+  
+    //obteniendo informacion de la compañia para validar
+    let companyParams=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
+    .then(params => {
+        if(!params){
+            res.status(404).send({message:"No hay "});
+        }else{
+            return(params)
+        }
+    });
 
         Product.Name = Name;
         Product.Brand= Brand;
@@ -44,18 +58,62 @@ function createProduct(req, res){
         Product.Active=Active;
         Product.BuyPrice= BuyPrice;
         Product.codproducts = codproducts;
-        Product.Inventary= Inventary;
-        Product.AverageCost= AverageCost;
+       
+        Product.AverageCost= 0;
 
 
                 console.log(Product);
-                Product.save((err, ProductStored)=>{
+                Product.save(async (err, ProductStored)=>{
                     if(err){
                         res.status(500).send({message: err});
                     }else{
                         if(!ProductStored){
                             res.status(500).send({message: "Error"});
                         }else{
+                            let productId=ProductStored._id;
+                            let nombreProduct=ProductStored.Name;
+                           //obteniendo id de la bodega pricipal de la empresa
+                           let bodegaPrincipal=await bodega.findOne({Name:'Principal', Company:Company},['_id'])
+                           .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            //obteniendo id de la bodega de reserva de la empresa
+                            let bodegaReserva=await bodega.findOne({Name:'Reserva', Company:Company},['_id'])
+                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            
+                           
+                            Inventory.Product=productId;
+                            Inventory.Stock=0;
+                            Inventory.Description="Inventario principal producto: "+ nombreProduct;
+                            Inventory.Bodega=bodegaPrincipal._id;
+                            Inventory.Company=Company;
+                        
+                            Inventory.save(async (err, inventoryStored)=>{
+                                if(err){
+                                    res.status(500).send({message: err});
+                                }else{
+                                    if(!inventoryStored){
+                                        res.status(500).send({message: "Error"});
+                                    }else{}
+                                }
+                            });
+                            if(companyParams.AvailableReservation){
+                                InventoryReserva.Product=productId;
+                                InventoryReserva.Stock=0;
+                                InventoryReserva.Description="Inventario de reserva producto: "+ nombreProduct;
+                                InventoryReserva.Bodega=bodegaReserva._id;
+                                InventoryReserva.Company=Company;
+                                InventoryReserva.save(async (err, inventoryStored)=>{
+                                    if(err){
+                                        res.status(500).send({message: err});
+                                    }else{
+                                        if(!inventoryStored){
+                                            res.status(500).send({message: "Error"});
+                                        }else{}
+                                    }
+                                });
+
+                            }
+                            
+
                             res.status(200).send({Product: ProductStored})
                         }
                     }
@@ -69,7 +127,7 @@ function uploadLogo(req,res){
     const params= req.params;
     const id=params.id;
     console.log(req.files);
-    Product.findByPk(id).then((productData)=>{        
+    Product.find({_id:id}).then((productData)=>{        
           if(!productData){
             res.status(404)
             .send({message:"no se encontro usuario"});
@@ -93,21 +151,19 @@ function uploadLogo(req,res){
                 let updatedObject = {                   
                     Logo: fileName,
                   }
-                let result =  Product.update(updatedObject,
-                    { 
-                      returning: true,                
-                      where: {ID_Products: id},
-                      attributes: [ 'Logo']
-                    }
-                  );
-                  if(!result) {
-                    res.status(500).json({
-                        message: "Error -> No se puede actualizar el cliente con ID = " + req.params.id,
-                        error: "No se puede actualizar",
-                    });
-                }
+                 Product.findByIdAndUpdate({_id:id},updatedObject,(err, updateObject)=>{
+                           if(err){
+                              res.status(500).json(err);
+
+                           }else{
+                               if(updateObject){
+                                    res.status(200).json(updateObject);
+                               }
+                           }
+                 })
+                  
     
-                res.status(200).json(result);
+               
             }
             
         }

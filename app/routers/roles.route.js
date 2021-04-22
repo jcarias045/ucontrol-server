@@ -11,6 +11,7 @@ router.post('/create-rol', roles.createRol);
 router.get('/get-opcionesmenu/:id', roles.getOptionsSystemRol);
 router.put('/update-rol/:id', roles.updateRol);
 router.put('/changestate-rol/:id', roles.changeStateRol);
+router.get('/opciones/:id', roles.opciones);
 
 
 module.exports = router;

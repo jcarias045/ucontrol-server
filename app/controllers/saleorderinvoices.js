@@ -1660,7 +1660,7 @@ async function anularSaleInovice(req,res){
                      }
                      if(companyParams.AvailableReservation){
                                             //descontando cantidad que se reservara
-                            inventory.findByIdAndUpdate({_id:item.Inventory},{
+                            inventory.findByIdAndUpdate({_id:productreserved._id},{
                                 Stock:parseFloat((productreserved.Stock + parseFloat(item.Quantity)) ),
                             }).then(result=> console.log(result))
                             .catch(err => {console.log(err);});

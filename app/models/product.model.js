@@ -37,7 +37,7 @@ const ProductSchema = Schema({
         ref: "Measure",
         // autopopulate: true,
       },
-    Inventary: Number,
+   
     AverageCost: Number
 })
 

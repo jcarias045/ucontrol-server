@@ -1,6 +1,136 @@
 const Inventory = require("../models/inventory.model");
 const Product=require("../models/product.model");
 
+function getInventory(req, res){
+    const { id } = req.params;
+    Inventory.find({Company:id}).populate({path: 'Bodega', model: 'Bodega', match:{Company: id}})
+    .populate({path: 'Product', model: 'Product' ,
+    populate:{path: 'Measure', model: 'Measure'},
+    populate:{path: 'CatProduct', model: 'CatProduct'},
+   })
+     .then(inventory => {
+         if(!inventory){
+             res.status(404).send({message:"No hay "});
+         }else{
+             
+             res.status(200).send({inventory})
+         }
+     });
+}
+
+function getInventories(req, res){
+    const { id } = req.params;
+    Inventory.aggregate([
+        {$match:{ $expr:
+            { $and:
+               [
+                 { Company: id},
+               
+                
+               ]
+            }
+         }},
+        
+            {
+                
+                $lookup: {
+                    from: "products",
+                    let: { productid: "$Product" },
+                    pipeline: [
+                            { $match:
+                            { $expr:
+                                
+                                     { $eq: [ "$_id",  "$$productid" ] }
+                                    
+                                }
+                             },
+                             {$lookup: {
+                                from: "catproducts" ,
+                                let: {catId: "$CatProduct"}, 
+                                pipeline: [
+                                    { $match:  { $expr:
+                                
+                                        { $eq: [ "$_id",  "$$catId" ] }
+                                       
+                                   } },
+                                  
+                                ],
+                                as: "categoria"
+                            }
+                            },
+                            {
+                                $lookup: {
+                                from: "brands" ,
+                                let: {brandId: "$Brand"}, 
+                                pipeline: [
+                                    { $match:  { $expr:
+                                
+                                        { $eq: [ "$_id",  "$$brandId" ] }
+                                       
+                                   } },
+                                  
+                                ],
+                                as: "marca"
+                              }
+                            },
+                            {
+                                $lookup: {
+                                from: "measures" ,
+                                let: {meedidaId: "$Measure"}, 
+                                pipeline: [
+                                    { $match:  { $expr:
+                                
+                                        { $eq: [ "$_id",  "$$meedidaId" ] }
+                                       
+                                   } },
+                                  
+                                ],
+                                as: "medida"
+                              }
+                            }
+
+                     ],
+                    as:"producto",
+                    
+                },
+                
+            },
+            {
+                    
+                $lookup: {
+                    from: "bodegas",
+                    let: { bodegaId: "$Bodega" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                               
+                                     { $eq: [ "$_id",  "$$bodegaId" ] },
+                             }
+                        },
+                       
+                       
+                     ],
+                    as:"bodega",
+                    
+                },
+                
+            },
+            //   {
+            //      $unwind:  "$invoice"
+            //   },
+              
+        ])
+     .then(inventory => {
+         if(!inventory){
+             res.status(404).send({message:"No hay "});
+         }else{
+             
+             res.status(200).send({inventory})
+         }
+     });
+}
+
+
 function createInventory(req, res){
     let inventory = new Inventory();
 
@@ -71,8 +201,9 @@ function getProductInfoxInventary(req,res){
 }
 
 module.exports={
-    // getInventories,
+    getInventory,
     createInventory,
+    getInventories,
     // updateInventory,
     // deleteInventory,
     // getInventoriesID,
