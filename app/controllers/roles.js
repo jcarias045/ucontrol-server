@@ -7,7 +7,7 @@
 // const ProfileOptions=db.ProfileOptions;
 // const SysOptions = db.SysOptions;
 const Roles = require('../models/rol.model');
-const SysOptions = require('../models/systemOp.model');
+const SysOptions= require('../models/systemOp.model');
 const profileOptions = require('../models/profileOptions.model')
 
 function getRolesByCompany(req, res){
@@ -111,8 +111,9 @@ function getOptionsSystemRol(req, res){
         .populate({path: 'Rol', model: 'Rol'})
         .populate({path: 'OpMenu', populate: {path:'Grupos'}})
         .then(roles => {
-            res.status(200).send({roles});
-          
+            // if(roles.Checked===true){
+                res.status(200).send({roles});
+            // }
         })
     }catch(error) {
         // imprimimos a consola

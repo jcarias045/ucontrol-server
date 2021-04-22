@@ -32,7 +32,7 @@ function ExportProductList(req, res){
         .fontSize(10)
         .text('Codigo Producto: ' +producto.codproducts)
         .text('Nombre Producto: '+producto.Name)
-        .text('Marca: '+producto.Brand.Name)
+        .text('Marca: '+ producto.Brand.Name)
     })
 
 

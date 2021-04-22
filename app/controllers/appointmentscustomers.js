@@ -5,7 +5,19 @@ const moment = require("moment-timezone");
 const jwt= require('../services/jwt');
 
 function getBookingCustomer(req,res){
-    BookingCustomer.find().populate({ path: 'User', model: 'User'}).
+    BookingCustomer.find({User: req.params.id, Customer: req.params.customerid}).populate({ path: 'User', model: 'User'}).
+    populate({ path: 'Customer', model: 'Customer'})
+    .then(bookingCustomer => {
+        if(!bookingCustomer){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bookingCustomer})
+        }
+    });
+}
+
+function getBookingAllCustomer(req,res){
+    BookingCustomer.find({User: req.params.id}).populate({ path: 'User', model: 'User'}).
     populate({ path: 'Customer', model: 'Customer'})
     .then(bookingCustomer => {
         if(!bookingCustomer){
@@ -101,5 +113,6 @@ module.exports={
     createBookingCustomer,
     updateBookingCustomer,
     deleteBookingCustomer,
+    getBookingAllCustomer,    
     getBookingId    
 }
