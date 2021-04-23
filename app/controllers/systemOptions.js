@@ -17,7 +17,6 @@ function getSystemOptions(req, res){
 
     try{
         SysOptions.find({Grupos: req.params.id})
-        // .populate({path: "Grupos", model: "Grupos"})
         .then(sysOptions => {
             res.status(200).send({sysOptions});
           
@@ -248,7 +247,7 @@ async function createSystemOption(req, res){
              let opId=result._id;
              console.log("ingresando datos opciones ");
              console.log(result);
-            roles.find().then(role =>{
+             roles.find().then(role =>{
                 role.map(async item=>{
                     sysOp.push({
                         Checked:false,
