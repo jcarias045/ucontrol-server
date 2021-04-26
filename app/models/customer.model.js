@@ -2,6 +2,7 @@ const moongose = require('mongoose');
 const  Company = require('./company.model');
 const User = require('./user.model');
 const Discount = require('./discount.model');
+const Sector = require('./sector.model');
 const Schema =  moongose.Schema;
 
 const CustomerSchema = Schema({
@@ -34,7 +35,13 @@ const CustomerSchema = Schema({
     ref: "Discount"
   },
   TypeofTaxpayer: String,
-  PaymentCondition:String
+  PaymentCondition:String,
+  Nit:String,
+  Ncr:String,
+  Sector:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
 })
 
 module.exports = moongose.model('Customer', CustomerSchema)

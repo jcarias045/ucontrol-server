@@ -10,7 +10,7 @@ function createCustomer(req, res) {
 
     const { Name,LastName,codCustomer,Email, Password,Country,City,ZipCode,
             Phone,MobilPhone,idNumber,Images,AccountsReceivable,Access,
-            PaymentTime, Discount, User, Company, Active } = req.body;
+            PaymentTime, Discount, User, Company, Active, Sector,Nit,Ncr,TypeofTaxpayer,PaymentCondition} = req.body;
 
             customer.Name = Name;
             customer.LastName = LastName;
@@ -31,6 +31,11 @@ function createCustomer(req, res) {
             customer.User = User;
             customer.Active= Active;
             customer.Company = Company;
+            customer.Ncr=Ncr;
+            customer.Sector=Sector;
+            customer.Nit=Nit;
+            customer.TypeofTaxpayer = TypeofTaxpayer;
+            customer.PaymentCondition= PaymentCondition;
             if (!Password) {
                 res.status(500).send({ message: "La contraseña es obligatoria. " });
               } else {

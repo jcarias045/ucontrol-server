@@ -60,13 +60,14 @@ let customerInvoicesRoutes= require('./app/routers/customerInvoice.route');
 let saleOrderInvoiceRoutes= require('./app/routers/saleorderinvoice.route');
 let customerPaymentRoutes= require('./app/routers/customerpayments.route');
 let productOutputRoutes= require('./app/routers/productoutput.route');
+let sectorRoutes= require('./app/routers/sector.route');
 
 const app=express();
 
 const cors = require('cors');
 const corsOptions = {
-    //origin: 'https://ucontrolsoftware.netlify.app',
-    origin: 'http://localhost:3000',
+    origin: 'https://ucontrolsoftware.netlify.app',
+    // origin: 'http://localhost:3000',
     // origin:'https://master.d1qx17th3y62lk.amplifyapp.com',
     optionsSuccessStatus: 200
 }
@@ -147,6 +148,7 @@ app.use('/api',documentUser);
 app.use('/api',saleOrderInvoiceRoutes);
 app.use('/api',customerPaymentRoutes);
 app.use('/api',productOutputRoutes);
+app.use('/api',sectorRoutes);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));

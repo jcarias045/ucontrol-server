@@ -21,7 +21,13 @@ const SupplierSchema = Schema({
   SupplierType: { 
     type: Schema.ObjectId, 
     ref: "SupplierType"
-  }  
+  }  ,
+  Nit:String,
+  NCR:String,
+  Sector:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
 })
 
 module.exports =mongoose.model('Supplier', SupplierSchema)
