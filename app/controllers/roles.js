@@ -128,77 +128,57 @@ function getOptionsSystemRol(req, res){
 
 async function updateRol(req, res){
    
+   
     let rolId = req.params.id;     
     let habilitados=req.body.check;
     let deshabilitados=req.body.noCheck;
 
+    const {Description,Name}=req.body;
 
-
-    let sysOp = new profileOptions();
+    let sysOp ={};
     let rol = await Roles.findById(rolId);
     let options = await profileOptions.find({Rol: rolId});
-    console.log(rol);
-    console.log(options);
-    if(!rol){
-           // retornamos el resultado al cliente
-            res.status(404).json({
-                message: "No se encuentra el cliente con ID = " + rolId,
-                error: "404"
-            });
-        } else {    
-            // actualizamos nuevo cambio en la base de datos, definición de
-            // let updateObject = rol;
-            // let updatedObject = {             
-            //     Name:Name,
-            //     Description:Description,
-            //     Company: Company               
-            // }
-            // console.log(updatedObject);    //agregar proceso de encriptacion
-            let result = await Roles.findByIdAndUpdate({_id: rolId}, rol, (err, updateObject)=>
-                            ( profileOptions.findByIdAndUpdate({Rol: rolId})));
-            if(habilitados.length>0){
-                for  (const cartItem of habilitados) {
-                sysOp.Rol=rolId;
-                sysOp.OpMenu=cartItem.id;
-                sysOp.Checked=cartItem.checked;
-                console.log(sysOp);
-                await profileOptions.insertMany(sysOp).then(async result=>{}).catch(err=>{
-                    console.log(err);
-                    return err.message;
-                });
-            }
-            }
-            if(deshabilitados.length>0){
-                for  (const cartItem of deshabilitados) {
-                sysOp.Rol=rolId;
-                sysOp.OpMenu=cartItem.id;
-                sysOp.Checked=cartItem.checked;
-                console.log(sysOp);
-                await profileOptions.insertMany(sysOp).then(async result=>{}).catch(err=>{
-                    console.log(err);
-                    return err.message;
-                });
-            }
-            }
     
-            // retornamos el resultado al cliente
-            if(!result) {
-                console.log(rol);
-                 console.log(options);
-                res.status(500).json({
-                    message: "Error Resultado = " + req.params.id,
-                    error: "No se puede actualizar",
-                });
-            }
+    profileOptions.remove({Rol:rolId}).then(async function(result) {
+       
+        if(result){
+             Roles.findByIdAndUpdate({_id:rolId},{Description:Description, Name:Name}).catch(function (err){return err})
 
-            res.status(200).json(result);
+            if(habilitados.length>0){
+                for(let item of habilitados){   
+                  sysOp.Rol=rolId;
+                  sysOp.OpMenu=item.id;
+                  sysOp.Checked=item.checked;
+                   await profileOptions.insertMany(sysOp).then(async result=>{
+                      
+                   }).catch(err=>{
+                       
+                      return err.message;
+                  });
+              }
+            
+  
+            }
+  
+            if(deshabilitados.length>0){
+              for(let item of deshabilitados){   
+                  sysOp.Rol=rolId;
+                  sysOp.OpMenu=item.id;
+                  sysOp.Checked=item.checked;
+                  console.log(sysOp);
+                   await profileOptions.insertMany(sysOp).then(async result=>{
+                       console.log(result);
+                   }).catch(err=>{
+                       console.log(err);
+                      return err.message;
+                  });
+          }
+      }
         }
-    // } catch(error){
-    //     res.status(500).json({
-    //         message: "Error en Catch: " + req.params.id,
-    //         error: error.message
-    //     });
-    // }
+        res.status(200).json(result);
+    })
+
+  
 }
 
 async function changeStateRol(req,res){

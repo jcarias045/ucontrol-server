@@ -248,7 +248,7 @@ async function createSystemOption(req, res){
              let opId=result._id;
              console.log("ingresando datos opciones ");
              console.log(result);
-            roles.find().then(role =>{
+             roles.find().then(role =>{
                 role.map(async item=>{
                     sysOp.push({
                         Checked:false,
