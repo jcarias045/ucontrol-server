@@ -20,6 +20,9 @@ router.get('/get-saleinvoiceheader/:id/:user/:company', saleinvoice.getSaleInvoi
 router.get('/get-saleinvoicenoingresados/:id', saleinvoice.getSaleInvoicePendientesIngreso);
 
 
+router.get('/get-charges/:id', saleinvoice.getChargestoCustomers);
+
+
 
 
 module.exports = router;

@@ -99,8 +99,8 @@ async function createSaleOrder(req, res){
     const saledetails=req.body.details;
     const detalle=[];
     let deudor=false;
-    moment.locale();
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
 
 
     const {CodCustomerQuote,CustomerName,Description,Total,User,companyId,CustomerQuote,SubTotal,Customer,Comments,diasCredito} = req.body;

@@ -528,6 +528,9 @@ async function getAllPayments(req, res){
         }
     });
 }
+
+
+
 module.exports={
     addCustomerPayment,
     getPaymentDetails,

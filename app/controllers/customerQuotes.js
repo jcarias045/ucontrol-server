@@ -128,7 +128,8 @@ async function updateCustomerQuote(req, res){
     let detailsAnt=req.body.ordenAnt;
     let updateQuote={};
 
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
     updateQuote.Description=req.body.Description;
     updateQuote.CustomerName=req.body.CustomerName;
     updateQuote.Customer=req.body.Customer;
@@ -136,7 +137,7 @@ async function updateCustomerQuote(req, res){
     updateQuote.Total=parseFloat(req.body.Total).toFixed(2);
     let detallePrev={};
     let detalle=[];
-    CustomerQuote.findByIdAndUpdate({_id:quoteId},updateQuote,(err,purchaseUpdate)=>{
+    CustomerQuote.updateOne({_id:quoteId},updateQuote,(err,purchaseUpdate)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
             console.log(err);
@@ -144,7 +145,11 @@ async function updateCustomerQuote(req, res){
             if(!purchaseUpdate){
                 res.status(404).send({message: "No se actualizo registro"});
             }else{
-                CustomerQuote.findByIdAndUpdate({_id:quoteId},{DateUpdate:creacion},(err,purchaseUpdate)=>{});
+              
+                if(purchaseUpdate.nModified>0){
+                     CustomerQuote.findByIdAndUpdate({_id:quoteId},{DateUpdate:creacion},(err,purchaseUpdate)=>{});
+                }
+               
                 if(detailsAnt.length > 0) {
                      detailsAnt.map(async item => {  
                         detallePrev.ProductName=item.ProductName;

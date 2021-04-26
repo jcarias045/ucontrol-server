@@ -22,7 +22,7 @@ function getSaleOrderInvoices(req, res){
         if(!invoices){
             res.status(404).send({message:"No hay "});
         }else{
-            
+
             res.status(200).send({invoices})
         }
     });
@@ -76,7 +76,7 @@ function getSaleOrderDetails(req, res){
     saleOrderDetails.find({SaleOrder:saleId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
-    
+
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
@@ -97,7 +97,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     const paymentDetails=new CustomerPaymentDetails();
     let messageError=false;
     const saledetails=req.body.details;
-    
+
     let dePurchaseOrder=req.body.ordenAnt;
     let addTaxes=req.body.impuestos;
     const detalle=[];
@@ -107,8 +107,6 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     moment.locale();
     // let creacion = moment().format('DD/MM/YYYY');
     let now= new Date();
-    let fecha=now.getTime();
-   
     let creacion=now.toISOString().substring(0, 10);
 
     const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
@@ -117,7 +115,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     let details=[];
     let deOrden=[];
     let impuestos=[];
-   
+
 
     let codigo=0;
     let codigoSalidas=0;
@@ -138,7 +136,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                     if(doc.CodOutput!==null){
                 return(doc.CodOutput)
             }
-        }  
+        }
     });
     //obteniendo informacion de la compañia para validar
     let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
@@ -169,8 +167,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     if(!codigoSaleOrderInvoice){
         codigo =1;
     }else {codigo=codigoSaleOrderInvoice+1}
-    
-    
+
+
     if(!codOutput){
         codigoSalidas =1;
     }else {codigoSalidas=codOutput+1}
@@ -247,10 +245,10 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                         if(update){}});
                     if(invoiceId){
                         console.log("INGRESANDO DETALLES");
-               
+
 
                      if(dePurchaseOrder.length > 0){
-                        dePurchaseOrder.map(async item => { 
+                        dePurchaseOrder.map(async item => {
                          deOrden.push({
                              ProductName:item.ProductName,
                              SaleOrderInvoice:invoiceId,
@@ -266,14 +264,14 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                              Product:item.Inventory.Product._id,
                              Entregados:!companyParams.RequieredOutput?item.Quantity:0,
                              iniQuantity:item.Quantity
-                            
+
                          })
-                     }) 
+                     })
                      }
                      if(deOrden.length>0){    //insertando detalles de los detalles de la orden
                         saleOrderInvoiceDetails.insertMany(deOrden)
                         .then(function (detalles) {
-                            //si ingreso no requerido 
+                            //si ingreso no requerido
 
                             if(detalles){
                                 //cuenta por cobrar
@@ -299,18 +297,18 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                     ProductOuput.save((err, outputStored)=>{
                                         if(err){
                                             console.log(err);
-                                
+
                                         }else {
                                             if(!outputStored){
                                                 console.log('no se ingreso entrada');
-                                
+
                                             }
                                             else{
                                                 let salidaId=outputStored._id;
 
-                                                  
+
                                                  detalles.map(async item=>{
-                                                
+
                                                         //obteniendo stock de producto  (bodega principal)
                                                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -319,7 +317,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                                                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                        
+
                                                         //obteniendo id del movimiento de tipo reserva
                                                         let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
                                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -361,23 +359,23 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
                                                                                             // res.status(500).send({message: err});
-                                    
+
                                                                                         }else {
                                                                                             if(!traceabilityStored){
                                                                                                 // res.status(500).send({message: "Error al crear el nuevo usuario."});
                                                                                                 console.log(traceabilityStored);
                                                                                             }
                                                                                             else{
-                                    
+
                                                                                             }
                                                                                         }
                                                                                     });
-            
+
                                                                                 }
                                                                         }).catch(err => console.log(err))
                                                                         console.log('id del moviminto de reserva', movementId);
                                                                         //registro de movimiento
-                                                                       
+
                                                                         res.status(200).send({orden: detalles});
                                                                     }
                                                                 })
@@ -385,8 +383,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
                                                                 //stock de bodega de reserva
                                                                 console.log(infoInventary.Product);
-                    
-                                                        } 
+
+                                                        }
                                                         else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
                                                             console.log("EMPRESA HABILITADA PARA RESERVAS");
                                                             console.log('BODEGA RESERVA');
@@ -426,7 +424,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                                                     inventorytraceability.DocumentId=invoiceId;
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
-                                                                                        
+
                                                                                             res.status(500).send({message: "No se actualizo inventario"});
                                                                                         }else {
                                                                                             if(!traceabilityStored){
@@ -440,29 +438,29 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                                                     });
                                                                                 }
                                                                             }).catch(err => console.log(err));
-                                                                      
-                                                                        
+
+
                                                                     }
-                                                                
+
                                                                 })
-                                                                .catch(err => {console.log(err);});    
-                                                                
+                                                                .catch(err => {console.log(err);});
+
                                                         }
                                                         else{
 
                                                             res.status(500).send({ message: "Verificar Inventario" });
-                                                            
+
                                                         }
-                                       
-                                        
+
+
                                     })
 
 
                                             }
                                         }
                                     });
-                                  
-                                    res.status(200).send({orden: detalles})  
+
+                                    res.status(200).send({orden: detalles})
                             }
                             else{
                                 res.status(200).send({orden: detalles});
@@ -470,31 +468,31 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                             }else{
                                 res.status(500).send({ message: "No se registraron detalles" });
                             }
-                           
-                           
+
+
                         })
                         .catch(function (err) {
                             console.log(err);
                         });
                     }
-               
+
                     }
 
 
                 }
             }
         })
-       
+
         if(condicionPago==='Contado'){
           console.log("PAGO DE CONTADO");
             payment.save((err, paymentStored)=>{
                 if(err){
                     res.status(500).send({message: err});
-        
+
                 }else {
                     if(!paymentStored){
                         res.status(500).send({message: "No se inserto registro"});
-        
+
                     }
                     else{
                         let paymentid=paymentStored._id;
@@ -506,7 +504,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                         paymentDetails.Amount=Monto;
                         paymentDetails.CustomerPayment=paymentid;
                         paymentDetails.SaleOrderInvoice=invoiceId;
-                      
+
                         console.log(paymentDetails);
                         if(PaymentMethodName!=='Contado'){
                             paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
@@ -522,7 +520,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                             if(err){
                                 // res.status(500).send({message: err});
                                 console.log(err);
-                    
+
                             }else {
                                 if(!detailStored){
                                     // res.status(500).send({message: err});
@@ -533,14 +531,14 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                     if(paymentDetailId){
                                         let sumMontos=await CustomerPaymentDetails.aggregate([
                                             {$match :{CustomerPayment: paymentid}},
-                                           
+
                                             {
                                                 $group:{
                                                    _id:null,
                                                 "sumAmount":{$sum: '$Amount'}
                                             }
                                            },
-                                          
+
                                         ]);
                                         let sumaMontos=0.0;
                                         sumMontos.map(item =>{
@@ -549,7 +547,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                         //actualizando deuda con cliente
                                         customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
                                             if(err){
-                                               
+
                                                 console.log(err);
                                             }else{console.log(updateDeuda) }
                                         });
@@ -557,27 +555,27 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                             console.log('SUMANDO MONTOS');
                                             saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
                                                 if(err){
-                                                 
+
                                                     console.log(err);
                                                 }else{console.log(updateDeuda);}
                                             });
-                                            
-                                            
+
+
                                         }
-                                       
+
                                     }
-                                   
+
                                 }
                             }
                         });
-                        
+
                         res.status(200).send({ paymentStored});
                     }
                 }
             })
         }
     }
- 
+
     if(!companyParams.OrderWithWallet && deudor){
         res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
     }
@@ -595,7 +593,7 @@ async function createSaleOrderInvoice(req, res){
     const paymentDetails=new CustomerPaymentDetails();
     let messageError=false;
     const saledetails=req.body.details;
-    
+
     let dePurchaseOrder=req.body.ordenAnt;
     let addTaxes=req.body.impuestos;
     const detalle=[];
@@ -606,7 +604,7 @@ async function createSaleOrderInvoice(req, res){
     // let creacion = moment().format('DD/MM/YYYY');
     let now= new Date();
     let fecha=now.getTime();
-   
+
     let creacion=now.toISOString().substring(0, 10);
 
     const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
@@ -615,7 +613,7 @@ async function createSaleOrderInvoice(req, res){
     let details=[];
     let deOrden=[];
     let impuestos=[];
-   
+
 
     let codigo=0;
     let codigoSalidas=0;
@@ -635,7 +633,7 @@ async function createSaleOrderInvoice(req, res){
                     if(doc.CodOutput!==null){
                 return(doc.CodOutput)
             }
-        }  
+        }
     });
     //obteniendo informacion de la compañia para validar
     let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
@@ -733,10 +731,10 @@ async function createSaleOrderInvoice(req, res){
                     let quoteId=SaleOrderStored.CustomerQuote;
                     if(invoiceId){
                         console.log("INGRESANDO DETALLES");
-               
+
 
                      if(saledetails.length > 0){
-                        saledetails.map(async item => { 
+                        saledetails.map(async item => {
                          deOrden.push({
                              ProductName:item.Name,
                              SaleOrderInvoice:invoiceId,
@@ -753,13 +751,13 @@ async function createSaleOrderInvoice(req, res){
                              iniQuantity:item.Quantity
 
                          })
-                     }) 
+                     })
                      }
                      if(deOrden.length>0){    //insertando detalles de los detalles de la orden
                         saleOrderInvoiceDetails.insertMany(deOrden)
                         .then(function (detalles) {
-                            //si ingreso no requerido 
-                                                    
+                            //si ingreso no requerido
+
                                 if(condicionPago==='Contado'){
                                     console.log("PAGO DE CONTADO");
                                     payment.SaleOrderInvoice=invoiceId;
@@ -767,15 +765,15 @@ async function createSaleOrderInvoice(req, res){
                                     payment.User=User;
                                     payment.codpayment=codigo;
                                     payment.Saldo=0;
-                                
+
                                     payment.save((err, paymentStored)=>{
                                         if(err){
                                             res.status(500).send({message: err});
-                                
+
                                         }else {
                                             if(!paymentStored){
                                                 res.status(500).send({message: "No se inserto registro"});
-                                
+
                                             }
                                             else{
                                                 let paymentid=paymentStored._id;
@@ -787,7 +785,7 @@ async function createSaleOrderInvoice(req, res){
                                                 paymentDetails.Amount=Monto;
                                                 paymentDetails.CustomerPayment=paymentid;
                                                 paymentDetails.SaleOrderInvoice=invoiceId;
-                                                
+
                                                 console.log(paymentDetails);
                                                 if(PaymentMethodName!=='Contado'){
                                                     paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
@@ -803,7 +801,7 @@ async function createSaleOrderInvoice(req, res){
                                                     if(err){
                                                         // res.status(500).send({message: err});
                                                         console.log(err);
-                                            
+
                                                     }else {
                                                         if(!detailStored){
                                                             // res.status(500).send({message: err});
@@ -814,14 +812,14 @@ async function createSaleOrderInvoice(req, res){
                                                             if(paymentDetailId){
                                                                 let sumMontos=await CustomerPaymentDetails.aggregate([
                                                                     {$match :{CustomerPayment: paymentid}},
-                                                                    
+
                                                                     {
                                                                         $group:{
                                                                             _id:null,
                                                                         "sumAmount":{$sum: '$Amount'}
                                                                     }
                                                                     },
-                                                                    
+
                                                                 ]);
                                                                 let sumaMontos=0.0;
                                                                 sumMontos.map(item =>{
@@ -830,28 +828,28 @@ async function createSaleOrderInvoice(req, res){
                                                                 //actualizando deuda con cliente
                                                                 customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
                                                                     if(err){
-                                                                        
+
                                                                         console.log(err);
                                                                     }else{console.log(updateDeuda) }
                                                                 });
-                                                                
+
                                                                     saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
                                                                         if(err){
-                                                                        
+
                                                                             console.log(err);
                                                                         }else{console.log(updateDeuda);}
                                                                     });
-                                                                    
-                                                                    
-                                                                
-                                                                
+
+
+
+
                                                             }
-                                                            
+
                                                         }
                                                     }
                                                 });
-                                                
-                                                
+
+
                                             }
                                         }
                                     })
@@ -880,18 +878,18 @@ async function createSaleOrderInvoice(req, res){
                                     ProductOuput.save((err, outputStored)=>{
                                         if(err){
                                             console.log(err);
-                                
+
                                         }else {
                                             if(!outputStored){
                                                 console.log('no se ingreso entrada');
-                                
+
                                             }
                                             else{
                                                 let salidaId=outputStored._id;
 
-                                                  
+
                                                  detalles.map(async item=>{
-                                                
+
                                                         //obteniendo stock de producto  (bodega principal)
                                                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -900,7 +898,7 @@ async function createSaleOrderInvoice(req, res){
                                                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                                                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                        
+
                                                         //obteniendo id del movimiento de tipo reserva
                                                         let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
                                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -942,23 +940,23 @@ async function createSaleOrderInvoice(req, res){
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
                                                                                             // res.status(500).send({message: err});
-                                    
+
                                                                                         }else {
                                                                                             if(!traceabilityStored){
                                                                                                 // res.status(500).send({message: "Error al crear el nuevo usuario."});
                                                                                                 console.log(traceabilityStored);
                                                                                             }
                                                                                             else{
-                                    
+
                                                                                             }
                                                                                         }
                                                                                     });
-            
+
                                                                                 }
                                                                         }).catch(err => console.log(err))
                                                                         console.log('id del moviminto de reserva', movementId);
                                                                         //registro de movimiento
-                                                                       
+
                                                                         res.status(200).send({orden: detalles});
                                                                     }
                                                                 })
@@ -966,8 +964,8 @@ async function createSaleOrderInvoice(req, res){
 
                                                                 //stock de bodega de reserva
                                                                 console.log(infoInventary.Product);
-                    
-                                                        } 
+
+                                                        }
                                                         else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
                                                             console.log("EMPRESA HABILITADA PARA RESERVAS");
                                                             console.log('BODEGA RESERVA');
@@ -1007,7 +1005,7 @@ async function createSaleOrderInvoice(req, res){
                                                                                     inventorytraceability.DocumentId=invoiceId;
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
-                                                                                        
+
                                                                                             res.status(500).send({message: "No se actualizo inventario"});
                                                                                         }else {
                                                                                             if(!traceabilityStored){
@@ -1021,29 +1019,29 @@ async function createSaleOrderInvoice(req, res){
                                                                                     });
                                                                                 }
                                                                             }).catch(err => console.log(err));
-                                                                      
-                                                                        
+
+
                                                                     }
-                                                                
+
                                                                 })
-                                                                .catch(err => {console.log(err);});    
-                                                                
+                                                                .catch(err => {console.log(err);});
+
                                                         }
                                                         else{
 
                                                             res.status(500).send({ message: "Verificar Inventario" });
-                                                            
+
                                                         }
-                                       
-                                        
+
+
                                     })
 
 
                                             }
                                         }
                                     });
-                                  
-                                    res.status(200).send({orden: detalles})  
+
+                                    res.status(200).send({orden: detalles})
                             }
                             else{
                                 res.status(200).send({orden: detalles});
@@ -1051,14 +1049,14 @@ async function createSaleOrderInvoice(req, res){
                             }else{
                                 res.status(500).send({ message: "No se registraron detalles" });
                             }
-                           
-                           
+
+
                         })
                         .catch(function (err) {
                             console.log(err);
                         });
                     }
-               
+
                     }
 
 
@@ -1068,7 +1066,7 @@ async function createSaleOrderInvoice(req, res){
 
 
     }
- 
+
     if(!companyParams.OrderWithWallet && deudor){
         res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
     }
@@ -1077,7 +1075,7 @@ async function createSaleOrderInvoice(req, res){
 
 
 function getSaleInvoiceDetails(req, res){
-    let invoiceId = req.params.id; 
+    let invoiceId = req.params.id;
     saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
@@ -1104,20 +1102,20 @@ async function updateSaleOrderInvoice(req, res){
     let entryDataDetail=[];
     let now= new Date();
     let fecha=now.getTime();
-   
+
     let creacion=now.toISOString().substring(0, 10);
-        
+
     updateInvoice.Customer=req.body.Customer;
     updateInvoice.InvoiceNumber=req.body.InvoiceNumber;
     updateInvoice.Total=parseFloat((req.body.Total).toFixed(2));
     updateInvoice.InvoiceComments=req.body.InvoiceComments;
     updateInvoice.InvoiceDate=req.body.InvoiceDate;
-    
+
     let detallePrev={};
     let detalle=[];
     let idEntry;
     let outputDataDetail=[];
-     
+
         //obteniendo informacion de la compañia para validar
         let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
         .then(params => {
@@ -1148,23 +1146,23 @@ async function updateSaleOrderInvoice(req, res){
                     console.log(err);
                 } else {
                     if(!invoiceUpdate){
-                        
+
                         res.status(404).send({message: "No se actualizo registro"});
                     }
                     else{
-                    
+
                         let codInvoice;
                         let idd=await saleOrderDetails.find({SaleOrder: invoiceId}).then(function(doc){
                             if(doc){
                                     if(doc.CodInvoice!==null){
                                 return(doc._id)
                             }
-                        }  
+                        }
                     });
                         console.log('id',idd);
                         if(detailsAnt.length > 0) {
-                            
-                            detailsAnt.map(async item => {  
+
+                            detailsAnt.map(async item => {
                             codDetail=item._id;
                             detallePrev.ProductName=item.ProductName;
                             detallePrev.Quantity=parseFloat(item.Quantity) ,
@@ -1173,7 +1171,7 @@ async function updateSaleOrderInvoice(req, res){
                             detallePrev.Inventory =item.Inventory._id,
                             detallePrev.SubTotal=parseFloat((item.Price)*(item.Quantity))-parseFloat((item.Price)*(item.Quantity))*parseFloat(item.Discount/100)
                             saleOrderInvoiceDetails.updateMany({_id: item._id ,SaleOrderInvoice:invoiceId},detallePrev)
-                                .then(function (detalles) { 
+                                .then(function (detalles) {
                                     if(!companyParams.RequieredOutput){
 
                                         productOutputDetail.findOneAndUpdate({SaleInvoiceDetail:item._id},{
@@ -1181,16 +1179,16 @@ async function updateSaleOrderInvoice(req, res){
                                             Inventory :item.Inventory._id
                                         }).then(( detalles)=>{}) ;
 
-                                     
+
                                     }
                                 })
                                 .catch(function (err) {
                                     console.log(err);
-                                });  
-                         
-    
+                                });
+
+
                             });
-                        
+
                             console.log('-------');
                             console.log('ENTRADA',idEntry);
                             console.log('ENTRADA',codInvoice);
@@ -1222,7 +1220,7 @@ async function updateSaleOrderInvoice(req, res){
                                        if(entry!==null){
                                            return entry._id;
                                        }else {return null}
-                                        
+
                                     }).catch(err => {console.log(err);})
                                     console.log(invoiceId);
                                     console.log(outputId);
@@ -1243,14 +1241,14 @@ async function updateSaleOrderInvoice(req, res){
                                                 console.log("INSERTANDO SALIDA DETALLE");
                                                 console.log(outputStored);
                                                     if(outputStored){
-                                                        
+
                                                     }
                                             });
 
                                         })
                                     }
-                                  
-                                 
+
+
                                 })
                                 .catch(function (err) {
                                     console.log(err);
@@ -1287,9 +1285,9 @@ async function updateSaleOrderInvoice(req, res){
 
                                     //stock de bodega de reserva
                                     console.log(infoInventary.Product);
-                                  
 
-            
+
+
                                     console.log('id del moviminto de reserva', movementId);
                                     //registro de movimiento
                                     const inventorytraceability= new inventoryTraceability();
@@ -1370,7 +1368,7 @@ async function updateSaleOrderInvoice(req, res){
                                     }
                                 });
 
-                               
+
                             }
                             else{
 
@@ -1381,7 +1379,7 @@ async function updateSaleOrderInvoice(req, res){
 
                     }).catch(function (err) {console.log(err);})
                      }
-               
+
                     res.status(200).send({invoice: invoiceUpdate});
                     }
                 }
@@ -1393,7 +1391,7 @@ async function deleteSaleInvoiceDetails(req,res){
     const {_id,Quantity,Inventory,User,Customer,TotalAct,Total,SubTotal}=req.body;
     let now= new Date();
     let fecha=now.getTime();
-    
+
     let creacion=now.toISOString().substring(0, 10);
     let companyId=Inventory.Company;
     console.log(req.body);
@@ -1406,7 +1404,7 @@ async function deleteSaleInvoiceDetails(req,res){
             return(params)
         }
     });
-     
+
       //Deuda ppor cobrar actual
       let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
         console.log(doc);
@@ -1417,7 +1415,7 @@ async function deleteSaleInvoiceDetails(req,res){
         }
     });
     console.log("deuda",deudaAct);
-    saleOrderInvoiceDetails.find({_id: _id}).then(function (detalles){    
+    saleOrderInvoiceDetails.find({_id: _id}).then(function (detalles){
              //cuenta por cobrar
              customer.findByIdAndUpdate({_id: Customer},{
                 AccountsReceivable:(parseFloat(deudaAct)-parseFloat(SubTotal)),
@@ -1451,7 +1449,7 @@ async function deleteSaleInvoiceDetails(req,res){
 
                     //stock de bodega de reserva
                     console.log(infoInventary.Product);
-                  
+
                     console.log('id del moviminto de reserva', movementId);
                     //registro de movimiento
                     const inventorytraceability= new inventoryTraceability();
@@ -1482,7 +1480,7 @@ async function deleteSaleInvoiceDetails(req,res){
                                       if (!detailDeleted) {
                                         res.status(404).send({ message: "Detalle no encontrado" });
                                       } else {
-                                      
+
                                         res.status(202).send({ deleted: detailDeleted});
                                       }
                                     }
@@ -1491,7 +1489,7 @@ async function deleteSaleInvoiceDetails(req,res){
                             }
                         }
                     });
-                 
+
                 }
                 if(companyParams.AvailableReservation){
                         //descontando cantidad que se reservara
@@ -1535,7 +1533,7 @@ async function deleteSaleInvoiceDetails(req,res){
                                           if (!detailDeleted) {
                                             res.status(404).send({ message: "Detalle no encontrado" });
                                           } else {
-                                          
+
                                             res.status(202).send({ deleted: detailDeleted});
                                           }
                                         }
@@ -1546,9 +1544,9 @@ async function deleteSaleInvoiceDetails(req,res){
 
                 }
           })
-        
+
     })
-    
+
 
 
 
@@ -1574,7 +1572,7 @@ async function anularSaleInovice(req,res){
             return(params)
         }
     });
-    
+
         //Deuda ppor cobrar actual
         let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
             console.log(doc);
@@ -1608,7 +1606,7 @@ async function anularSaleInovice(req,res){
             }
             saleOrderInvoiceDetails.find({SaleOrderInvoice : invoiceId})
             .then(function (detalles){
-              
+
                     detalles.map(async item =>{
                         //obteniendo stock de producto  (bodega principal)
                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
@@ -1633,7 +1631,7 @@ async function anularSaleInovice(req,res){
 
                                 //stock de bodega de reserva
                                 console.log(infoInventary.Product);
-                            
+
                                 console.log('id del moviminto de reserva', movementId);
                                 //registro de movimiento
                                 const inventorytraceability= new inventoryTraceability();
@@ -1667,7 +1665,7 @@ async function anularSaleInovice(req,res){
 
                             //stock de bodega de reserva
                             console.log(productreserved.Product);
-                        
+
                             console.log('id del moviminto de reserva', movementId);
                             //registro de movimiento
                             const inventorytraceability= new inventoryTraceability();
@@ -1730,8 +1728,8 @@ async function getSaleInvoicesNoPagadas(req, res){
     });
 }
 function getSaleInvoiceHeader(req, res){
-    let invoiceId = req.params.id; 
-    let userId = req.params.user; 
+    let invoiceId = req.params.id;
+    let userId = req.params.user;
     let companyId = req.params.company;
     saleOrderInvoice.find({_id:invoiceId}).populate({path: 'User', model: 'User',match:{_id:userId}})
     .populate({path: 'Customer', model: 'Customer',match:{Company:companyId}})
@@ -1746,7 +1744,7 @@ function getSaleInvoiceHeader(req, res){
 
 
 function getSaleInvoicePendientesIngreso(req, res){
-   
+
     console.log(req.params.id);
     // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
     // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
@@ -1754,10 +1752,99 @@ function getSaleInvoicePendientesIngreso(req, res){
     .then(invoices => {
         if(!invoices){
             res.status(404).send({message:"No hay "});
-        }else{          
+        }else{
             res.status(200).send({invoices})
         }
     });
+}
+
+
+function getChargestoCustomers(req, res){
+    const { id } = req.params;
+
+    saleOrderInvoice.aggregate([
+            {
+
+                $lookup: {
+                    from: "customers",
+                    let: { customerId: "$Customer" },
+                    pipeline: [
+                            { $match:
+                            { $expr:
+
+                                     { $eq: [ "$_id",  "$$customerId" ] }
+
+                                }
+
+                             },
+                             {$lookup: {
+                                from: "companies" ,
+                                let: {companyId: "$Company"},
+                                pipeline: [
+                                    { $match:
+                                        { $expr:
+                                            { $and:
+                                               [
+                                                 { $eq: [ "$_id",  "$$companyId" ] },
+                                                 { _id:id }
+                                               ]
+                                            }
+                                         }
+                                    },
+
+                                ],
+                                as: "company"
+                            }
+                            },
+
+
+
+                     ],
+                    as:"customer",
+
+                },
+
+            },
+            {
+
+                $lookup: {
+                    from: "customerpayments",
+                    let: { saleinvoiceId:"$_id"},
+                    pipeline: [
+                        { $match:
+
+
+                                { $expr:
+                                    { $and:
+                                       [
+                                         { $eq: [ "$SaleOrderInvoice",  "$$saleinvoiceId" ] },
+                                        
+                                       ]
+                                    }
+                                 }
+
+                        },
+
+
+                     ],
+                    as:"pagos",
+
+                },
+            }
+            // },
+            //   {
+            //      $unwind:  "$invoice"
+            //   },
+
+        ])
+     .then(invoice => {
+         if(!invoice){
+             res.status(404).send({message:"No hay "});
+         }else{
+
+             res.status(200).send({invoice})
+         }
+     });
 }
 module.exports={
     getSaleOrderInvoices,
@@ -1772,6 +1859,7 @@ module.exports={
     anularSaleInovice,
     getSaleInvoicesNoPagadas,
     getSaleInvoiceHeader,
-    getSaleInvoicePendientesIngreso
-    
+    getSaleInvoicePendientesIngreso,
+    getChargestoCustomers
+
 }

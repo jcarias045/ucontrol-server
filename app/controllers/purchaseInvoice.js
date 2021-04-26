@@ -1235,6 +1235,94 @@ function getInvoiceSupplierExport(req, res){
     });
 }
 
+function getPaymentToSuppliers(req, res){
+    const { id } = req.params;
+
+    purchaseInvoice.aggregate([
+            {
+
+                $lookup: {
+                    from: "suppliers",
+                    let: { supplierId: "$Supplier" },
+                    pipeline: [
+                            { $match:
+                            { $expr:
+
+                                     { $eq: [ "$_id",  "$$supplierId" ] }
+
+                                }
+
+                             },
+                             {$lookup: {
+                                from: "companies" ,
+                                let: {companyId: "$Company"},
+                                pipeline: [
+                                    { $match:
+                                        { $expr:
+                                            { $and:
+                                               [
+                                                 { $eq: [ "$_id",  "$$companyId" ] },
+                                                 { _id:id }
+                                               ]
+                                            }
+                                         }
+                                    },
+
+                                ],
+                                as: "company"
+                            }
+                            },
+
+
+
+                     ],
+                    as:"supplier",
+
+                },
+
+            },
+            {
+
+                $lookup: {
+                    from: "paymentsuppliers",
+                    let: { saleinvoiceId:"$_id"},
+                    pipeline: [
+                        { $match:
+
+
+                                { $expr:
+                                    { $and:
+                                       [
+                                         { $eq: [ "$PurchaseInvoice",  "$$saleinvoiceId" ] },
+                                        
+                                       ]
+                                    }
+                                 }
+
+                        },
+
+
+                     ],
+                    as:"pagos",
+
+                },
+            }
+            // },
+            //   {
+            //      $unwind:  "$invoice"
+            //   },
+
+        ]).sort({CodInvoice:-1})
+     .then(invoice => {
+         if(!invoice){
+             res.status(404).send({message:"No hay "});
+         }else{
+
+             res.status(200).send({invoice})
+         }
+     });
+}
+
 
 module.exports={
     getSuppliersInvoices,
@@ -1247,7 +1335,8 @@ module.exports={
     getSuppliersInvoicesPendientes,
     getSuppliersInvoicesNoPagada,
     getInfoInvoice,
-    getInvoiceSupplierExport
+    getInvoiceSupplierExport,
+    getPaymentToSuppliers
 }
 
 // const db = require('../config/db.config.js');;

@@ -19,5 +19,6 @@ router.get('/export-getinvoicesupplier', purchaseInvoice.getInvoiceSupplierExpor
 router.get('/get-suppliersinvoicespendientes/:id/:company', purchaseInvoice.getSuppliersInvoicesPendientes);
 router.get('/get-invoicenopagada/:id/:company', purchaseInvoice.getSuppliersInvoicesNoPagada);
 router.get('/get-infoinvoice/:id/:company/:invoice', purchaseInvoice.getInfoInvoice);
+router.get('/get-payments/:id', purchaseInvoice.getPaymentToSuppliers);
 
 module.exports = router;
