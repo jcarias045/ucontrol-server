@@ -43,9 +43,8 @@ async function createSupplierInvoice(req, res){
     let diasEntrega=req.body.dias;
     let fechaInvoice=req.body.InvoiceDate;
     
-    moment.locale();
-    let nuevows = moment().format('L');
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
     
     console.log(creacion);
     var date = new Date(fechaInvoice);
@@ -443,9 +442,8 @@ async function createNewSupplierInvoice(req, res){
     let diasEntrega=req.body.dias;
     let fechaInvoice=req.body.InvoiceDate;
     
-    moment.locale();
-    let nuevows = moment().format('L');
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
     
     console.log(invoiceDetalle);
     var date = new Date(fechaInvoice);
@@ -1237,90 +1235,148 @@ function getInvoiceSupplierExport(req, res){
 
 function getPaymentToSuppliers(req, res){
     const { id } = req.params;
-
-    purchaseInvoice.aggregate([
-            {
-
-                $lookup: {
-                    from: "suppliers",
-                    let: { supplierId: "$Supplier" },
-                    pipeline: [
-                            { $match:
-                            { $expr:
-
-                                     { $eq: [ "$_id",  "$$supplierId" ] }
-
-                                }
-
-                             },
-                             {$lookup: {
-                                from: "companies" ,
-                                let: {companyId: "$Company"},
-                                pipeline: [
-                                    { $match:
-                                        { $expr:
-                                            { $and:
-                                               [
-                                                 { $eq: [ "$_id",  "$$companyId" ] },
-                                                 { _id:id }
-                                               ]
-                                            }
-                                         }
-                                    },
-
-                                ],
-                                as: "company"
+    supplier.aggregate([
+        {
+           
+            $lookup: {
+                from: "companies" ,
+                let: {companyId: "$Company"},
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                            [
+                                { $eq: [ "$_id",  "$$companyId" ] },
+                                { _id:id }
+                            ]
                             }
+                        }
+                    },
+
+                ],
+                as: "company"
+            }
+        },
+        {
+           
+            $lookup: {
+                from: "purchaseinvoices" ,
+                let: {supplierId: "$_id"},
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                            [
+                                { $eq: [ "$Supplier",  "$$supplierId" ] },
+                                
+                            ]
+                            }
+                        }
+                    },
+                    {$lookup: {
+                        from: "paymentsuppliers" ,
+                        let: {invoiceId: "$_id"},
+                        pipeline: [
+                            { $match:
+                                { $expr:
+                                   
+                                            { $eq: [ "$PurchaseInvoice",  "$$invoiceId" ] }
+                                       
+                                    }
                             },
 
+                        ],
+                        as: "pagos"
+                    }
+                }
 
-
-                     ],
-                    as:"supplier",
-
-                },
-
-            },
-            {
-
-                $lookup: {
-                    from: "paymentsuppliers",
-                    let: { saleinvoiceId:"$_id"},
-                    pipeline: [
-                        { $match:
-
-
-                                { $expr:
-                                    { $and:
-                                       [
-                                         { $eq: [ "$PurchaseInvoice",  "$$saleinvoiceId" ] },
-                                        
-                                       ]
-                                    }
-                                 }
-
-                        },
-
-
-                     ],
-                    as:"pagos",
-
-                },
+                ],
+                as: "invoices",
+                
             }
-            // },
-            //   {
-            //      $unwind:  "$invoice"
-            //   },
-
-        ]).sort({CodInvoice:-1})
-     .then(invoice => {
-         if(!invoice){
+        },
+       
+      
+    ])
+     .then(result => {
+         if(!result){
              res.status(404).send({message:"No hay "});
          }else{
-
+            var ObjectID = require('mongodb').ObjectID
+            console.log(result);
+            var invoice = result.filter(function (item) {
+                return (item.Company).toString()===id;
+              });
              res.status(200).send({invoice})
          }
      });
+}
+
+function getInvoicesBySupplier(req, res){
+    let supplierId = req.params.id; 
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    var ObjectID = require('mongodb').ObjectID
+    let antCod=0;
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+   
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() -15);
+    let fecha1=now.toISOString().substring(0, 10);
+    let fecha2=date.toISOString().substring(0, 10);
+    
+    try{
+
+        purchaseInvoice.aggregate([
+            {  $match: {Supplier:ObjectID(supplierId)}},
+        
+            {
+                $lookup: {
+                    from:"purchaseinvoicedetails",
+                   
+                    let:{ordenId:"$_id" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                               
+                                    { $eq: [ "$PurchaseInvoice",  "$$ordenId" ] }
+                                   
+                                }
+                            }
+    
+                    ],
+                    as:"detalles",
+                    
+                },
+                
+                  
+                
+            }, 
+            
+        ]).then(result => {
+            var order = result.filter(function (item) {
+                let fecha=new Date(item.CreationDate);
+                console.log("creacion",fecha);
+                console.log("f1",f1);
+                console.log("f2",f2);
+                return fecha>=f2 && fecha<=f1;
+              });
+              console.log(order);
+            res.status(200).send(order);
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
 }
 
 
@@ -1336,7 +1392,8 @@ module.exports={
     getSuppliersInvoicesNoPagada,
     getInfoInvoice,
     getInvoiceSupplierExport,
-    getPaymentToSuppliers
+    getPaymentToSuppliers,
+    getInvoicesBySupplier
 }
 
 // const db = require('../config/db.config.js');;

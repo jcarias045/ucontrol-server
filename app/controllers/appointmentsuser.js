@@ -5,8 +5,7 @@ const moment = require("moment-timezone");
 const jwt= require('../services/jwt');
 
 function getBookingUser(req,res){
-    BookingUser.find().populate({ path: 'User', model: 'User'}).
-    populate({ path:'BookingCustomer', model: 'BookingCustomer' })
+    BookingUser.find({User:req.params.id}).populate({path: 'User', model: 'User'})
     .then(bookingUser => {
         if(!bookingUser){
             res.status(404).send({message:"No hay "});

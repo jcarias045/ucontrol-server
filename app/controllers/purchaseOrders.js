@@ -30,9 +30,8 @@ async function createPurchaseOrder(req,res){
     const orden= new PurchaseOrder();
 
     let now= new Date();
-    let creacion = moment().format('DD/MM/YYYY');
-    let date = moment().format('L');
-    let CreationDate = moment().format('LT');
+    let creacion=now.toISOString().substring(0, 10);
+
     const {Supplier,InvoiceNumber,Image,Total,User,Inventory,DeliverDate,
     Description,companyId,SupplierName} = req.body;
 
@@ -271,6 +270,72 @@ function exportPruchaseOrder(req, res){
 }
 
 
+function getInvoicesBySupplier(req, res){
+    let supplierId = req.params.id; 
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    var ObjectID = require('mongodb').ObjectID
+    let antCod=0;
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+   
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() -15);
+    let fecha1=now.toISOString().substring(0, 10);
+    let fecha2=date.toISOString().substring(0, 10);
+    
+    try{
+
+        PurchaseOrder.aggregate([
+            {  $match: {Supplier:ObjectID(supplierId)}},
+        
+            {
+                $lookup: {
+                    from:"purchaseorderdetails",
+                   
+                    let:{ordenId:"$_id" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                               
+                                    { $eq: [ "$PurchaseOrder",  "$$ordenId" ] }
+                                   
+                                }
+                            }
+    
+                    ],
+                    as:"detalles",
+                    
+                },
+                
+                  
+                
+            }, 
+            
+        ]).then(result => {
+            var order = result.filter(function (item) {
+                let fecha=new Date(item.CreationDate);
+                console.log("creacion",fecha);
+                console.log("f1",f1);
+                console.log("f2",f2);
+                return fecha>=f2 && fecha<=f1;
+              });
+            res.status(200).send(order);
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
 
 module.exports={
     getPurchaseOrders,
@@ -285,7 +350,7 @@ module.exports={
     exportPruchaseOrder,
     getClosedPurchaseDetails,
     // getPurchaseOrdersBySupplier,
-    // getInvoicesBySupplier
+    getInvoicesBySupplier
 }
 
 // const db = require('../config/db.config.js');

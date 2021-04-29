@@ -491,7 +491,7 @@ async function cancelledPaymentInvoice(req, res){
 async function getAllPayments(req, res){
     
     PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
-    .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice'})
+    .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice', populate:{path: 'Supplier',model:'Supplier'}})
     .then(pagos => {
         if(!pagos){
             res.status(404).send({message:"No hay "});

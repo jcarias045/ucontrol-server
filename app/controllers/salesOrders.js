@@ -1538,6 +1538,74 @@ function getAllSaleOrderDetails(req, res){
     });
 }
 
+
+function getSaleOrdersbyCustomers(req, res){
+    let supplierId = req.params.id; 
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    var ObjectID = require('mongodb').ObjectID
+    let antCod=0;
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+   
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() -15);
+    let fecha1=now.toISOString().substring(0, 10);
+    let fecha2=date.toISOString().substring(0, 10);
+    console.log("gola");
+    try{
+
+        saleOrder.aggregate([
+            {  $match: {Customer:ObjectID(supplierId)}},
+        
+            {
+                $lookup: {
+                    from:"saleorderdetails",
+                   
+                    let:{ordenId:"$_id" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                               
+                                    { $eq: [ "$SaleOrder",  "$$ordenId" ] }
+                                   
+                                }
+                            }
+    
+                    ],
+                    as:"detalles",
+                    
+                },
+                
+                  
+                
+            }, 
+            
+        ]).then(result => {
+            var order = result.filter(function (item) {
+                let fecha=new Date(item.CreationDate);
+                console.log("creacion",fecha);
+                console.log("f1",f1);
+                console.log("f2",f2);
+                return fecha>=f2 && fecha<=f1;
+              });
+            res.status(200).send(order);
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
+}
+
+
 module.exports = {
     getSaleOrders,
     getSelesOrderClosed,
@@ -1550,5 +1618,6 @@ module.exports = {
     deleteSaleOrderDetail,
     anulaSaleOrder,
     changeSaleOrderState,
-    getAllSaleOrderDetails
+    getAllSaleOrderDetails,
+    getSaleOrdersbyCustomers
 }

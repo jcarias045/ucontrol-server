@@ -460,11 +460,11 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                         }
                                     });
 
-                                    res.status(200).send({orden: detalles})
-                            }
-                            else{
-                                res.status(200).send({orden: detalles});
-                            }
+                                    // res.status(200).send({orden: detalles})
+                             }
+                                else{
+                                    res.status(200).send({orden: detalles});
+                                }
                             }else{
                                 res.status(500).send({ message: "No se registraron detalles" });
                             }
@@ -478,102 +478,105 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
                     }
 
-
+                    if(condicionPago==='Contado'){
+                        console.log("PAGO DE CONTADO");
+                          payment.save((err, paymentStored)=>{
+                              if(err){
+                                  res.status(500).send({message: err});
+              
+                              }else {
+                                  if(!paymentStored){
+                                      res.status(500).send({message: "No se inserto registro"});
+              
+                                  }
+                                  else{
+                                      let paymentid=paymentStored._id;
+                                      console.log('METODO',PaymentMethodId);
+                                      paymentDetails.CreationDate=creacion;
+                                      paymentDetails.Reason=Reason;
+                                      paymentDetails.PaymentMethods=PaymentMethodId;
+                                      paymentDetails.Cancelled=false;
+                                      paymentDetails.Amount=Monto;
+                                      paymentDetails.CustomerPayment=paymentid;
+                                      paymentDetails.SaleOrderInvoice=invoiceId;
+              
+                                      console.log(paymentDetails);
+                                      if(PaymentMethodName!=='Contado'){
+                                          paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
+                                          paymentDetails.BankName= BankName;
+                                          paymentDetails.NoTransaction= NoTransaction;
+                                      }
+                                      if(PaymentMethodName==='Contado'){
+                                          paymentDetails.NumberAccount=null;
+                                          paymentDetails.BankName= null;
+                                          paymentDetails.NoTransaction= null;
+                                      }
+                                      paymentDetails.save(async (err, detailStored)=>{
+                                          if(err){
+                                              // res.status(500).send({message: err});
+                                              console.log(err);
+              
+                                          }else {
+                                              if(!detailStored){
+                                                  // res.status(500).send({message: err});
+                                                  console.log(err);
+                                              }
+                                              else{
+                                                  let paymentDetailId=detailStored._id;
+                                                  if(paymentDetailId){
+                                                      let sumMontos=await CustomerPaymentDetails.aggregate([
+                                                          {$match :{CustomerPayment: paymentid}},
+              
+                                                          {
+                                                              $group:{
+                                                                 _id:null,
+                                                              "sumAmount":{$sum: '$Amount'}
+                                                          }
+                                                         },
+              
+                                                      ]);
+                                                      let sumaMontos=0.0;
+                                                      sumMontos.map(item =>{
+                                                          sumaMontos=item.sumAmount;
+                                                      })
+                                                      //actualizando deuda con cliente
+                                                      customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
+                                                          if(err){
+              
+                                                              console.log(err);
+                                                          }else{console.log(updateDeuda) }
+                                                      });
+                                                      if(parseFloat(sumMontos)===parseFloat(totalFactura)){
+                                                          console.log('SUMANDO MONTOS');
+                                                          saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                                              if(err){
+              
+                                                                  console.log(err);
+                                                              }else{console.log(updateDeuda);}
+                                                          });
+              
+              
+                                                      }
+              
+                                                  }
+              
+                                              }
+                                          }
+                                      });
+              
+                                      res.status(200).send({ paymentStored});
+                                  }
+                              }
+                          })
+                      }else{
+                           res.status(200).send({orden: detalles});
+                      }
+                     
                 }
             }
         })
 
-        if(condicionPago==='Contado'){
-          console.log("PAGO DE CONTADO");
-            payment.save((err, paymentStored)=>{
-                if(err){
-                    res.status(500).send({message: err});
-
-                }else {
-                    if(!paymentStored){
-                        res.status(500).send({message: "No se inserto registro"});
-
-                    }
-                    else{
-                        let paymentid=paymentStored._id;
-                        console.log('METODO',PaymentMethodId);
-                        paymentDetails.CreationDate=creacion;
-                        paymentDetails.Reason=Reason;
-                        paymentDetails.PaymentMethods=PaymentMethodId;
-                        paymentDetails.Cancelled=false;
-                        paymentDetails.Amount=Monto;
-                        paymentDetails.CustomerPayment=paymentid;
-                        paymentDetails.SaleOrderInvoice=invoiceId;
-
-                        console.log(paymentDetails);
-                        if(PaymentMethodName!=='Contado'){
-                            paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
-                            paymentDetails.BankName= BankName;
-                            paymentDetails.NoTransaction= NoTransaction;
-                        }
-                        if(PaymentMethodName==='Contado'){
-                            paymentDetails.NumberAccount=null;
-                            paymentDetails.BankName= null;
-                            paymentDetails.NoTransaction= null;
-                        }
-                        paymentDetails.save(async (err, detailStored)=>{
-                            if(err){
-                                // res.status(500).send({message: err});
-                                console.log(err);
-
-                            }else {
-                                if(!detailStored){
-                                    // res.status(500).send({message: err});
-                                    console.log(err);
-                                }
-                                else{
-                                    let paymentDetailId=detailStored._id;
-                                    if(paymentDetailId){
-                                        let sumMontos=await CustomerPaymentDetails.aggregate([
-                                            {$match :{CustomerPayment: paymentid}},
-
-                                            {
-                                                $group:{
-                                                   _id:null,
-                                                "sumAmount":{$sum: '$Amount'}
-                                            }
-                                           },
-
-                                        ]);
-                                        let sumaMontos=0.0;
-                                        sumMontos.map(item =>{
-                                            sumaMontos=item.sumAmount;
-                                        })
-                                        //actualizando deuda con cliente
-                                        customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
-                                            if(err){
-
-                                                console.log(err);
-                                            }else{console.log(updateDeuda) }
-                                        });
-                                        if(parseFloat(sumMontos)===parseFloat(totalFactura)){
-                                            console.log('SUMANDO MONTOS');
-                                            saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
-                                                if(err){
-
-                                                    console.log(err);
-                                                }else{console.log(updateDeuda);}
-                                            });
-
-
-                                        }
-
-                                    }
-
-                                }
-                            }
-                        });
-
-                        res.status(200).send({ paymentStored});
-                    }
-                }
-            })
-        }
+       
     }
 
     if(!companyParams.OrderWithWallet && deudor){
@@ -1762,89 +1765,180 @@ function getSaleInvoicePendientesIngreso(req, res){
 function getChargestoCustomers(req, res){
     const { id } = req.params;
 
-    saleOrderInvoice.aggregate([
-            {
-
-                $lookup: {
-                    from: "customers",
-                    let: { customerId: "$Customer" },
-                    pipeline: [
-                            { $match:
-                            { $expr:
-
-                                     { $eq: [ "$_id",  "$$customerId" ] }
-
-                                }
-
-                             },
-                             {$lookup: {
-                                from: "companies" ,
-                                let: {companyId: "$Company"},
-                                pipeline: [
-                                    { $match:
-                                        { $expr:
-                                            { $and:
-                                               [
-                                                 { $eq: [ "$_id",  "$$companyId" ] },
-                                                 { _id:id }
-                                               ]
-                                            }
-                                         }
-                                    },
-
-                                ],
-                                as: "company"
+    
+    customer.aggregate([
+        {
+           
+            $lookup: {
+                from: "companies" ,
+                let: {companyId: "$Company"},
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                            [
+                                { $eq: [ "$_id",  "$$companyId" ] },
+                                { _id:id }
+                            ]
                             }
+                        }
+                    },
+
+                ],
+                as: "company"
+            }
+        },
+        {
+           
+            $lookup: {
+                from: "saleorderinvoices" ,
+                let: {customerId: "$_id"},
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                            [
+                                { $eq: [ "$Customer",  "$$customerId" ] },
+                                
+                            ]
+                            }
+                        }
+                    },
+                    {$lookup: {
+                        from: "customerpayments" ,
+                        let: {invoiceId: "$_id"},
+                        pipeline: [
+                            { $match:
+                                { $expr:
+                                   
+                                            { $eq: [ "$SaleOrderInvoice",  "$$invoiceId" ] }
+                                       
+                                    }
                             },
 
+                        ],
+                        as: "pagos"
+                    }
+                }
 
-
-                     ],
-                    as:"customer",
-
-                },
-
-            },
-            {
-
-                $lookup: {
-                    from: "customerpayments",
-                    let: { saleinvoiceId:"$_id"},
-                    pipeline: [
-                        { $match:
-
-
-                                { $expr:
-                                    { $and:
-                                       [
-                                         { $eq: [ "$SaleOrderInvoice",  "$$saleinvoiceId" ] },
-                                        
-                                       ]
-                                    }
-                                 }
-
-                        },
-
-
-                     ],
-                    as:"pagos",
-
-                },
+                ],
+                as: "invoices",
+                
             }
-            // },
-            //   {
-            //      $unwind:  "$invoice"
-            //   },
-
-        ])
-     .then(invoice => {
-         if(!invoice){
+        },
+       
+      
+    ])
+     .then(result => {
+         if(!result){
              res.status(404).send({message:"No hay "});
          }else{
-
+            var ObjectID = require('mongodb').ObjectID
+            console.log(result);
+            var invoice = result.filter(function (item) {
+                return (item.Company).toString()===id;
+              });
              res.status(200).send({invoice})
          }
      });
+}
+
+
+function getSaleOrderInvoicebyCustomers(req, res){
+    let supplierId = req.params.id; 
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    var ObjectID = require('mongodb').ObjectID
+    let antCod=0;
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+   
+    // date.setMonth(date.getMonth() - 1/2);
+    date.setDate(date.getDate() -15);
+    let fecha1=now.toISOString().substring(0, 10);
+    let fecha2=date.toISOString().substring(0, 10);
+    console.log("gola");
+    try{
+
+        saleOrderInvoice.aggregate([
+            {  $match: {Customer:ObjectID(supplierId)}},
+        
+            {
+                $lookup: {
+                    from:"saleinvoicedetails",
+                   
+                    let:{ordenId:"$_id"},
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                               
+                                    { $eq: [ "$SaleOrderInvoice",  "$$ordenId" ] }
+                                   
+                                }
+                            },
+                            {"$lookup": {
+                                "from": "products" ,
+                                "let": {"productId": "$Product"}, 
+                                "pipeline": [
+                                    { $match:{ $expr:
+                               
+                                        { $eq: [ "$_id",  "$$productId" ] }
+                                       
+                                    }},
+                                    {
+                                        "$lookup": {
+                                            "from": "measures" ,
+                                            let:{catId:"$Measure" },
+                                             pipeline:[
+                                                { $match:
+                                                    { $expr:
+                                                       
+                                                            { $eq: [ "$_id",  "$$catId" ] }
+                                                           
+                                                        }
+                                                    },
+                                             ],
+                                             as:"medidas"
+                                        }
+
+                                    }
+                                ],
+                                "as": "producto"
+                            }
+                            }
+                            
+    
+                    ],
+                    as:"detalles",
+                    
+                },
+                
+                  
+                
+            }, 
+            
+        ]).then(result => {
+            var order = result.filter(function (item) {
+                let fecha=new Date(item.CreationDate);
+                console.log("creacion",fecha);
+                console.log("f1",f1);
+                console.log("f2",f2);
+                return fecha>=f2 && fecha<=f1;
+              });
+            res.status(200).send(order);
+            
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error!",
+            error: error
+        });
+    }
 }
 module.exports={
     getSaleOrderInvoices,
@@ -1860,6 +1954,7 @@ module.exports={
     getSaleInvoicesNoPagadas,
     getSaleInvoiceHeader,
     getSaleInvoicePendientesIngreso,
-    getChargestoCustomers
+    getChargestoCustomers,
+    getSaleOrderInvoicebyCustomers
 
 }

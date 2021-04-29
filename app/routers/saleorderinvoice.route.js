@@ -21,7 +21,7 @@ router.get('/get-saleinvoicenoingresados/:id', saleinvoice.getSaleInvoicePendien
 
 
 router.get('/get-charges/:id', saleinvoice.getChargestoCustomers);
-
+router.get('/get-saleorderinvoicebycustomer/:id/:fecha1/:fecha2', saleinvoice.getSaleOrderInvoicebyCustomers);
 
 
 

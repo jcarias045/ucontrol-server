@@ -57,22 +57,23 @@ async function addCustomerPayment(req, res){
     console.log('existe ya',existePago);
     console.log(deudaCliente);
     console.log("saldo actuasl",saldoActual);
+    console.log("Monto",Monto);
     payment.SaleOrderInvoice=SaleOrderInvoiceId;
     payment.DatePayment=creacion;
     payment.User=User;
     payment.codpayment=codigo;
-    payment.Saldo=parseFloat(totalFactura)-parseFloat(Monto);
-
+    payment.Saldo=parseFloat(totalFactura).toFixed(2)-parseFloat(Monto).toFixed(2);
     if(existePago!==null){
         console.log("PAGOOO PREVIO");
-        if(parseFloat(totalaPagarInvoice.Total)<= parseFloat(Monto)){
+        if(parseFloat(totalaPagarInvoice.Total).toFixed(2)<= parseFloat(Monto).toFixed(2)){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
-            if(parseFloat(saldoActual)< parseFloat(Monto)){
+            if(parseFloat(saldoActual).toFixed(2)< parseFloat(Monto).toFixed(2)){
                 res.status(500).send({message:"Monto Superior a saldo pendiente"});
             }else{
-                CustomerPayment.updateOne({SaleOrderInvoice:SaleOrderInvoiceId},
-                    {Saldo: parseFloat(saldoActual)-parseFloat(Monto)}).catch(err => {console.log(err);});
+
+                CustomerPayment.updateOne({SaleOrderInvoice : SaleOrderInvoiceId},
+                    {Saldo: parseFloat(saldoActual).toFixed(2)-parseFloat(Monto).toFixed(2)}).catch(err => {console.log(err);});
                 
                 //para obtener el id del pago realizado
                 let getPaymentId=await CustomerPayment.findOne({SaleOrderInvoice:SaleOrderInvoiceId},'_id')
@@ -162,6 +163,8 @@ async function addCustomerPayment(req, res){
     }
     else{
         console.log("NUEVO PAGO DESDE CERO");
+    console.log("Saldo de factura",totalFactura);
+
         if(parseFloat(totalFactura).toFixed(2) < parseFloat(Monto).toFixed(2)){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
@@ -322,7 +325,7 @@ async function updatePaymentInvoice(req, res){
                 } 
             });
             console.log('registrado',montoRegistrado,saldopendiente);
-            CustomerPayment.findByIdAndUpdate({_id:idpayment},{Saldo: parseFloat(saldopendiente)+parseFloat(montoRegistrado)},async (err,purchaseUpdate)=>{
+            CustomerPayment.findByIdAndUpdate({_id:idpayment},{Saldo: parseFloat(saldopendiente).toFixed(2)+parseFloat(montoRegistrado).toFixed(2)},async (err,purchaseUpdate)=>{
                 if(err){
                     console.log(err);
                 } else{
