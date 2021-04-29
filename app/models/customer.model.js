@@ -42,6 +42,14 @@ const CustomerSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Sector"
   },
+  Sector1:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
+  Sector2:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
 })
 
 module.exports = moongose.model('Customer', CustomerSchema)

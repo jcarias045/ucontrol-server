@@ -17,7 +17,22 @@ const CompanySchema = Schema({
   DaysOrderValidity: Number,
   AvailableReservation:Boolean,
   OrderWithWallet:Boolean,
-  AverageCost:Boolean
+  AverageCost:Boolean,
+  InvoiceLines: Number,
+  Nit:String,
+  Ncr:String,
+  ActividadPrimaria:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
+  ActividadSecundaria:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector",
+  },
+  ActividadTerciaria:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector",
+  },
   },
   // { 
   //       freezeTableName: true,

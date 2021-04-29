@@ -7,7 +7,8 @@ function createSupplier(req, res){
     const Supplier = new supplier();
 
     const {Name, Web, Email, Phone, Address, DebsToPay, Active,
-    codsupplier, PaymentTime, Company, deliveryDays, SupplierType} = req.body
+    codsupplier, PaymentTime, Company, deliveryDays, SupplierType,
+    Nit, Ncr, Sector, Sector1, Sector2} = req.body
 
     Supplier.Name= Name
     Supplier.Web= Web;
@@ -20,8 +21,12 @@ function createSupplier(req, res){
     Supplier.PaymentTime=PaymentTime;
     Supplier.Company=Company;
     Supplier.deliveryDays=deliveryDays;
-    Supplier.SupplierType= SupplierType
-
+    Supplier.SupplierType= SupplierType;
+    Supplier.Nit = Nit;
+    Supplier.Ncr = Ncr;
+    Supplier.Sector = Sector; 
+    Supplier.Sector1 = Sector1; 
+    Supplier.Sector2 = Sector2; 
 
     console.log(Supplier);
     Supplier.save((err, SupplierStored)=>{

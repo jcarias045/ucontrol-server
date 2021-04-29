@@ -10,7 +10,8 @@ function createCustomer(req, res) {
 
     const { Name,LastName,codCustomer,Email, Password,Country,City,ZipCode,
             Phone,MobilPhone,idNumber,Images,AccountsReceivable,Access,
-            PaymentTime, Discount, User, Company, Active, Sector,Nit,Ncr,TypeofTaxpayer,PaymentCondition} = req.body;
+            PaymentTime, Discount, User, Company, Active, Sector, Sector1, Sector2,
+            Nit,Ncr,TypeofTaxpayer,PaymentCondition} = req.body;
 
             customer.Name = Name;
             customer.LastName = LastName;
@@ -33,6 +34,8 @@ function createCustomer(req, res) {
             customer.Company = Company;
             customer.Ncr=Ncr;
             customer.Sector=Sector;
+            customer.Sector1=Sector1;
+            customer.Sector2=Sector2;
             customer.Nit=Nit;
             customer.TypeofTaxpayer = TypeofTaxpayer;
             customer.PaymentCondition= PaymentCondition;
