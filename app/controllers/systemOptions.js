@@ -17,6 +17,7 @@ function getSystemOptions(req, res){
 
     try{
         SysOptions.find({Grupos: req.params.id})
+        .populate({path: "Grupos", model: "Grupos"})
         .then(sysOptions => {
             res.status(200).send({sysOptions});
           
@@ -216,7 +217,7 @@ async function createSystemGroup(req, res){
         // Construimos el modelo del objeto
         grupos.Name = req.body.Name;
         grupos.icon=req.body.icon;
-        
+
         grupos.save((err, GruposStored)=>{
             if(err){
                 res.status(500).send({message: err});
@@ -253,9 +254,7 @@ async function createSystemOption(req, res){
                         Checked:false,
                         Rol:item._id,
                         OpMenu:opId
-
-                    })
-                    
+                    })                    
                 });
                 console.log("opciones que se van a ingresar");
                 console.log(sysOp);

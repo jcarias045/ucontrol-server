@@ -23,8 +23,16 @@ const SupplierSchema = Schema({
     ref: "SupplierType"
   }  ,
   Nit:String,
-  NCR:String,
+  Ncr:String,
   Sector:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
+  Sector1:{
+    type: Schema.Types.ObjectId,
+    ref: "Sector"
+  },
+  Sector2:{
     type: Schema.Types.ObjectId,
     ref: "Sector"
   },

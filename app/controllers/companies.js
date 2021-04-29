@@ -19,7 +19,8 @@ function createCompany (req, res){
     const  { Name,Logo,ShortName,Web, AccessToCustomers,AccessToSuppliers,
     RequieredIncome, RequieredOutput,CompanyRecords,AverageCost,
     WorksOpenQuote, DaysQuotationValidity, DaysOrderValidity,
-    AvailableReservation, OrderWithWallet} = req.body;
+    AvailableReservation, OrderWithWallet, InvoiceLines, Nit, Ncr, ActividadPrimaria,
+    ActividadSecundaria, ActividadTerciaria} = req.body;
 
     company.Name  =  Name;
     company.Logo = Logo;
@@ -37,6 +38,12 @@ function createCompany (req, res){
     company.AvailableReservation = AvailableReservation;
     company.OrderWithWallet = OrderWithWallet;
     company.AverageCost = AverageCost;
+    company.InvoiceLines = InvoiceLines;
+    company.Nit = Nit;
+    company.Ncr = Ncr;
+    company.ActividadPrimaria= ActividadPrimaria;
+    company.ActividadSecundaria= ActividadSecundaria;
+    company.ActividadTerciaria= ActividadTerciaria;
     console.log(company);
 
     company.save((err, companyStored)=>{

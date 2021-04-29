@@ -4,11 +4,9 @@ const Company = require('../models/company.model')
 
 const SectorSchema = Schema({
   Name: String,
-  Description: String, 
-  Company: { type: Schema.ObjectId, 
-             ref: "Company",
-            // autopopulate: true,
-           }
+  Categoria: String,
+  CodMin: String,
+  SubCategoria: String
 })
 
 module.exports = moongose.model('Sector', SectorSchema)

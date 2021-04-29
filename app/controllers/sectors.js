@@ -3,12 +3,12 @@ const sector= require('../models/sector.model');
 function createSector(req, res){
     const Sector = new sector();
     
-    const {Name, Description,Company} = req.body
+    const {Name, Categoria, CodMin, SubCategoria} = req.body
 
     Sector.Name= Name;
-    Sector.Description= Description;
-   
-    Sector.Company=Company;
+    Sector.CodMin=CodMin;
+    Sector.Categoria= Categoria;
+    Sector.SubCategoria= SubCategoria;
 
     console.log(Sector);
     Sector.save((err, SectorStored)=>{
@@ -27,9 +27,8 @@ function createSector(req, res){
 
 function getSectors(req, res){
     // Buscamos informacion para llenar el modelo de 
-    let companyId=req.params.id;
     try{
-        sector.find({Company:companyId})
+        sector.find()
         .then(sector => {
             res.status(200).send({sector});
           
