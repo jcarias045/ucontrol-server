@@ -216,8 +216,14 @@ async function createSystemGroup(req, res){
     const grupos = new Grupos();
         // Construimos el modelo del objeto
         grupos.Name = req.body.Name;
+        let Nombre = grupos.Name;
+        console.log(Nombre);
         grupos.icon=req.body.icon;
-
+        Grupos.findOne({Name: Nombre})
+        .then(group=>{
+            console.log(group);
+            console.log(grupos);
+        if(!group){    
         grupos.save((err, GruposStored)=>{
             if(err){
                 res.status(500).send({message: err});
@@ -229,6 +235,12 @@ async function createSystemGroup(req, res){
                 }
             }
         });
+        }else{
+            console.log("entra2");
+            res.status(500).send({ message: "Error el Grupo ya existe."});
+        }
+
+    })
 }
 
 async function createSystemOption(req, res){

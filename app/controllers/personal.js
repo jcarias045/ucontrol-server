@@ -138,8 +138,15 @@ branchOffice, addressWorkPlace, officeWorkPlace} = req.body
             Personal.branchOffice= branchOffice;
             Personal.addressWorkPlace= addressWorkPlace;
             Personal.officeWorkPlace= officeWorkPlace;
-            
+            let compania = Personal.Company;
+            console.log(compania);
+            let codigo = Personal.codPersonal;
+            console.log(codigo);
             console.log(Personal);
+            personal.findOne({Company: compania, codPersonal: codigo})
+            .then(colaboradores=>{
+                console.log(colaboradores);
+                if(!colaboradores){
             Personal.save((err, PersonalStored)=>{
                 if(err){
                     res.status(500).send({message: err});
@@ -151,6 +158,10 @@ branchOffice, addressWorkPlace, officeWorkPlace} = req.body
                     }
                 }
             });
+            }else{
+                res.status(500).send({message: "Error Personal ya Existe"}); 
+            }  
+        })
 
     
 }

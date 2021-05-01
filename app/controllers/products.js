@@ -8,8 +8,8 @@ const path=require("path");
 const PDFDocument=require('pdfkit'); 
 
 
-
 function getPoducts(req, res){
+
     product.find({Company: req.params.id}).populate({path: 'Company', model: 'Company'}).
     populate({path: 'Supplier', model: 'Supplier'}).
     populate({path: 'Brand', model: 'Brand'}).
@@ -43,7 +43,6 @@ async function createProduct(req, res){
             return(params)
         }
     });
-
         Product.Name = Name;
         Product.Brand= Brand;
         Product.SellPrice= SellPrice;
@@ -58,7 +57,6 @@ async function createProduct(req, res){
         Product.Active=Active;
         Product.BuyPrice= BuyPrice;
         Product.codproducts = codproducts;
-       
         Product.AverageCost= 0;
 
 
@@ -110,16 +108,11 @@ async function createProduct(req, res){
                                         }else{}
                                     }
                                 });
-
                             }
-                            
-
                             res.status(200).send({Product: ProductStored})
                         }
                     }
-                });
-        
-       
+                });       
 }
 
 

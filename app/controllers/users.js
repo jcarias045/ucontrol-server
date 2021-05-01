@@ -25,6 +25,7 @@ function createUser(req,res){
     user.Rol = Rol;
     user.Profile = Profile
     console.log(user);
+
     if (!Password) {
         res.status(500).send({ message: "La contraseña es obligatoria. " });
       } else {
@@ -32,21 +33,36 @@ function createUser(req,res){
           if (err) {
             res.status(500).send({ message: "Error al encriptar la contraseña." });
           } else {
-            user.Password = hash;    
+            user.Password = hash;
+            let email = user.Email;
+            let compania = user.Company;
+            console.log(email);
+            console.log(compania);
+        User.findOne({Company: compania, Email: email})
+        .then(usuario=>{
+            console.log(usuario);
+            console.log(user);            
+            if(!usuario){
             user.save((err, userStored)=>{
-        if(err){
-            res.status(500).send({message: err});
+                if(err){
+                    res.status(500).send({message: err});
+                }else{
+                    if(!userStored){
+                        res.status(500).send({message: "Error"});
+                    }else{
+                        res.status(200).send({User: userStored});
+                    }
+                }
+            });
         }else{
-            if(!userStored){
-                res.status(500).send({message: "Error"});
-            }else{
-                res.status(200).send({User: userStored});
-            }
+                    console.log("entra2");
+                    res.status(500).send({ message: "Error el Usuario ya existe."});
         }
-      });
+
+    })
     }
-  });
-}
+    });
+    }
 }
 
 function getUsers(req, res){

@@ -1,3 +1,4 @@
+const { find } = require("../models/company.model");
 const Company = require("../models/company.model");
 
 function getCompanies(req, res) {
@@ -15,12 +16,12 @@ function getCompanies(req, res) {
 function createCompany (req, res){
     
     const company = new Company();
-
+    console.log(req.body);
     const  { Name,Logo,ShortName,Web, AccessToCustomers,AccessToSuppliers,
     RequieredIncome, RequieredOutput,CompanyRecords,AverageCost,
     WorksOpenQuote, DaysQuotationValidity, DaysOrderValidity,
     AvailableReservation, OrderWithWallet, InvoiceLines, Nit, Ncr, ActividadPrimaria,
-    ActividadSecundaria, ActividadTerciaria} = req.body;
+    ActividadSecundaria, ActividadTerciaria, Imprenta} = req.body;
 
     company.Name  =  Name;
     company.Logo = Logo;
@@ -44,8 +45,9 @@ function createCompany (req, res){
     company.ActividadPrimaria= ActividadPrimaria;
     company.ActividadSecundaria= ActividadSecundaria;
     company.ActividadTerciaria= ActividadTerciaria;
+    company.Imprenta= Imprenta;
     console.log(company);
-
+    
     company.save((err, companyStored)=>{
         if(err){
             res.status(500).send({message: err});
@@ -62,6 +64,7 @@ function createCompany (req, res){
 }
 
 function deleteCompany(req, res) {
+  console.log("probandoEliminar");
     const { id } = req.params;
   
     Company.findByIdAndRemove(id, (err, companyDeleted) => {

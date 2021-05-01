@@ -3,65 +3,86 @@ const jwt = require("../services/jwt");
 const Customer = require("../models/customer.model");
 const company= require("../models/company.model");
 
-
 function createCustomer(req, res) {
 
-    const customer = new Customer();
+    const customerNew = new Customer();
 
     const { Name,LastName,codCustomer,Email, Password,Country,City,ZipCode,
             Phone,MobilPhone,idNumber,Images,AccountsReceivable,Access,
             PaymentTime, Discount, User, Company, Active, Sector, Sector1, Sector2,
             Nit,Ncr,TypeofTaxpayer,PaymentCondition} = req.body;
-
-            customer.Name = Name;
-            customer.LastName = LastName;
-            customer.codCustomer = codCustomer;
-            customer.Email = Email;
-            customer.Password = Password;
-            customer.Country = Country;
-            customer.City = City;
-            customer.ZipCode = ZipCode;
-            customer.Phone = Phone;
-            customer.MobilPhone = MobilPhone;
-            customer.idNumber = idNumber;
-            customer.Images = Images;
-            customer.AccountsReceivable = AccountsReceivable;
-            customer.Access = Access;
-            customer.PaymentTime = PaymentTime;
-            customer.Discount = Discount;
-            customer.User = User;
-            customer.Active= Active;
-            customer.Company = Company;
-            customer.Ncr=Ncr;
-            customer.Sector=Sector;
-            customer.Sector1=Sector1;
-            customer.Sector2=Sector2;
-            customer.Nit=Nit;
-            customer.TypeofTaxpayer = TypeofTaxpayer;
-            customer.PaymentCondition= PaymentCondition;
+        
+            customerNew.Name = Name;
+            customerNew.LastName = LastName;
+            customerNew.codCustomer = codCustomer;
+            customerNew.Email = Email;
+            customerNew.Password = Password;
+            customerNew.Country = Country;
+            customerNew.City = City;
+            customerNew.ZipCode = ZipCode;
+            customerNew.Phone = Phone;
+            customerNew.MobilPhone = MobilPhone;
+            customerNew.idNumber = idNumber;
+            customerNew.Images = Images;
+            customerNew.AccountsReceivable = AccountsReceivable;
+            customerNew.Access = Access;
+            customerNew.PaymentTime = PaymentTime;
+            customerNew.Discount = Discount;
+            customerNew.User = User;
+            customerNew.Active= Active;
+            customerNew.Company = Company;
+            customerNew.Ncr=Ncr;
+            customerNew.Sector=Sector;
+            customerNew.Sector1=Sector1;
+            customerNew.Sector2=Sector2;
+            customerNew.Nit=Nit;
+            customerNew.TypeofTaxpayer = TypeofTaxpayer;
+            customerNew.PaymentCondition= PaymentCondition;
+            console.log(customerNew.codCustomer);
+            const comparar = customerNew.codCustomer;
+            console.log(comparar);
+            console.log(customerNew.Company);
+            const compararCompany = customerNew.Company;
+            console.log(compararCompany);
             if (!Password) {
-                res.status(500).send({ message: "La contraseña es obligatoria. " });
-              } else {
+                res.status(500).send({ message: "La contraseña es obligatoria." });
+                } else {
                 bcrypt.hash(Password, null, null, (err, hash) => {
-                  if (err) {
+                if (err) {
                     res.status(500).send({ message: "Error al encriptar la contraseña." });
-                  } else {
-                    customer.Password = hash;    
-                    customer.save((err, customerStored)=>{
-                if(err){
-                    res.status(500).send({message: err});
-                }else{
-                    if(!customerStored){
-                        res.status(500).send({message: "Error"});
-                    }else{
-                        res.status(200).send({Customer: customerStored});
-                    }
+                 } else {
+                    customerNew.Password = hash;
                 }
-              });
-            }
-          });
+            });
         }
+        Customer.findOne({Company: compararCompany, codCustomer: comparar})
+            .then(customer=>{
+                console.log(customer);
+                console.log(customerNew.codCustomer);
+                console.log(!customer);
+                console.log("entra");
+                console.log(customerNew.Company);
+                if(!customer){
+                    console.log("si entra al if");
+                                 customerNew.save((err, customerStored)=>{
+                                    if(err){
+                                        res.status(500).send({message: err});
+                                    }else{
+                                        if(!customerStored){
+                                            res.status(500).send({message: "Error"});
+                                        }else{
+                                            res.status(200).send({Customer: customerStored});
+                                        }
+                                     }
+                                 });
+                }else{
+                    console.log("entra2");
+                    res.status(500).send({ message: "Error el cliente ya existe." });
+                }
+            })
     }
+
+    
     
 function getCustomers(req, res){
     console.log(req.params.id);
@@ -75,6 +96,8 @@ function getCustomers(req, res){
             .populate({path: "Company", model: "Company"})
             .populate({path: "Discount", model: "Discount"})
         .then(customer => {
+            console.log(customer);
+            console.log(!customer);
             if(!customer){
                 res.status(404).send({message:"No hay "});
             }else{

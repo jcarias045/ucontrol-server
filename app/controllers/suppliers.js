@@ -29,7 +29,14 @@ function createSupplier(req, res){
     Supplier.Sector2 = Sector2; 
 
     console.log(Supplier);
-    Supplier.save((err, SupplierStored)=>{
+    let codsup = Supplier.codsupplier;
+    let compania = Supplier.Company;
+    supplier.findOne({codsupplier: codsup,Company: compania})
+    .then(proveedor=>{
+        console.log(proveedor);
+        console.log(Supplier);
+        if(!proveedor){
+        Supplier.save((err, SupplierStored)=>{
         if(err){
             res.status(500).send({message: err});
         }else{
@@ -40,7 +47,11 @@ function createSupplier(req, res){
             }
         }
     });
-    
+    }else{
+        console.log("Ya Existe");
+        res.status(500).send({message: "Error Proovedor ya existe"});
+    }
+    })    
 }
 
 

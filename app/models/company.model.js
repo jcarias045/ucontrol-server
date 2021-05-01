@@ -21,6 +21,7 @@ const CompanySchema = Schema({
   InvoiceLines: Number,
   Nit:String,
   Ncr:String,
+  Imprenta:String,
   ActividadPrimaria:{
     type: Schema.Types.ObjectId,
     ref: "Sector"
