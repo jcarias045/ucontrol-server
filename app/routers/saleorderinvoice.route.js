@@ -9,7 +9,7 @@ router.get('/get-saleorderinvoices/:id/:company', saleinvoice.getSaleOrderInvoic
 router.get('/get-saleorderclosed/:id/:company', saleinvoice.getSaleOrdersClosed);
 router.get('/get-saleorderinfo/:id', saleinvoice.getSaleOrderInfo);
 router.get('/get-saleordersdetails/:id', saleinvoice.getSaleOrderDetails);
-router.post('/create-saleorderinvoice', saleinvoice.createSaleOrderInvoiceWithOrder);
+router.post('/create-saleorderinvoice', saleinvoice.createSaleOrderInvoiceWithOrder2);
 router.post('/create-newsaleorderinvoice', saleinvoice.createSaleOrderInvoice);
 router.get('/get-saleorderinvoicedetails/:id', saleinvoice.getSaleInvoiceDetails);
 router.put('/update-saleorderinvoice/:id', saleinvoice.updateSaleOrderInvoice);
@@ -22,6 +22,12 @@ router.get('/get-saleinvoicenoingresados/:id', saleinvoice.getSaleInvoicePendien
 
 router.get('/get-charges/:id', saleinvoice.getChargestoCustomers);
 router.get('/get-saleorderinvoicebycustomer/:id/:fecha1/:fecha2', saleinvoice.getSaleOrderInvoicebyCustomers);
+
+
+
+router.post('/pruebascorrelativos', saleinvoice.funcionPruebaCorrelativos);
+
+
 
 
 
