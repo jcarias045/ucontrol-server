@@ -60,21 +60,21 @@ async function getSaleOrdersClosed(req, res){
 
 function getSaleOrderInfo(req, res){
     let saleId = req.params.id;
-    console.log("obteniendo info");
+    
     saleOrders.find({_id: saleId}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
     .then(quote => {
         if(!quote){
             res.status(404).send({message:"No hay "});
         }else{
             res.status(200).send({quote})
-            console.log(quote);
+         
         }
     });
 }
 
 function getSaleOrderDetails(req, res){
     let saleId = req.params.id;
-    console.log("OBTENIENDO DETALLES");
+    
     saleOrderDetails.find({SaleOrder:saleId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
@@ -124,7 +124,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
     let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
-        console.log(doc);
+      
             if(doc){
                     if(doc.CodInvoice!==null){
                 return(doc.CodInvoice)
@@ -149,7 +149,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
             return(params)
         }
     });
-    console.log(companyParams);
+   
 
     //Deuda ppor cobrar actual
     let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
@@ -164,7 +164,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     //OBTENCION DE CORRELATIVOS
     //OBTENIENDO TIPO DE CLIENTE 
     let customerType=await customer.findOne({_id:Customer}).then(function(doc){
-        console.log(doc);
+      
             if(doc){
                     if(doc.TypeofTaxpayer!==null){
                 return(doc.TypeofTaxpayer)
@@ -2095,7 +2095,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
     let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
-        console.log(doc);
+       
             if(doc){
                     if(doc.CodInvoice!==null){
                 return(doc.CodInvoice)
@@ -2120,11 +2120,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             return(params)
         }
     });
-    console.log(companyParams);
+
 
     //Deuda ppor cobrar actual
     let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
-        console.log(doc);
+        
             if(doc){
                     if(doc.AccountsReceivable!==null){
                 return(doc.AccountsReceivable)
@@ -2182,8 +2182,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
       
     })
     //
-    console.log(codOutput);
-    console.log("Codigo de salida",codigoSalidas);
+    
 
         //++++++++++++++ verificando deudas +++++++++++++++++++
         //obtener fecha de facturas relacionadas con el cliente
@@ -2234,8 +2233,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     let totalfactura=0.0;
     let sumimpuestos=0.0;
     if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
-       console.log("Si entro de condicion");
-   
+     
         SaleOrderInvoice.InvoiceNumber=correlativeNumber;
       
        while(contador<longitudArreglo){
@@ -2275,23 +2273,21 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                     invoiceId=SaleOrderStored.map(item=>{return item._id}).toString();
                     let quoteId=SaleOrderStored.CustomerQuote;
                     //cambio de estado a orden de venta
-                    console.log("INGRESOO FACT ",invoiceId);
-                    console.log(SaleOrderStored);
+                   
                     // saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
                     //     if(err){
                     //         res.status(500).send({ message: "Error del servidor." });
                     //     }
                     //     if(update){}});
                     if(invoiceId){
-                        console.log("CONTADOR",contador);
+                       
                 
                         for(let i=0; i<nLineas;i++){ 
-                            console.log("arreglo de detalles",dePurchaseOrder[parseInt(contador)+ parseInt(i)]);
+                          
                             if(dePurchaseOrder[contador+ i]){
                                //    console.log("prueba",dePurchaseOrder[contador+ i].dato);
                               
-                               totalfactura+=parseFloat(dePurchaseOrder[contador+ i].Quantity)* parseFloat(dePurchaseOrder[contador+ i].Price)
-                               -  parseFloat(dePurchaseOrder[contador+ i].Quantity)* parseFloat(dePurchaseOrder[contador+ i].Price)*parseFloat(dePurchaseOrder[contador+ i].Discount/100);
+                               totalfactura+=(parseFloat(dePurchaseOrder[contador+ i].SubTotal));
                                   deOrden.push({
                                       
                                         ProductName:dePurchaseOrder[contador+ i].ProductName,
@@ -2300,22 +2296,24 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         Discount:parseFloat(dePurchaseOrder[contador+ i].Discount),
                                         Price:parseFloat(dePurchaseOrder[contador+ i].Price),
                                         Inventory :dePurchaseOrder[contador+ i].Inventory._id,
-                                        SubTotal: parseFloat(dePurchaseOrder[contador+ i].Quantity*dePurchaseOrder[contador+ i].Price)- parseFloat((dePurchaseOrder[contador+ i].Quantity*dePurchaseOrder[contador+ i].Price)*dePurchaseOrder[contador+ i].Discount),
+                                        SubTotal: parseFloat(dePurchaseOrder[contador+ i].SubTotal),
                                         Entregados:!companyParams.RequieredOutput?dePurchaseOrder[contador+ i].Quantity:0,
                                         State:!companyParams.RequieredOutput?true:false,
                                         Measure:dePurchaseOrder[contador+ i].Measure,
                                         CodProduct:dePurchaseOrder[contador+ i].CodProduct,
                                         Product:dePurchaseOrder[contador+ i].Inventory.Product._id,
                                         Entregados:!companyParams.RequieredOutput?dePurchaseOrder[contador+ i].Quantity:0,
-                                        iniQuantity:dePurchaseOrder[contador+ i].Quantity
+                                        iniQuantity:dePurchaseOrder[contador+ i].Quantity,
+                                        BuyPrice:parseFloat(dePurchaseOrder[contador+ i].BuyPrice),
+                                        PriceDiscount:parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento)?
+                                        parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento):parseFloat(dePurchaseOrder[contador+ i].Descuento)
                                   })
                                   
                             }
                             else{deOrden[null]}
                         }
                        
-                     console.log("DETALLES A INGRESAR");
-                     console.log(deOrden);
+                     
                     if(customerType.toString()==="CreditoFiscal"){
                          impuestosList.map(item=>{
                         sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
@@ -2323,7 +2321,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                     }else{sumimpuestos=0}
                     
                        totalfactura=totalfactura+sumimpuestos;
-                       console.log("EL TOTAL DE LA FACTURA ACTUAL",totalfactura);
+            
                        saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Total:totalfactura},async (err,update)=>{
                         if(err){
                             
@@ -2334,13 +2332,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                         .then(async function (detalles) {
                             //si ingreso no requerido
                         
-                            if(detalles){
+                            if( detalles){
                                
                                 //cuenta por cobrar
                                 let idfactura=detalles.map(item=>{return item.SaleOrderInvoice}).toString();
-                                console.log("PARTE DE SALIDAS Y BODEGAS",condicionPago);
-                                console.log("para factura",invoiceId);
-
+                                
                                customer.findByIdAndUpdate({_id:Customer},{
                                     AccountsReceivable:parseFloat(deudaAct)+parseFloat(Total),
                                 }).then(function(update){
@@ -2348,8 +2344,16 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                                     }
                                     else{}}).catch(err =>{console.log(err)});
+
                                     if(condicionPago==='Contado'){
-                                        console.log("pago de cotados", totalfactura);
+                                        await saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                            if(err){
+
+                                                console.log(err);
+                                            }else{}
+                                        });
+
+                                       
                                         let pago=[{
                                          SaleOrderInvoice:invoiceId,
                                          DatePayment:creacion,
@@ -2358,7 +2362,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                          Saldo:0,
                                          Customer:Customer
                                         }]
-                                      console.log("PAGO DE CONTADO");
+                                    
                                       
                 
                                       await CustomerPayment.insertMany(pago)
@@ -2371,7 +2375,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                 
                                               }
                                               else{
-                                                  console.log("SE INSENTO APGO");
+                                                
                                                   let paymentid=paymentStored.map(item=>{return item._id}).toString();
                                                   let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
                                                   let payDetail=[{
@@ -2386,26 +2390,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     BankName: BankName,
                                                     NoTransaction: NoTransaction,
                                                   }]
-                                                  console.log('METODO',PaymentMethodId);
                                                   
-                                                  paymentDetails.Reason=Reason;
-                                                  paymentDetails.PaymentMethods=PaymentMethodId;
-                                                  paymentDetails.Cancelled=false;
-                                                  paymentDetails.Amount=Monto;
-                                                  paymentDetails.CustomerPayment=paymentid;
-                                                  paymentDetails.SaleOrderInvoice=invoiceId;
-                
-                                                  console.log(paymentDetails);
-                                                  if(PaymentMethodName!=='Contado'){
-                                                      paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
-                                                      paymentDetails.BankName= BankName;
-                                                      paymentDetails.NoTransaction= NoTransaction;
-                                                  }
-                                                  if(PaymentMethodName==='Contado'){
-                                                      paymentDetails.NumberAccount=null;
-                                                      paymentDetails.BankName= null;
-                                                      paymentDetails.NoTransaction= null;
-                                                  }
                                                   CustomerPaymentDetails.insertMany(payDetail)
                                                     .then(async function (detailStored) {
                                                    
@@ -2414,7 +2399,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                               console.log(err);
                                                           }
                                                           else{
-                                                              let paymentDetailId=detailStored._id;
+                                                              let paymentDetailId=detailStored.map(item=>{return item._id});
+                                                             
                                                               if(paymentDetailId){
                                                                   let sumMontos=await CustomerPaymentDetails.aggregate([
                                                                       {$match :{CustomerPayment: paymentid}},
@@ -2432,20 +2418,14 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                                       sumaMontos=item.sumAmount;
                                                                   })
                                                                   //actualizando deuda con cliente
-                                                                  customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
+                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat((totalfactura)).toFixed(2)},(err,updateDeuda)=>{
                                                                       if(err){
                 
                                                                           console.log(err);
-                                                                      }else{console.log(updateDeuda) }
+                                                                      }else{}
                                                                   });
                 
-                                                                      saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
-                                                                          if(err){
-                
-                                                                              console.log(err);
-                                                                          }else{console.log(updateDeuda);}
-                                                                      });
-                
+                                                                     
                 
                 
                 
@@ -2461,200 +2441,192 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                       })
                                   }
                              
-                                if(!companyParams.RequieredOutput){
-                                    console.log("salidas no requeridas",invoiceId);
-                                    let salidaId=null;
-                                    let salida=[{
-                                       EntryDate:creacion,
-                                       User:User,
-                                       Comments:"Ingreso automatico "+creacion,
-                                       State:true,
-                                       CodOutput:codigoSalidas,
-                                       Company:companyId,
-                                       SaleOrderInvoice:invoiceId,
-                                       Customer:Customer,
-                                       InvoiceNumber:InvoiceNumber,
-                                    }]
+                            //     if(!companyParams.RequieredOutput){
+                            //         console.log("salidas no requeridas",invoiceId);
+                            //         let salidaId=null;
+                                 
+                            //         let  salida=[{
+                            //            EntryDate:creacion,
+                            //            User:User,
+                            //            Comments:"Ingreso automatico "+creacion,
+                            //            State:true,
+                            //            CodOutput:codigoSalidas,
+                            //            Company:companyId,
+                            //            SaleOrderInvoice:invoiceId,
+                            //            Customer:Customer,
+                            //            InvoiceNumber:correlativeNumber,
+                            //         }]
                                   
-                                    ProductOuput.User=User;
-                                    ProductOuput.Comments="Ingreso automatico "+creacion;
-                                    ProductOuput.State=true;
-                                    ProductOuput.CodOutput=codigoSalidas;
-                                    ProductOuput.Company=companyId;
-                                    ProductOuput.SaleOrderInvoice=invoiceId;
-                                    ProductOuput.Customer=Customer;
-                                    ProductOuput.InvoiceNumber=InvoiceNumber;
                                    
-                                    productOutput.insertMany(salida)
-                                    .then(function (outputStored) {
-                                       
-                                            if(!outputStored){
-                                                console.log('no se ingreso entrada');
+                            //         await productOutput.insertMany(salida)
+                            //         .then(async function (outputStored) {
 
-                                            }
-                                            else{
-                                                let salidaId=outputStored.map(item=>{return item._id}).toString();
+                            //                     let salidaId=outputStored.map( item=>{return item._id}).toString();
+  
+                            //                     console.log("detalles salidas", detalles); 
+                            //                     if( outputStored){
+                                                  
+                            //                          detalles.map( async  item=>{
+                            //                             //obteniendo stock de producto  (bodega principal)
+                            //                             let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+                            //                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                                       
+                            //                             console.log('EN STOCK:',infoInventary);
 
+                            //                             let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
+                            //                             .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+                            //                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            //                               console.log("en reserva", productreserved);
+                            //                             //obteniendo id del movimiento de tipo reserva
+                            //                             let movementId= await MovementTypes.findOne({Name:'salida'},['_id'])
+                            //                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            //                             console.log("MOVIMEITO",movementId);
+                            //                             if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
+                            //                                     //descontando cantidad que se reservara
+                            //                                     console.log("VERIFICANDO ENTRADA");
+                            //                                    await inventory.findByIdAndUpdate({_id:item.Inventory},{
+                            //                                         Stock:parseFloat(infoInventary.Stock - item.Quantity),
+                            //                                     }).then(async function(update){
+                            //                                         if(!update){
 
-                                                 detalles.map(async item=>{
+                            //                                         }
+                            //                                         else{
+                            //                                             outputDataDetail.push({
+                            //                                                 SaleInvoiceDetail:item._id,
+                            //                                                 ProductOutput:salidaId,
+                            //                                                 Quantity:item.Quantity,
+                            //                                                 Inventory:infoInventary._id,
+                            //                                                 ProductName:item.ProductName,
+                            //                                                 Price:item.Price,
+                            //                                                 Measure:item.Measure,
+                            //                                                 CodProduct:item.CodProduct,
+                            //                                                 Product:item.Product
+                            //                                                  });
+                            //                                             await productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
+                            //                                                 console.log("INSERTANDO SALIDA DETALLE");
+                            //                                                 console.log(outputStored);
+                            //                                                     if(outputStored){
+                            //                                                         const inventorytraceability= new inventoryTraceability();
+                            //                                                         inventorytraceability.Quantity=item.Quantity;
+                            //                                                         inventorytraceability.Product=item.Product;
+                            //                                                         inventorytraceability.WarehouseDestination=null; //destino
+                            //                                                         inventorytraceability.MovementType=movementId._id;
+                            //                                                         inventorytraceability.MovDate=creacion;
+                            //                                                         inventorytraceability.WarehouseOrigin=item.Inventory; //origen
+                            //                                                         inventorytraceability.User=User;
+                            //                                                         inventorytraceability.Company=companyId;
+                            //                                                         inventorytraceability.DocumentId=invoiceId;
+                            //                                                         inventorytraceability.save((err, traceabilityStored)=>{
+                            //                                                             if(err){
+                            //                                                                 // res.status(500).send({message: err});
 
-                                                        //obteniendo stock de producto  (bodega principal)
-                                                        let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
-                                                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                        console.log('EN STOCK:',infoInventary);
+                            //                                                             }else {
+                            //                                                                 if(!traceabilityStored){
+                            //                                                                     // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                            //                                                                     console.log(traceabilityStored);
+                            //                                                                 }
+                            //                                                                 else{
 
-                                                        let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
-                                                        .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
-                                                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            //                                                                 }
+                            //                                                             }
+                            //                                                         });
 
-                                                        //obteniendo id del movimiento de tipo reserva
-                                                        let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
-                                                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            //                                                     }
+                            //                                             }).catch(err => console.log(err))
+                            //                                             console.log('id del moviminto de reserva', movementId);
+                            //                                             //registro de movimiento
 
-                                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
-                                                                //descontando cantidad que se reservara
-                                                                inventory.findByIdAndUpdate({_id:item.Inventory},{
-                                                                    Stock:parseFloat(infoInventary.Stock - item.Quantity),
-                                                                }).then(function(update){
-                                                                    if(!update){
+                            //                                             res.status(200).send({orden: detalles});
+                            //                                         }
+                            //                                     })
+                            //                                     .catch(err => {console.log(err);});
 
-                                                                    }
-                                                                    else{
-                                                                        outputDataDetail.push({
-                                                                            SaleInvoiceDetail:item._id,
-                                                                            ProductOutput:salidaId,
-                                                                            Quantity:item.Quantity,
-                                                                            Inventory:infoInventary._id,
-                                                                            ProductName:item.ProductName,
-                                                                            Price:item.Price,
-                                                                            Measure:item.Measure,
-                                                                            CodProduct:item.CodProduct,
-                                                                            Product:item.Product
-                                                                             });
-                                                                        productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
-                                                                            console.log("INSERTANDO SALIDA DETALLE");
-                                                                            console.log(outputStored);
-                                                                                if(outputStored){
-                                                                                    const inventorytraceability= new inventoryTraceability();
-                                                                                    inventorytraceability.Quantity=item.Quantity;
-                                                                                    inventorytraceability.Product=item.Product;
-                                                                                    inventorytraceability.WarehouseDestination=null; //destino
-                                                                                    inventorytraceability.MovementType=movementId._id;
-                                                                                    inventorytraceability.MovDate=creacion;
-                                                                                    inventorytraceability.WarehouseOrigin=item.Inventory; //origen
-                                                                                    inventorytraceability.User=User;
-                                                                                    inventorytraceability.Company=companyId;
-                                                                                    inventorytraceability.DocumentId=invoiceId;
-                                                                                    inventorytraceability.save((err, traceabilityStored)=>{
-                                                                                        if(err){
-                                                                                            // res.status(500).send({message: err});
+                                                               
 
-                                                                                        }else {
-                                                                                            if(!traceabilityStored){
-                                                                                                // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                                                                console.log(traceabilityStored);
-                                                                                            }
-                                                                                            else{
+                            //                             }
+                            //                             else if( parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) &&  companyParams.AvailableReservation){
+                            //                                 console.log("EMPRESA HABILITADA PARA RESERVAS");
+                            //                                 console.log('BODEGA RESERVA');
+                                                               
 
-                                                                                            }
-                                                                                        }
-                                                                                    });
+                            //                                     //actualizando el stock de reserva
+                            //                                     await inventory.findByIdAndUpdate({_id:productreserved._id},{
+                            //                                         Stock:parseFloat(productreserved.Stock - item.Quantity),
+                            //                                     }).then(async function(update){
+                            //                                         if(!update){
+                            //                                             res.status(500).send({message: "No se actualizo inventario"});
+                            //                                         }else{
+                            //                                             outputDataDetail.push({
+                            //                                                 SaleInvoiceDetail:item._id,
+                            //                                                 ProductOutput:salidaId,
+                            //                                                 Quantity:item.Quantity,
+                            //                                                 Inventory:productreserved._id,
+                            //                                                 ProductName:item.ProductName,
+                            //                                                 Price:item.Price,
+                            //                                                 Measure:item.Measure,
+                            //                                                 CodProduct:item.CodProduct,
+                            //                                                 Product:item.Product
+                            //                                                  });
+                            //                                              await productOutputDetail.insertMany(outputDataDetail) .then(async function (outputStored) {
+                            //                                                 console.log("INSERTANDO SALIDA DETALLE");
+                            //                                                 console.log(outputDataDetail);
+                            //                                                     if(outputStored){
+                            //                                                         const inventorytraceability= new inventoryTraceability();
+                            //                                                         inventorytraceability.Quantity=item.Quantity;
+                            //                                                         inventorytraceability.Product=item.Product;
+                            //                                                         inventorytraceability.WarehouseDestination=null; //destino
+                            //                                                         inventorytraceability.MovementType=movementId._id;
+                            //                                                         inventorytraceability.MovDate=creacion;
+                            //                                                         inventorytraceability.WarehouseOrigin=productreserved._id; //origen
+                            //                                                         inventorytraceability.User=User;
+                            //                                                         inventorytraceability.Company=companyId;
+                            //                                                         inventorytraceability.DocumentId=invoiceId;
+                            //                                                        await inventorytraceability.save((err, traceabilityStored)=>{
+                            //                                                             if(err){
 
-                                                                                }
-                                                                        }).catch(err => console.log(err))
-                                                                        console.log('id del moviminto de reserva', movementId);
-                                                                        //registro de movimiento
-
-                                                                        res.status(200).send({orden: detalles});
-                                                                    }
-                                                                })
-                                                                .catch(err => {console.log(err);});
-
-                                                                //stock de bodega de reserva
-                                                                console.log(infoInventary.Product);
-
-                                                        }
-                                                        else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
-                                                            console.log("EMPRESA HABILITADA PARA RESERVAS");
-                                                            console.log('BODEGA RESERVA');
-                                                                console.log(productreserved);
-
-                                                                //actualizando el stock de reserva
-                                                                inventory.findByIdAndUpdate({_id:productreserved._id},{
-                                                                    Stock:parseFloat(productreserved.Stock - item.Quantity),
-                                                                }).then(function(update){
-                                                                    if(!update){
-                                                                        res.status(500).send({message: "No se actualizo inventario"});
-                                                                    }else{
-                                                                        outputDataDetail.push({
-                                                                            SaleInvoiceDetail:item._id,
-                                                                            ProductOutput:salidaId,
-                                                                            Quantity:item.Quantity,
-                                                                            Inventory:productreserved._id,
-                                                                            ProductName:item.ProductName,
-                                                                            Price:item.Price,
-                                                                            Measure:item.Measure,
-                                                                            CodProduct:item.CodProduct,
-                                                                            Product:item.Product
-                                                                             });
-                                                                        productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
-                                                                            console.log("INSERTANDO SALIDA DETALLE");
-                                                                            console.log(outputStored);
-                                                                                if(outputStored){
-                                                                                    const inventorytraceability= new inventoryTraceability();
-                                                                                    inventorytraceability.Quantity=item.Quantity;
-                                                                                    inventorytraceability.Product=item.Product;
-                                                                                    inventorytraceability.WarehouseDestination=null; //destino
-                                                                                    inventorytraceability.MovementType=movementId._id;
-                                                                                    inventorytraceability.MovDate=creacion;
-                                                                                    inventorytraceability.WarehouseOrigin=productreserved._id; //origen
-                                                                                    inventorytraceability.User=User;
-                                                                                    inventorytraceability.Company=companyId;
-                                                                                    inventorytraceability.DocumentId=invoiceId;
-                                                                                    inventorytraceability.save((err, traceabilityStored)=>{
-                                                                                        if(err){
-
-                                                                                            res.status(500).send({message: "No se actualizo inventario"});
-                                                                                        }else {
-                                                                                            if(!traceabilityStored){
-                                                                                                // // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                                                                // console.log(traceabilityStored);
-                                                                                            }
-                                                                                            else{
-                                                                                                console.log(traceabilityStored);
-                                                                                            }
-                                                                                        }
-                                                                                    });
-                                                                                }
-                                                                            }).catch(err => console.log(err));
+                            //                                                                 res.status(500).send({message: "No se actualizo inventario"});
+                            //                                                             }else {
+                            //                                                                 if(!traceabilityStored){
+                            //                                                                     // // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                            //                                                                     // console.log(traceabilityStored);
+                            //                                                                 }
+                            //                                                                 else{
+                            //                                                                     console.log(traceabilityStored);
+                            //                                                                 }
+                            //                                                             }
+                            //                                                         });
+                            //                                                     }
+                            //                                                 }).catch(err => console.log(err));
 
 
-                                                                    }
+                            //                                         }
 
-                                                                })
-                                                                .catch(err => {console.log(err);});
+                            //                                     })
+                            //                                     .catch(err => {console.log(err);});
 
-                                                        }
-                                                        else{
+                            //                             }
+                            //                             else{
 
-                                                            res.status(500).send({ message: "Verificar Inventario" });
+                            //                                 res.status(500).send({ message: "Verificar Inventario" });
 
-                                                        }
+                            //                             }
+
+                                                       
+                            //                     });
+
+                            //                     }
+                                            
+                                                
+                                               
 
 
-                                    })
+                                            
+                            //                 return
+                            //         });
 
-
-                                            }
-                                        
-                                    });
-
-                                    // res.status(200).send({orden: detalles})
-                             }
-                                else{
-                                  
-                                    
-                                }
+                            //         // res.status(200).send({orden: detalles})
+                            //  }
+                                
                                
                             }else{
                                 res.status(500).send({ message: "No se registraron detalles" });
@@ -2666,7 +2638,252 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                             console.log(err);
                         });
                     }
-                   
+                       
+                    if(!companyParams.RequieredOutput){
+                        if(invoiceId){
+
+                            console.log("salidas no requeridas",invoiceId);
+                        let salidaId=null;
+                     
+                        let  salida=[{
+                           EntryDate:creacion,
+                           User:User,
+                           Comments:"Ingreso automatico "+creacion,
+                           State:true,
+                           CodOutput:codigoSalidas,
+                           Company:companyId,
+                           SaleOrderInvoice:invoiceId,
+                           Customer:Customer,
+                           InvoiceNumber:correlativeNumber,
+                        }]
+                        let datos=await  saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).then( function(detail){
+                            return detail
+                        
+                       });
+
+
+                       console.log("los datos",datos);
+                        //obteniendo id del movimiento de tipo reserva
+                       
+
+
+                         await productOutput.insertMany(salida)
+                         .then( async function(outputStored){
+                             if(!outputStored){
+
+                             }else{
+                                 salidaId= outputStored.map( item=>{return item._id}).toString();
+                                console.log("SALIDA",salidaId);
+                                
+                               
+                                 datos.map(async item =>{
+                                      
+                                      //obteniendo stock de producto  (bodega principal)
+                                      let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+                                      .then(async resultado =>{ 
+                                      
+                                        return resultado});
+                                       let productreserved=await inventory.findOne({Product:  infoInventary.Product, _id: { $nin:  infoInventary._id }},['Stock','Product'])
+                                        .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+                                        .then(async resultado =>resultado)
+                                      console.log('EN STOCK:',infoInventary);
+    
+                                      
+                                      console.log("bodega reserva",productreserved);
+                                      let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
+                                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                                        
+                                        console.log("movimiento", movementId);
+                                         outputDataDetail.push({
+                                            SaleInvoiceDetail:item._id,
+                                            ProductOutput:salidaId,
+                                            Quantity:item.Quantity,
+                                            Inventory: !companyParams.AvailableReservation?infoInventary._id :productreserved._id,
+                                            ProductName:item.ProductName,
+                                            Price:item.Price,
+                                            Measure:item.Measure,
+                                            CodProduct:item.CodProduct,
+                                            Product:item.Product
+                                             });
+
+                                             console.log("lista detalles",outputDataDetail);
+    
+                                  
+                                    if(parseFloat( infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation ){
+                                        //descontando cantidad que se reservara
+                                        console.log("VERIFICANDO ENTRADA");
+                                        inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                            Stock:parseFloat(infoInventary.Stock - item.Quantity),
+                                        }).then(async function(update){
+                                            if(!update){
+    
+                                            }
+                                            else{
+                                                outputDataDetail.push({
+                                                    SaleInvoiceDetail:item._id,
+                                                    ProductOutput:salidaId,
+                                                    Quantity:item.Quantity,
+                                                    Inventory:infoInventary._id,
+                                                    ProductName:item.ProductName,
+                                                    Price:item.Price,
+                                                    Measure:item.Measure,
+                                                    CodProduct:item.CodProduct,
+                                                    Product:item.Product
+                                                     });
+                                                 let exist= productOutputDetail.find({ProductName:item.ProductName, ProductOutput:salidaId})
+                                                 .then(resultado =>{return resultado})
+                                                 console.log("existe",exist);
+                                                 if(exist.length<0){
+                                                    productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
+                                                        console.log("INSERTANDO SALIDA DETALLE");
+                                                        console.log(outputStored);
+                                                            if(outputStored){
+                                                                const inventorytraceability= new inventoryTraceability();
+                                                                inventorytraceability.Quantity=item.Quantity;
+                                                                inventorytraceability.Product=item.Product;
+                                                                inventorytraceability.WarehouseDestination=null; //destino
+                                                                inventorytraceability.MovementType=movementId._id;
+                                                                inventorytraceability.MovDate=creacion;
+                                                                inventorytraceability.WarehouseOrigin=item.Inventory; //origen
+                                                                inventorytraceability.User=User;
+                                                                inventorytraceability.Company=companyId;
+                                                                inventorytraceability.DocumentId=invoiceId;
+                                                                inventorytraceability.save((err, traceabilityStored)=>{
+                                                                    if(err){
+                                                                        // res.status(500).send({message: err});
+        
+                                                                    }else {
+                                                                        if(!traceabilityStored){
+                                                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                                            console.log(traceabilityStored);
+                                                                        }
+                                                                        else{
+        
+                                                                        }
+                                                                    }
+                                                                });
+        
+                                                            }
+                                                    }).catch(err => console.log(err))
+    
+                                                 }
+                                            
+                                                console.log('id del moviminto de reserva', movementId);
+                                                //registro de movimiento
+    
+                                                res.status(200).send({orden: detalles});
+                                            }
+                                        })
+                                        .catch(err => {console.log(err);});
+    
+                                       
+    
+                                  }
+                                  else if( parseFloat( productreserved.Stock)>=parseFloat(item.Quantity) &&  companyParams.AvailableReservation ){
+                                    console.log("EMPRESA HABILITADA PARA RESERVAS");
+                                    console.log('BODEGA RESERVA');
+                                    // outputDataDetail.push({
+                                    //     SaleInvoiceDetail:item._id,
+                                    //     ProductOutput:salidaId,
+                                    //     Quantity:item.Quantity,
+                                    //     Inventory:productreserved._id,
+                                    //     ProductName:item.ProductName,
+                                    //     Price:item.Price,
+                                    //     Measure:item.Measure,
+                                    //     CodProduct:item.CodProduct,
+                                    //     Product:item.Product
+                                    //      });
+
+                                       
+                                     productOutputDetail.insertMany(outputDataDetail) .then(async function (outputStored) {
+                                            console.log("INSERTANDO SALIDA DETALLE");
+                                            console.log(outputDataDetail);
+                                                if(outputStored){
+                                                    const inventorytraceability= new inventoryTraceability();
+                                                    inventorytraceability.Quantity=item.Quantity;
+                                                    inventorytraceability.Product=item.Product;
+                                                    inventorytraceability.WarehouseDestination=null; //destino
+                                                    inventorytraceability.MovementType=movementId._id;
+                                                    inventorytraceability.MovDate=creacion;
+                                                    inventorytraceability.WarehouseOrigin=productreserved._id; //origen
+                                                    inventorytraceability.User=User;
+                                                    inventorytraceability.Company=companyId;
+                                                    inventorytraceability.DocumentId=invoiceId;
+                                                    inventorytraceability.save((err, traceabilityStored)=>{
+                                                        if(err){
+
+                                                            res.status(500).send({message: "No se actualizo inventario"});
+                                                        }else {
+                                                            if(!traceabilityStored){
+                                                                // // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                                // console.log(traceabilityStored);
+                                                            }
+                                                            else{
+                                                                console.log(traceabilityStored);
+                                                            }
+                                                        }
+                                                    });
+                                                }
+                                            }).catch(err => console.log(err));
+                                        //actualizando el stock de reserva
+                                          inventory.findByIdAndUpdate({_id:productreserved._id},{
+                                            Stock:parseFloat(productreserved.Stock - item.Quantity),
+                                        }).then( function(update){
+                                            if(!update){
+                                                res.status(500).send({message: "No se actualizo inventario"});
+                                            }else{
+                                                console.log("entro a ingreso");
+                                                //  outputDataDetail.push({
+                                                //     SaleInvoiceDetail:item._id,
+                                                //     ProductOutput:salidaId,
+                                                //     Quantity:item.Quantity,
+                                                //     Inventory:productreserved._id,
+                                                //     ProductName:item.ProductName,
+                                                //     Price:item.Price,
+                                                //     Measure:item.Measure,
+                                                //     CodProduct:item.CodProduct,
+                                                //     Product:item.Product
+                                                //      });
+                                               
+                                               
+                                                 
+    
+                                                       
+                                                
+    
+    
+                                            }
+    
+                                        })
+                                        .catch(err => {console.log(err);});
+    
+    
+                                      
+    
+                                        
+    
+                                }
+                                else{
+    
+                                    res.status(500).send({ message: "Verificar Inventario" });
+    
+                                }
+                                  
+                                
+                               }) 
+                            
+
+                             }
+                           
+                        
+                            
+                        }) .catch(function (err) {
+                            console.log(err);
+                        });
+
+                        }
+                        
+                    }
                      
                     }
                     
@@ -2678,7 +2895,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                       
                 
             }
-         
+           return 
         })
         deOrden=[];
         totalfactura=0.0;
@@ -2686,7 +2903,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         contador +=nLineas;
         i+=1;
         correlativeNumber=parseInt(correlativeNumber)+1;
-        console.log("CONTADOR FINAL",contador); 
+        console.log("CONTADOR FINAL while",contador); 
        
        }//fin del while
         res.status(200).send({orden: "cambios"});

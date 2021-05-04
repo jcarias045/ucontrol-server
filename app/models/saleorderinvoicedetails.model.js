@@ -17,6 +17,8 @@ const SaleInvoiceDetailSchema = Schema({
   Price:Number,
   ProductName:String,
   SubTotal:Number,
+  PriceDiscount:Number,
+  BuyPrice:Number,
   Measure:String,
   CodProduct:String,
   Inventory: {type: Schema.ObjectId, 
