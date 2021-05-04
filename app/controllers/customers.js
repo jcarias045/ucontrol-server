@@ -77,6 +77,7 @@ function createCustomer(req, res) {
                                  });
                 }else{
                     console.log("entra2");
+                    console.log("Usuario Ya existe");
                     res.status(500).send({ message: "Error el cliente ya existe." });
                 }
             })
@@ -96,8 +97,6 @@ function getCustomers(req, res){
             .populate({path: "Company", model: "Company"})
             .populate({path: "Discount", model: "Discount"})
         .then(customer => {
-            console.log(customer);
-            console.log(!customer);
             if(!customer){
                 res.status(404).send({message:"No hay "});
             }else{

@@ -6,12 +6,14 @@ const saleinvoice = require('../controllers/saleorderinvoices');
 
 
 router.get('/get-saleorderinvoices/:id/:company', saleinvoice.getSaleOrderInvoices);
+router.get('/get-saleorderinvoicesvncr/:id', saleinvoice.getDetallesVentaContribuyente);
 router.get('/get-saleorderclosed/:id/:company', saleinvoice.getSaleOrdersClosed);
 router.get('/get-saleorderinfo/:id', saleinvoice.getSaleOrderInfo);
 router.get('/get-saleordersdetails/:id', saleinvoice.getSaleOrderDetails);
 router.post('/create-saleorderinvoice', saleinvoice.createSaleOrderInvoiceWithOrder2);
 router.post('/create-newsaleorderinvoice', saleinvoice.createSaleOrderInvoice);
 router.get('/get-saleorderinvoicedetails/:id', saleinvoice.getSaleInvoiceDetails);
+router.get('/get-saleorderinvoiceexport/:id', saleinvoice.getExportInfoFacturas);
 router.put('/update-saleorderinvoice/:id', saleinvoice.updateSaleOrderInvoice);
 router.put('/delete-saleorderinvoicedetails/:id', saleinvoice.deleteSaleInvoiceDetails);
 router.put('/anular-saleorderinvoice/:id', saleinvoice.anularSaleInovice);
