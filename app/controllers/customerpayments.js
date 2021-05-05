@@ -277,6 +277,21 @@ function getPaymentDetails(req, res){
             
         }
     });
+
+}
+function getExportExcelInfo(req, res){
+    CustomerPaymentDetails.find()
+    .populate({path: 'CustomerPayment', model: 'CustomerPayment',match:{SaleOrderInvoice:id}})
+    .populate({path: 'PaymentMethods', model: 'PaymentMethods'})
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            
+            res.status(200).send({details})
+            
+        }
+    });
 }
 
 async function updatePaymentInvoice(req, res){
@@ -521,7 +536,9 @@ async function cancelledPaymentInvoice(req, res){
 async function getAllPayments(req, res){
     
     CustomerPayment.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
-    .populate({path: 'SaleOrderInvoice', model: 'SaleOrderInvoice'}).sort({codpayment:-1})
+    .populate({path: 'SaleOrderInvoice', model: 'SaleOrderInvoice', populate: {path: 'SaleOrder', model: 'SaleOrder'}})
+    .sort({codpayment:-1})
+    .populate({path: 'Customer', model: 'Customer'})
     .then(pagos => {
         if(!pagos){
             res.status(404).send({message:"No hay "});
@@ -539,5 +556,6 @@ module.exports={
     getPaymentDetails,
     updatePaymentInvoice,
     cancelledPaymentInvoice,
-    getAllPayments
+    getAllPayments,
+    getExportExcelInfo
 }

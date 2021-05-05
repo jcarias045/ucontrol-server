@@ -4,6 +4,7 @@ const saleOrderInvoiceDetails = require("../models/saleorderinvoicedetails.model
 const saleOrders=require("../models/saleorder.model");
 const saleOrderDetails = require("../models/saleorderdetail.model");
 const company = require("../models/company.model");
+const User = require("../models/user.model");
 const inventory=require("../models/inventory.model");
 const inventoryTraceability = require("../models/inventorytraceability.model");
 const MovementTypes = require("../models/movementtype.model");
@@ -27,6 +28,23 @@ function getSaleOrderInvoices(req, res){
             res.status(404).send({message:"No hay "});
         }else{
 
+            res.status(200).send({invoices})
+        }
+    });
+}
+
+function getDetallesVentaContribuyente(req, res){
+    const  company  = req.params.id;
+   saleOrderInvoice.find()
+   .populate({path: 'Customer', model: 'Customer', match:{TypeofTaxpayer: 'CreditoFiscal'}}).sort({CodInvoice:-1})
+   .populate({path: 'User', model: 'User',match:{Company: company}})
+   .populate({path: 'SaleOrder', model: 'SaleOrder'})
+    .then(invoices => {
+        if(!invoices){
+            console.log("no entro");
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(("Si entro"));
             res.status(200).send({invoices})
         }
     });
@@ -1113,11 +1131,29 @@ async function createSaleOrderInvoice(req, res){
 
 function getSaleInvoiceDetails(req, res){
     let invoiceId = req.params.id;
-    saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).populate({path: 'Inventory', model: 'Inventory',
+    saleOrderInvoiceDetails.find({invoiceId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
     populate:{path: 'Measure',model:'Measure'}}
     )}).populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({details})
+        }
+    });
+}
+
+function getExportInfoFacturas(req, res){
+    let Company = req.params.id;
+    console.log(Company);
+    saleOrderInvoiceDetails.find().populate({path: 'Inventory', model: 'Inventory',
+    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    populate:({path: 'Product',model:'Product',
+    populate:{path: 'Measure',model:'Measure'}}
+    )}).populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
+    .populate({path: 'User', model: 'User', match: {Company: Company}})
     .then(details => {
         if(!details){
             res.status(404).send({message:"No hay "});
@@ -3207,9 +3243,14 @@ module.exports={
     getSaleInvoicePendientesIngreso,
     getChargestoCustomers,
     getSaleOrderInvoicebyCustomers,
+<<<<<<< HEAD
     funcionPruebaCorrelativos,
     createSaleOrderInvoiceWithOrder2,
     getSalesForUsers,
     getSalesForProducts
 
+=======
+    getExportInfoFacturas,
+    getDetallesVentaContribuyente
+>>>>>>> manuelback
 }
