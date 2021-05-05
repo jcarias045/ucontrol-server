@@ -11,8 +11,22 @@ function getCompanies(req, res) {
       }
     });
   }
-  
 
+
+function getInfoCompany(req, res) {
+
+    const {id} = req.params;
+
+    console.log(id);
+    Company.find({ _id: id}).then(company => {
+      if (!company) {
+        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
+      } else {
+        res.status(200).send({ company });
+      }
+    });
+  }
+  
 function createCompany (req, res){
     
     const company = new Company();
@@ -80,8 +94,7 @@ function deleteCompany(req, res) {
         }
       }
     });
-  }
-
+}
 
 function updateCompany(req, res){
     let companyData = req.body;
@@ -130,6 +143,7 @@ module.exports ={
     getCompanies,
     deleteCompany,
     updateCompany,
-    desactivateCompany
+    desactivateCompany,
+    getInfoCompany
 }
 

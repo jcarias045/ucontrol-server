@@ -2972,12 +2972,8 @@ module.exports={
     getSaleInvoicePendientesIngreso,
     getChargestoCustomers,
     getSaleOrderInvoicebyCustomers,
-<<<<<<< HEAD
     funcionPruebaCorrelativos,
-    createSaleOrderInvoiceWithOrder2
-
-=======
+    createSaleOrderInvoiceWithOrder2,
     getExportInfoFacturas,
     getDetallesVentaContribuyente
->>>>>>> manuelback
 }
