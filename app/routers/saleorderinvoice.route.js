@@ -28,6 +28,8 @@ router.get('/get-saleorderinvoicebycustomer/:id/:fecha1/:fecha2', saleinvoice.ge
 
 
 router.post('/pruebascorrelativos', saleinvoice.funcionPruebaCorrelativos);
+router.get('/get-saleforuser/:id/:fecha1/:fecha2', saleinvoice.getSalesForUsers);
+router.get('/get-saleforproduct/:id/:fecha1/:fecha2', saleinvoice.getSalesForProducts);
 
 
 
