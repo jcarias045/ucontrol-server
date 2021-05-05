@@ -5,6 +5,7 @@ const Customer = require('./customer.model');
 const User = require('./user.model');
 const PaymentSupplier=require('./paymentstoSuppliers.model');
 const Product=require('./product.model');
+const DocumentCorrelative= require('./documentcorrelatives.model')
 
 const SaleOrderInvoiceSchema = Schema({
   SaleOrder: {type: Schema.ObjectId, 
@@ -12,7 +13,7 @@ const SaleOrderInvoiceSchema = Schema({
     // autopopulate: true,
   },
   InvoiceDate:String,
-  CreationDate: String,
+  CreationDate: Date,
   Total:Number,
   CommentsofSale:String,
   DeliverDay:String,
@@ -30,6 +31,10 @@ const SaleOrderInvoiceSchema = Schema({
   Pagada: Boolean,
   State:String,
   InvoiceComments:String,
+  DocumentCorrelative:{type: Schema.ObjectId, 
+    ref: "DocumentCorrelative",
+    // autopopulate: true,
+  },
   
  
 })

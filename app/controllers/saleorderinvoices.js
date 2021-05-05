@@ -15,6 +15,8 @@ const CustomerPayment=require('../models/customerpayments.model');
 const CustomerPaymentDetails=require('../models/customerpaymentsdetails.model');
 const correlativeDocument= require('../models/documentcorrelatives.model');
 const taxes= require('../models/taxes.model');
+const users= require('../models/user.model');
+const product= require('../models/product.model');
 
 
 function getSaleOrderInvoices(req, res){
@@ -171,7 +173,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
             }
         }
     });
-    let correlativos= await correlativeDocument.findOne({ State:true}).populate({path: 'DocumentType', model:'DocumentType', match:{Ref: customerType.TypeofTaxpayer}})
+    let correlativos= await correlativeDocument.findOne({ State:true})
+    .populate({path: 'DocumentType', model:'DocumentType', match:{Ref: customerType.TypeofTaxpayer}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
@@ -2142,17 +2145,27 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             }
         }
     });
-    let correlativos= await correlativeDocument.findOne({ State:true}).populate({path: 'DocumentType', model:'DocumentType', match:{Ref: customerType.toString()}})
+     console.log("type",customerType);
+     var tipo=customerType.toString();
+     console.log(tipo);
+    
+    let correlativosselect= await correlativeDocument.find({ State:true})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
        }
       
     });
-    console.log("type",customerType);
-    let lengEndNumber=(correlativos.EndNumber).toString().length;
+    var correlativos = correlativosselect.filter(function (item) {
+        return item.DocumentType != null ;
+      });
+
+    console.log("CORRELATVO OBTENIUDIS",correlativos);
+   
+    let lengEndNumber=(correlativos.map(item => item.EndNumber)).toString().length;
     let nLineas=parseInt(companyParams.InvoiceLines);
-    let iniNumber=correlativos.StartNumber;
+    let iniNumber=correlativos.map(item => item.CurrentNumber);
    
     console.log(iniNumber);
     console.log("lineas", nLineas);
@@ -2162,7 +2175,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     let i=0;
     let step=0;
     let correlativeNumber=parseInt(iniNumber);
-    console.log(longitudArreglo);
+    console.log("CORRELATIVO INICIAL",correlativeNumber);
     //FIN DE OBTENCION DE CORRELATIVOS
     //Creacion de correlativo de doc
 
@@ -2235,10 +2248,13 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
      
         SaleOrderInvoice.InvoiceNumber=correlativeNumber;
-      
+        
        while(contador<longitudArreglo){
         let band=false;
+       
+           
         while (correlativeNumber.toString().length < lengEndNumber) {
+           
             correlativeNumber = "0" + correlativeNumber;
             
         }
@@ -2258,7 +2274,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             InvoiceDate:InvoiceDate,
             Pagada:false,
             Entregada:!companyParams.RequieredOutput?true:false,
-            InvoiceNumber:correlativeNumber
+            InvoiceNumber:correlativeNumber,
+            DocumentCorrelative: correlativos.map(item => item._id)
         }]
         console.log("save",correlativeNumber);
         console.log("CONTADOR ",contador);
@@ -2271,6 +2288,17 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                 band=true;
                 
                     invoiceId=SaleOrderStored.map(item=>{return item._id}).toString();
+                   let invoiceNumber=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
+                   console.log("CORRELATIVO ID",correlativos._id);
+                   let correlativoId=correlativos.map(item => item._id);
+                   console.log("# factura",parseFloat(invoiceNumber));
+                   await correlativeDocument.findByIdAndUpdate({_id:correlativoId},{CurrentNumber:parseInt(invoiceNumber)+1},async (err,update)=>{
+                       if(err){
+                           console.log(err);
+                       }
+                       if(update){
+                           console.log("actualizando correlativo",update);
+                       }});
                     let quoteId=SaleOrderStored.CustomerQuote;
                     //cambio de estado a orden de venta
                    
@@ -2919,6 +2947,249 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
 }
 
+async function getSalesForUsers(req,res){
+    const id=req.params.id;
+    const supplierId=req.params.customer;
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    var ObjectID = require('mongodb').ObjectID;
+    users.aggregate([
+        // {  $match: {_id:ObjectID(id)}},
+        {
+            $lookup: {
+                from:"saleorderinvoices",
+               
+                let:{userId:"$_id"},
+                pipeline: [
+                    { $match:
+                       
+                        { $expr:
+                            { $and:
+                               [
+                                { $eq: [ "$User",  "$$userId" ] },
+                                 { $lte: [ "$CreationDate", f1 ] },
+                                 { $gte: [ "$CreationDate", f2] },
+                               ]
+                            }
+                         }
+                    },
+                    {
+                        $lookup: {
+                            from:"saleinvoicedetails",
+                           
+                            let:{ordenId:"$_id"},
+                            pipeline: [
+                                { $match:
+                                    { $expr:
+                                       
+                                            { $eq: [ "$SaleOrderInvoice",  "$$ordenId" ] }
+                                           
+                                        }
+                                    },
+                                    {"$lookup": {
+                                        "from": "products" ,
+                                        "let": {"productId": "$Product"}, 
+                                        "pipeline": [
+                                            { $match:{ $expr:
+                                       
+                                                { $eq: [ "$_id",  "$$productId" ] }
+                                               
+                                            }},
+                                            {
+                                                "$lookup": {
+                                                    "from": "measures" ,
+                                                    let:{catId:"$Measure" },
+                                                     pipeline:[
+                                                        { $match:
+                                                            { $expr:
+                                                               
+                                                                    { $eq: [ "$_id",  "$$catId" ] }
+                                                                   
+                                                                }
+                                                            },
+                                                     ],
+                                                     as:"medidas"
+                                                }
+                
+                                            }
+                                        ],
+                                        "as": "producto"
+                                    }
+                                    }
+                                    
+                
+                            ],
+                            as:"detalles",
+                            
+                        },
+                        
+                          
+                        
+                    }
+                ],
+              
+                as:"facturas",
+                
+            }
+        },
+        { $project: { BirthDate: 0, LastLogin: 0 } }
+       
+        
+        
+    ]).then(result => {
+     
+        res.status(200).send(result);
+        
+    }).catch(err => {console.log(err)})
+}
+
+
+async function getSalesForProducts(req,res){
+    const id=req.params.id;
+    const supplierId=req.params.customer;
+    let companyId = req.params.company;
+    let f1=new Date(req.params.fecha1);
+    let f2=new Date(req.params.fecha2);
+    var ObjectID = require('mongodb').ObjectID;
+    product.aggregate([
+        // {  $match: {_id:ObjectID(id)}},
+        {
+            $lookup: {
+                from:"saleorderinvoices",
+               
+                let:{productId:"$_id"},
+                pipeline: [
+                    { $match:
+                       
+                        { $expr:
+                            { $and:
+                               [
+                               
+                                 { $lte: [ "$CreationDate", f1 ] },
+                                 { $gte: [ "$CreationDate", f2] },
+                               ]
+                            }
+                         }
+                    },
+                    {
+                        $lookup: {
+                            from:"saleinvoicedetails",
+                           
+                            let:{ordenId:"$_id"},
+                            pipeline: [
+                                { $match:
+                       
+                                    { $expr:
+                                        { $and:
+                                           [
+                                           
+                                            { $eq: [ "$SaleOrderInvoice",  "$$ordenId" ] },
+                                             { $eq: [ "$Product", "$$productId"] },
+                                           ]
+                                        }
+                                     }
+                                },
+                                    {"$lookup": {
+                                        "from": "products" ,
+                                        "let": {"productId": "$Product"}, 
+                                        "pipeline": [
+                                            { $match:{ $expr:
+                                       
+                                                { $eq: [ "$_id",  "$$productId" ] }
+                                               
+                                            }},
+                                            {
+                                                "$lookup": {
+                                                    "from": "measures" ,
+                                                    let:{catId:"$Measure" },
+                                                     pipeline:[
+                                                        { $match:
+                                                            { $expr:
+                                                               
+                                                                    { $eq: [ "$_id",  "$$catId" ] }
+                                                                   
+                                                                }
+                                                            },
+                                                     ],
+                                                     as:"medidas"
+                                                }
+                
+                                            }
+                                        ],
+                                        "as": "producto"
+                                    }
+                                    }
+                                    
+                
+                            ],
+                            as:"detalles",
+                            
+                        },
+                        
+                          
+                        
+                    }
+                ],
+              
+                as:"facturas",
+                
+            }
+        },
+        {$lookup: {
+            from: "catproducts" ,
+            let: {catId: "$CatProduct"}, 
+            pipeline: [
+                { $match:  { $expr:
+            
+                    { $eq: [ "$_id",  "$$catId" ] }
+                   
+               } },
+              
+            ],
+            as: "categoria"
+        }
+        },
+        {
+            $lookup: {
+            from: "brands" ,
+            let: {brandId: "$Brand"}, 
+            pipeline: [
+                { $match:  { $expr:
+            
+                    { $eq: [ "$_id",  "$$brandId" ] }
+                   
+               } },
+              
+            ],
+            as: "marca"
+          }
+        },
+        {
+            $lookup: {
+            from: "measures" ,
+            let: {meedidaId: "$Measure"}, 
+            pipeline: [
+                { $match:  { $expr:
+            
+                    { $eq: [ "$_id",  "$$meedidaId" ] }
+                   
+               } },
+              
+            ],
+            as: "medida"
+          }
+        },
+        { $project: { BirthDate: 0, LastLogin: 0 } }
+       
+        
+        
+    ]).then(result => {
+     
+        res.status(200).send(result);
+        
+    }).catch(err => {console.log(err)})
+}
 
 module.exports={
     getSaleOrderInvoices,
@@ -2937,6 +3208,8 @@ module.exports={
     getChargestoCustomers,
     getSaleOrderInvoicebyCustomers,
     funcionPruebaCorrelativos,
-    createSaleOrderInvoiceWithOrder2
+    createSaleOrderInvoiceWithOrder2,
+    getSalesForUsers,
+    getSalesForProducts
 
 }

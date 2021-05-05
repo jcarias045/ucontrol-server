@@ -10,7 +10,7 @@ const DocumentTypeSchema = Schema({
            },
    Name: String,
    Description: String,
-   Ref:String
+   Referencia:String
 })
 
 module.exports = moongose.model('DocumentType', DocumentTypeSchema)
