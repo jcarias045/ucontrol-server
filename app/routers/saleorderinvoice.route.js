@@ -11,7 +11,7 @@ router.get('/get-saleorderclosed/:id/:company', saleinvoice.getSaleOrdersClosed)
 router.get('/get-saleorderinfo/:id', saleinvoice.getSaleOrderInfo);
 router.get('/get-saleordersdetails/:id', saleinvoice.getSaleOrderDetails);
 router.post('/create-saleorderinvoice', saleinvoice.createSaleOrderInvoiceWithOrder2);
-router.post('/create-newsaleorderinvoice', saleinvoice.createSaleOrderInvoice);
+router.post('/create-newsaleorderinvoice', saleinvoice.createSaleOrderInvoice2);
 router.get('/get-saleorderinvoicedetails/:id', saleinvoice.getSaleInvoiceDetails);
 router.get('/get-saleorderinvoiceexport/:id', saleinvoice.getExportInfoFacturas);
 router.put('/update-saleorderinvoice/:id', saleinvoice.updateSaleOrderInvoice);

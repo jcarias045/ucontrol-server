@@ -103,21 +103,21 @@ async function getSaleOrdersClosed(req, res){
 
 function getSaleOrderInfo(req, res){
     let saleId = req.params.id;
-    
+
     saleOrders.find({_id: saleId}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
     .then(quote => {
         if(!quote){
             res.status(404).send({message:"No hay "});
         }else{
             res.status(200).send({quote})
-         
+
         }
     });
 }
 
 function getSaleOrderDetails(req, res){
     let saleId = req.params.id;
-    
+
     saleOrderDetails.find({SaleOrder:saleId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
@@ -167,7 +167,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
     let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
-      
+
             if(doc){
                     if(doc.CodInvoice!==null){
                 return(doc.CodInvoice)
@@ -192,7 +192,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
             return(params)
         }
     });
-   
+
 
     //Deuda ppor cobrar actual
     let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
@@ -205,9 +205,9 @@ async function createSaleOrderInvoiceWithOrder(req, res){
     });
     let deuda=deudaAct;
     //OBTENCION DE CORRELATIVOS
-    //OBTENIENDO TIPO DE CLIENTE 
+    //OBTENIENDO TIPO DE CLIENTE
     let customerType=await customer.findOne({_id:Customer}).then(function(doc){
-      
+
             if(doc){
                     if(doc.TypeofTaxpayer!==null){
                 return(doc.TypeofTaxpayer)
@@ -220,13 +220,13 @@ async function createSaleOrderInvoiceWithOrder(req, res){
        if(docCorrelative){
           return docCorrelative
        }
-      
+
     });
-    
+
     let lengEndNumber=(correlativos.EndNumber).toString().length;
     let nLineas=parseInt(companyParams.InvoiceLines);
     let iniNumber=correlativos.StartNumber;
-   
+
     console.log(iniNumber);
     console.log("lineas", nLineas);
     let longitudArreglo=details.length;
@@ -558,11 +558,11 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                           payment.save((err, paymentStored)=>{
                               if(err){
                                   res.status(500).send({message: err});
-              
+
                               }else {
                                   if(!paymentStored){
                                       res.status(500).send({message: "No se inserto registro"});
-              
+
                                   }
                                   else{
                                       let paymentid=paymentStored._id;
@@ -574,7 +574,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                       paymentDetails.Amount=Monto;
                                       paymentDetails.CustomerPayment=paymentid;
                                       paymentDetails.SaleOrderInvoice=invoiceId;
-              
+
                                       console.log(paymentDetails);
                                       if(PaymentMethodName!=='Contado'){
                                           paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
@@ -590,7 +590,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                           if(err){
                                               // res.status(500).send({message: err});
                                               console.log(err);
-              
+
                                           }else {
                                               if(!detailStored){
                                                   // res.status(500).send({message: err});
@@ -601,14 +601,14 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                   if(paymentDetailId){
                                                       let sumMontos=await CustomerPaymentDetails.aggregate([
                                                           {$match :{CustomerPayment: paymentid}},
-              
+
                                                           {
                                                               $group:{
                                                                  _id:null,
                                                               "sumAmount":{$sum: '$Amount'}
                                                           }
                                                          },
-              
+
                                                       ]);
                                                       let sumaMontos=0.0;
                                                       sumMontos.map(item =>{
@@ -617,7 +617,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                       //actualizando deuda con cliente
                                                       customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
                                                           if(err){
-              
+
                                                               console.log(err);
                                                           }else{console.log(updateDeuda) }
                                                       });
@@ -625,20 +625,20 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                           console.log('SUMANDO MONTOS');
                                                           saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
                                                               if(err){
-              
+
                                                                   console.log(err);
                                                               }else{console.log(updateDeuda);}
                                                           });
-              
-              
+
+
                                                       }
-              
+
                                                   }
-              
+
                                               }
                                           }
                                       });
-              
+
                                       res.status(200).send({ paymentStored});
                                   }
                               }
@@ -646,12 +646,12 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                       }else{
                            res.status(200).send({orden: detalles});
                       }
-                     
+
                 }
             }
         })
 
-       
+
     }
 
     if(!companyParams.OrderWithWallet && deudor){
@@ -1154,7 +1154,8 @@ async function createSaleOrderInvoice(req, res){
 
 function getSaleInvoiceDetails(req, res){
     let invoiceId = req.params.id;
-    saleOrderInvoiceDetails.find({invoiceId}).populate({path: 'Inventory', model: 'Inventory',
+    
+    saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
     populate:{path: 'Measure',model:'Measure'}}
@@ -1858,10 +1859,10 @@ function getSaleInvoicePendientesIngreso(req, res){
 function getChargestoCustomers(req, res){
     const { id } = req.params;
 
-    
+
     customer.aggregate([
         {
-           
+
             $lookup: {
                 from: "companies" ,
                 let: {companyId: "$Company"},
@@ -1882,7 +1883,7 @@ function getChargestoCustomers(req, res){
             }
         },
         {
-           
+
             $lookup: {
                 from: "saleorderinvoices" ,
                 let: {customerId: "$_id"},
@@ -1892,7 +1893,7 @@ function getChargestoCustomers(req, res){
                             { $and:
                             [
                                 { $eq: [ "$Customer",  "$$customerId" ] },
-                                
+
                             ]
                             }
                         }
@@ -1903,9 +1904,9 @@ function getChargestoCustomers(req, res){
                         pipeline: [
                             { $match:
                                 { $expr:
-                                   
+
                                             { $eq: [ "$SaleOrderInvoice",  "$$invoiceId" ] }
-                                       
+
                                     }
                             },
 
@@ -1916,11 +1917,11 @@ function getChargestoCustomers(req, res){
 
                 ],
                 as: "invoices",
-                
+
             }
         },
-       
-      
+
+
     ])
      .then(result => {
          if(!result){
@@ -1938,7 +1939,7 @@ function getChargestoCustomers(req, res){
 
 
 function getSaleOrderInvoicebyCustomers(req, res){
-    let supplierId = req.params.id; 
+    let supplierId = req.params.id;
     let companyId = req.params.company;
     let f1=new Date(req.params.fecha1);
     let f2=new Date(req.params.fecha2);
@@ -1947,7 +1948,7 @@ function getSaleOrderInvoicebyCustomers(req, res){
     let now= new Date();
     let fecha=now.getTime();
     var date = new Date(fecha);
-   
+
     // date.setMonth(date.getMonth() - 1/2);
     date.setDate(date.getDate() -15);
     let fecha1=now.toISOString().substring(0, 10);
@@ -1957,28 +1958,28 @@ function getSaleOrderInvoicebyCustomers(req, res){
 
         saleOrderInvoice.aggregate([
             {  $match: {Customer:ObjectID(supplierId)}},
-        
+
             {
                 $lookup: {
                     from:"saleinvoicedetails",
-                   
+
                     let:{ordenId:"$_id"},
                     pipeline: [
                         { $match:
                             { $expr:
-                               
+
                                     { $eq: [ "$SaleOrderInvoice",  "$$ordenId" ] }
-                                   
+
                                 }
                             },
                             {"$lookup": {
                                 "from": "products" ,
-                                "let": {"productId": "$Product"}, 
+                                "let": {"productId": "$Product"},
                                 "pipeline": [
                                     { $match:{ $expr:
-                               
+
                                         { $eq: [ "$_id",  "$$productId" ] }
-                                       
+
                                     }},
                                     {
                                         "$lookup": {
@@ -1987,9 +1988,9 @@ function getSaleOrderInvoicebyCustomers(req, res){
                                              pipeline:[
                                                 { $match:
                                                     { $expr:
-                                                       
+
                                                             { $eq: [ "$_id",  "$$catId" ] }
-                                                           
+
                                                         }
                                                     },
                                              ],
@@ -2001,17 +2002,17 @@ function getSaleOrderInvoicebyCustomers(req, res){
                                 "as": "producto"
                             }
                             }
-                            
-    
+
+
                     ],
                     as:"detalles",
-                    
+
                 },
-                
-                  
-                
-            }, 
-            
+
+
+
+            },
+
         ]).then(result => {
             var order = result.filter(function (item) {
                 let fecha=new Date(item.CreationDate);
@@ -2021,7 +2022,7 @@ function getSaleOrderInvoicebyCustomers(req, res){
                 return fecha>=f2 && fecha<=f1;
               });
             res.status(200).send(order);
-            
+
         })
     }catch(error) {
         // imprimimos a consola
@@ -2060,15 +2061,15 @@ async function funcionPruebaCorrelativos(req,res){
        if(docCorrelative){
           return docCorrelative
        }
-      
+
     });
 
-    
-  
+
+
     let lengEndNumber=(correlativos.EndNumber).toString().length;
     let nLineas=parseInt(companyParams.InvoiceLines);
     let iniNumber=correlativos.StartNumber;
-   
+
     console.log(iniNumber);
     console.log("lineas", nLineas);
     let longitudArreglo=details.length;
@@ -2078,7 +2079,7 @@ async function funcionPruebaCorrelativos(req,res){
     let nuevo=[];
     var arreglo;
     let correlativosid=[];
-   
+
     let contador=0;
     let i=0;
     let step=0;
@@ -2086,42 +2087,42 @@ async function funcionPruebaCorrelativos(req,res){
     console.log(longitudArreglo);
     let deOrden=[];
     while(contador<longitudArreglo ){
-       
-                
+
+
         while (correlativeNumber.toString().length < lengEndNumber) {
             correlativeNumber = "0" + correlativeNumber;
-            
+
         }
         console.log("save",correlativeNumber);
         console.log("contador",contador);
         for(let i=0; i<nLineas;i++){
-           
+
                  if(details[contador+ i]){
                     //    console.log("prueba",details[contador+ i].dato);
                        deOrden.push({
                            ProductName:details[contador+ i].dato
                        })
-                       
+
                  }
                  else{break}
-                
-                
-          
+
+
+
         }
         console.log("lo que ingreso de detalle", deOrden);
        deOrden=[]
         contador +=nLineas;
         i+=1;
-        
-        correlativeNumber=parseInt(correlativeNumber)+1; 
+
+        correlativeNumber=parseInt(correlativeNumber)+1;
         // console.log("el contador", contador);
         // console.log("paso",step);
     }
     console.log("i", i);
-   
-  
-   
-    
+
+
+
+
 }
 
 async function createSaleOrderInvoiceWithOrder2(req, res){
@@ -2157,7 +2158,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
     let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
-       
+
             if(doc){
                     if(doc.CodInvoice!==null){
                 return(doc.CodInvoice)
@@ -2186,7 +2187,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
     //Deuda ppor cobrar actual
     let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
-        
+
             if(doc){
                     if(doc.AccountsReceivable!==null){
                 return(doc.AccountsReceivable)
@@ -2195,9 +2196,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     });
     let deuda=deudaAct;
     //OBTENCION DE CORRELATIVOS
-    //OBTENIENDO TIPO DE CLIENTE 
+    //OBTENIENDO TIPO DE CLIENTE
     let customerType=await customer.findOne({_id:Customer}).then(function(doc){
-        
+
             if(doc){
                     if(doc.TypeofTaxpayer!==null){
                 return(doc.TypeofTaxpayer)
@@ -2207,25 +2208,25 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
      console.log("type",customerType);
      var tipo=customerType.toString();
      console.log(tipo);
-    
+
     let correlativosselect= await correlativeDocument.find({ State:true})
     .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
        }
-      
+
     });
     var correlativos = correlativosselect.filter(function (item) {
         return item.DocumentType != null ;
       });
 
-    console.log("CORRELATVO OBTENIUDIS",correlativos);
-   
+
+
     let lengEndNumber=(correlativos.map(item => item.EndNumber)).toString().length;
     let nLineas=parseInt(companyParams.InvoiceLines);
     let iniNumber=correlativos.map(item => item.CurrentNumber);
-   
+
     console.log(iniNumber);
     console.log("lineas", nLineas);
     let longitudArreglo=dePurchaseOrder.length;
@@ -2234,7 +2235,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     let i=0;
     let step=0;
     let correlativeNumber=parseInt(iniNumber);
-    console.log("CORRELATIVO INICIAL",correlativeNumber);
+
     //FIN DE OBTENCION DE CORRELATIVOS
     //Creacion de correlativo de doc
 
@@ -2247,31 +2248,31 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         codigoSalidas =1;
     }else {codigoSalidas=codOutput+1}
 
-    //IMPUESTOS 
+    //IMPUESTOS
     let impuestosList=await taxes.find({document:'venta',Company:companyId})
     .then(taxes => {
         return(taxes)
-      
+
     })
     //
-    
+
 
         //++++++++++++++ verificando deudas +++++++++++++++++++
         //obtener fecha de facturas relacionadas con el cliente
         let invoices=await customerInvoice.find({Pagada:false, Customer: Customer},'CreationDate')
         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-        
+
         invoices.map(item =>{
             //  let date = moment(item.CreationDate).format('DD/MM/YYYY');
-          
+
             let now= new Date();
             let fecha=now.getTime();
             var date = new Date(item.CreationDate);
-            
+
             date.setDate(date.getDate() + diasCredito);
             let fechaPago=date.toISOString().substring(0, 10);
             let fechaAct=now.toISOString().substring(0, 10);
-            
+
             if(fechaPago <= fechaAct){
                deudor=true;
             } else { deudor=false;}
@@ -2284,7 +2285,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
           console.log('agregar ingreso');
         }
      //++++++++++++++  FIN  +++++++++++++++++++
-    
+
     SaleOrderInvoice.CodInvoice=codigo;
     SaleOrderInvoice.Customer=Customer;
     SaleOrderInvoice.Total=Total;
@@ -2300,24 +2301,26 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     SaleOrderInvoice.Pagada=false;
     SaleOrderInvoice.Entregada=!companyParams.RequieredOutput?true:false;
     // SaleOrderInvoice.InvoiceNumber=InvoiceNumber;
-    
+
     let  invoiceId=null;
     let totalfactura=0.0;
     let sumimpuestos=0.0;
+    let arreglo=[];
+    let arregloFacturas=[];
     if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
-     
+
         SaleOrderInvoice.InvoiceNumber=correlativeNumber;
-        
+
        while(contador<longitudArreglo){
         let band=false;
-       
-           
+
+
         while (correlativeNumber.toString().length < lengEndNumber) {
-           
+
             correlativeNumber = "0" + correlativeNumber;
-            
+
         }
-       
+
         let factura=[{
             CodInvoice:codigo,
             Customer:Customer,
@@ -2338,45 +2341,45 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         }]
         console.log("save",correlativeNumber);
         console.log("CONTADOR ",contador);
-       
+
         await saleOrderInvoice.insertMany(factura).then(async function (SaleOrderStored) {
             if(!SaleOrderStored){
                 res.status(500).send({message: 'error'});
-                 
+
             }else {
                 band=true;
-                
+                    arregloFacturas.push(SaleOrderStored);
                     invoiceId=SaleOrderStored.map(item=>{return item._id}).toString();
                    let invoiceNumber=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
-                   console.log("CORRELATIVO ID",correlativos._id);
+
                    let correlativoId=correlativos.map(item => item._id);
-                   console.log("# factura",parseFloat(invoiceNumber));
+
                    await correlativeDocument.findByIdAndUpdate({_id:correlativoId},{CurrentNumber:parseInt(invoiceNumber)+1},async (err,update)=>{
                        if(err){
                            console.log(err);
                        }
                        if(update){
-                           console.log("actualizando correlativo",update);
+
                        }});
                     let quoteId=SaleOrderStored.CustomerQuote;
                     //cambio de estado a orden de venta
-                   
+
                     // saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
                     //     if(err){
                     //         res.status(500).send({ message: "Error del servidor." });
                     //     }
                     //     if(update){}});
                     if(invoiceId){
-                       
-                
-                        for(let i=0; i<nLineas;i++){ 
-                          
+
+
+                        for(let i=0; i<nLineas;i++){
+
                             if(dePurchaseOrder[contador+ i]){
                                //    console.log("prueba",dePurchaseOrder[contador+ i].dato);
-                              
+
                                totalfactura+=(parseFloat(dePurchaseOrder[contador+ i].SubTotal));
                                   deOrden.push({
-                                      
+
                                         ProductName:dePurchaseOrder[contador+ i].ProductName,
                                         SaleOrderInvoice:invoiceId,
                                         Quantity:parseFloat(dePurchaseOrder[contador+ i].Quantity) ,
@@ -2395,35 +2398,36 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         PriceDiscount:parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento)?
                                         parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento):parseFloat(dePurchaseOrder[contador+ i].Descuento)
                                   })
-                                  
+
                             }
                             else{deOrden[null]}
                         }
-                       
-                     
+
+
                     if(customerType.toString()==="CreditoFiscal"){
                          impuestosList.map(item=>{
                         sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
                        })
                     }else{sumimpuestos=0}
-                    
+
                        totalfactura=totalfactura+sumimpuestos;
-            
+
                        saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Total:totalfactura},async (err,update)=>{
                         if(err){
-                            
+
                         }
                         if(update){}});
+                        console.log("AREGGLO DEL DETALLE DE LA FACTURA", deOrden);
                      if(deOrden.length>0 || deOrden!==null){    //insertando detalles de los detalles de la orden
                         await saleOrderInvoiceDetails.insertMany(deOrden)
                         .then(async function (detalles) {
                             //si ingreso no requerido
-                        
+
                             if( detalles){
-                               
+                                arreglo.push(detalles);
                                 //cuenta por cobrar
-                                let idfactura=detalles.map(item=>{return item.SaleOrderInvoice}).toString();
-                                
+                                let iddetalle=detalles.map(item=>{return item._id}).toString();
+
                                customer.findByIdAndUpdate({_id:Customer},{
                                     AccountsReceivable:parseFloat(deudaAct)+parseFloat(Total),
                                 }).then(function(update){
@@ -2440,7 +2444,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                             }else{}
                                         });
 
-                                       
+
                                         let pago=[{
                                          SaleOrderInvoice:invoiceId,
                                          DatePayment:creacion,
@@ -2449,20 +2453,20 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                          Saldo:0,
                                          Customer:Customer
                                         }]
-                                    
-                                      
-                
+
+
+
                                       await CustomerPayment.insertMany(pago)
                                       .then(function (paymentStored) {
                                             //   res.status(500).send({message: err});
-                
-                                         
+
+
                                               if(!paymentStored){
                                                   res.status(500).send({message: "No se inserto registro"});
-                
+
                                               }
                                               else{
-                                                
+
                                                   let paymentid=paymentStored.map(item=>{return item._id}).toString();
                                                   let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
                                                   let payDetail=[{
@@ -2477,28 +2481,28 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     BankName: BankName,
                                                     NoTransaction: NoTransaction,
                                                   }]
-                                                  
+
                                                   CustomerPaymentDetails.insertMany(payDetail)
                                                     .then(async function (detailStored) {
-                                                   
+
                                                           if(!detailStored){
                                                               // res.status(500).send({message: err});
                                                               console.log(err);
                                                           }
                                                           else{
                                                               let paymentDetailId=detailStored.map(item=>{return item._id});
-                                                             
+
                                                               if(paymentDetailId){
                                                                   let sumMontos=await CustomerPaymentDetails.aggregate([
                                                                       {$match :{CustomerPayment: paymentid}},
-                
+
                                                                       {
                                                                           $group:{
                                                                               _id:null,
                                                                           "sumAmount":{$sum: '$Amount'}
                                                                       }
                                                                       },
-                
+
                                                                   ]);
                                                                   let sumaMontos=0.0;
                                                                   sumMontos.map(item =>{
@@ -2507,214 +2511,27 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                                   //actualizando deuda con cliente
                                                                  await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat((totalfactura)).toFixed(2)},(err,updateDeuda)=>{
                                                                       if(err){
-                
+
                                                                           console.log(err);
                                                                       }else{}
                                                                   });
-                
-                                                                     
-                
-                
-                
+
+
+
+
+
                                                               }
-                
+
                                                           }
-                                                      
+
                                                   });
-                
-                
+
+
                                               }
-                                          
+
                                       })
                                   }
-                             
-                            //     if(!companyParams.RequieredOutput){
-                            //         console.log("salidas no requeridas",invoiceId);
-                            //         let salidaId=null;
-                                 
-                            //         let  salida=[{
-                            //            EntryDate:creacion,
-                            //            User:User,
-                            //            Comments:"Ingreso automatico "+creacion,
-                            //            State:true,
-                            //            CodOutput:codigoSalidas,
-                            //            Company:companyId,
-                            //            SaleOrderInvoice:invoiceId,
-                            //            Customer:Customer,
-                            //            InvoiceNumber:correlativeNumber,
-                            //         }]
-                                  
-                                   
-                            //         await productOutput.insertMany(salida)
-                            //         .then(async function (outputStored) {
 
-                            //                     let salidaId=outputStored.map( item=>{return item._id}).toString();
-  
-                            //                     console.log("detalles salidas", detalles); 
-                            //                     if( outputStored){
-                                                  
-                            //                          detalles.map( async  item=>{
-                            //                             //obteniendo stock de producto  (bodega principal)
-                            //                             let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
-                            //                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                       
-                            //                             console.log('EN STOCK:',infoInventary);
-
-                            //                             let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
-                            //                             .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
-                            //                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            //                               console.log("en reserva", productreserved);
-                            //                             //obteniendo id del movimiento de tipo reserva
-                            //                             let movementId= await MovementTypes.findOne({Name:'salida'},['_id'])
-                            //                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            //                             console.log("MOVIMEITO",movementId);
-                            //                             if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
-                            //                                     //descontando cantidad que se reservara
-                            //                                     console.log("VERIFICANDO ENTRADA");
-                            //                                    await inventory.findByIdAndUpdate({_id:item.Inventory},{
-                            //                                         Stock:parseFloat(infoInventary.Stock - item.Quantity),
-                            //                                     }).then(async function(update){
-                            //                                         if(!update){
-
-                            //                                         }
-                            //                                         else{
-                            //                                             outputDataDetail.push({
-                            //                                                 SaleInvoiceDetail:item._id,
-                            //                                                 ProductOutput:salidaId,
-                            //                                                 Quantity:item.Quantity,
-                            //                                                 Inventory:infoInventary._id,
-                            //                                                 ProductName:item.ProductName,
-                            //                                                 Price:item.Price,
-                            //                                                 Measure:item.Measure,
-                            //                                                 CodProduct:item.CodProduct,
-                            //                                                 Product:item.Product
-                            //                                                  });
-                            //                                             await productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
-                            //                                                 console.log("INSERTANDO SALIDA DETALLE");
-                            //                                                 console.log(outputStored);
-                            //                                                     if(outputStored){
-                            //                                                         const inventorytraceability= new inventoryTraceability();
-                            //                                                         inventorytraceability.Quantity=item.Quantity;
-                            //                                                         inventorytraceability.Product=item.Product;
-                            //                                                         inventorytraceability.WarehouseDestination=null; //destino
-                            //                                                         inventorytraceability.MovementType=movementId._id;
-                            //                                                         inventorytraceability.MovDate=creacion;
-                            //                                                         inventorytraceability.WarehouseOrigin=item.Inventory; //origen
-                            //                                                         inventorytraceability.User=User;
-                            //                                                         inventorytraceability.Company=companyId;
-                            //                                                         inventorytraceability.DocumentId=invoiceId;
-                            //                                                         inventorytraceability.save((err, traceabilityStored)=>{
-                            //                                                             if(err){
-                            //                                                                 // res.status(500).send({message: err});
-
-                            //                                                             }else {
-                            //                                                                 if(!traceabilityStored){
-                            //                                                                     // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                            //                                                                     console.log(traceabilityStored);
-                            //                                                                 }
-                            //                                                                 else{
-
-                            //                                                                 }
-                            //                                                             }
-                            //                                                         });
-
-                            //                                                     }
-                            //                                             }).catch(err => console.log(err))
-                            //                                             console.log('id del moviminto de reserva', movementId);
-                            //                                             //registro de movimiento
-
-                            //                                             res.status(200).send({orden: detalles});
-                            //                                         }
-                            //                                     })
-                            //                                     .catch(err => {console.log(err);});
-
-                                                               
-
-                            //                             }
-                            //                             else if( parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) &&  companyParams.AvailableReservation){
-                            //                                 console.log("EMPRESA HABILITADA PARA RESERVAS");
-                            //                                 console.log('BODEGA RESERVA');
-                                                               
-
-                            //                                     //actualizando el stock de reserva
-                            //                                     await inventory.findByIdAndUpdate({_id:productreserved._id},{
-                            //                                         Stock:parseFloat(productreserved.Stock - item.Quantity),
-                            //                                     }).then(async function(update){
-                            //                                         if(!update){
-                            //                                             res.status(500).send({message: "No se actualizo inventario"});
-                            //                                         }else{
-                            //                                             outputDataDetail.push({
-                            //                                                 SaleInvoiceDetail:item._id,
-                            //                                                 ProductOutput:salidaId,
-                            //                                                 Quantity:item.Quantity,
-                            //                                                 Inventory:productreserved._id,
-                            //                                                 ProductName:item.ProductName,
-                            //                                                 Price:item.Price,
-                            //                                                 Measure:item.Measure,
-                            //                                                 CodProduct:item.CodProduct,
-                            //                                                 Product:item.Product
-                            //                                                  });
-                            //                                              await productOutputDetail.insertMany(outputDataDetail) .then(async function (outputStored) {
-                            //                                                 console.log("INSERTANDO SALIDA DETALLE");
-                            //                                                 console.log(outputDataDetail);
-                            //                                                     if(outputStored){
-                            //                                                         const inventorytraceability= new inventoryTraceability();
-                            //                                                         inventorytraceability.Quantity=item.Quantity;
-                            //                                                         inventorytraceability.Product=item.Product;
-                            //                                                         inventorytraceability.WarehouseDestination=null; //destino
-                            //                                                         inventorytraceability.MovementType=movementId._id;
-                            //                                                         inventorytraceability.MovDate=creacion;
-                            //                                                         inventorytraceability.WarehouseOrigin=productreserved._id; //origen
-                            //                                                         inventorytraceability.User=User;
-                            //                                                         inventorytraceability.Company=companyId;
-                            //                                                         inventorytraceability.DocumentId=invoiceId;
-                            //                                                        await inventorytraceability.save((err, traceabilityStored)=>{
-                            //                                                             if(err){
-
-                            //                                                                 res.status(500).send({message: "No se actualizo inventario"});
-                            //                                                             }else {
-                            //                                                                 if(!traceabilityStored){
-                            //                                                                     // // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                            //                                                                     // console.log(traceabilityStored);
-                            //                                                                 }
-                            //                                                                 else{
-                            //                                                                     console.log(traceabilityStored);
-                            //                                                                 }
-                            //                                                             }
-                            //                                                         });
-                            //                                                     }
-                            //                                                 }).catch(err => console.log(err));
-
-
-                            //                                         }
-
-                            //                                     })
-                            //                                     .catch(err => {console.log(err);});
-
-                            //                             }
-                            //                             else{
-
-                            //                                 res.status(500).send({ message: "Verificar Inventario" });
-
-                            //                             }
-
-                                                       
-                            //                     });
-
-                            //                     }
-                                            
-                                                
-                                               
-
-
-                                            
-                            //                 return
-                            //         });
-
-                            //         // res.status(200).send({orden: detalles})
-                            //  }
-                                
-                               
                             }else{
                                 res.status(500).send({ message: "No se registraron detalles" });
                             }
@@ -2725,167 +2542,287 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                             console.log(err);
                         });
                     }
-                       
-                    if(!companyParams.RequieredOutput){
-                        if(invoiceId){
 
-                            console.log("salidas no requeridas",invoiceId);
-                        let salidaId=null;
-                     
-                        let  salida=[{
-                           EntryDate:creacion,
-                           User:User,
-                           Comments:"Ingreso automatico "+creacion,
-                           State:true,
-                           CodOutput:codigoSalidas,
-                           Company:companyId,
-                           SaleOrderInvoice:invoiceId,
-                           Customer:Customer,
-                           InvoiceNumber:correlativeNumber,
-                        }]
-                        let datos=await  saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).then( function(detail){
-                            return detail
+
+
+                    }
+
+
+
+
+
+
+
+
+            }
+           return
+        })
+        deOrden=[];
+        totalfactura=0.0;
+        sumimpuestos=0.0;
+        contador +=nLineas;
+        codigo+=1;
+        correlativeNumber=parseInt(correlativeNumber)+1;
+        console.log("CONTADOR FINAL while",contador);
+
+       }//fin del while
+        res.status(200).send({orden: "cambios"});
+
+    }
+
+    if(!companyParams.OrderWithWallet && deudor){
+        res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
+    }
+
+
+    if(!companyParams.RequieredOutput){
+      
+        let salida=[];
+        
+        let  datosFactura=[];
+        let  datosDetalles=[];
+        let idsalida=null;
+        let count=0;
+        arregloFacturas.map(async item=>{
+            let id= item.forEach(item=>{
+                datosFactura.push(item)
+              
+
+            });
+         });
+         arreglo.map(item=>{
+            // console.log("arreglo final", item);
+            item.forEach(item=>{
+                 datosDetalles.push(item);
+                
+            })
+
+
+        })
+      
+
+        datosFactura.map(item=>{
+             salida.push(
+                 {
+                    EntryDate:creacion,
+                    User:User,
+                    Comments:"Ingreso automatico "+creacion,
+                    State:true,
+                    CodOutput:codigoSalidas,
+                    Company:companyId,
+                    SaleOrderInvoice:item._id,
+                    Customer:Customer,
+                    InvoiceNumber:item.InvoiceNumber,
+
+                 }
+             )
+
+
+        })
+        await productOutput.insertMany(salida).then(async function (outputStored) {
+            if(!outputStored){
+
+
+            }else {
+                var detalles=[];
+                 let cont=0;
+               
+                
+                 outputStored.map(async  item=> {
+                    let long=outputStored.length;
+                    console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
+                    let idfactura=item.SaleOrderInvoice;
+                   let id= item._id;
+                    console.log("ID+++++++++++++++++++++++++++++",id);
+                     let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura}).then(async function(data){
+                         return data;
+
+
+                     });
+                     data.map( item =>{
+                       detalles.push(
+                           {
+                               SaleInvoiceDetail:item._id,
+                               ProductOutput:id,
+                               Quantity:item.Quantity,
+                               Inventory:item.Inventory,
+                               ProductName:item.ProductName,
+                               Price:item.Price,
+                               Measure:item.Measure,
+                               CodProduct:item.CodProduct,
+                               Product:item.Product, 
+                               SaleOrderInvoice:item.SaleOrderInvoice
+
+                           }
+                       );
+
+                   })
+                   if(parseInt(long)<=parseInt(cont)){
+                       console.log("gola ");
+                   }
+                   
+                  cont+=1;
+                  if(parseInt(long)===parseInt(cont)){
+                    productOutputDetail.insertMany(detalles) .then(async function (outputStored) {
+                        console.log("INSERTANDO DETALLES");
+                        console.log(outputStored);
+                            if(outputStored){
+                                outputStored.map(async item=>{
+                                    let SaleInvoiceId=item.SaleOrderInvoice;
+                                    let salidaId=item.ProductOutput;
+                                       //obteniendo stock de producto  (bodega principal)
+
+                        let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        console.log('EN STOCK:',infoInventary);
+
+                        let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
+                        .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         
-                       });
-
-
-                       console.log("los datos",datos);
                         //obteniendo id del movimiento de tipo reserva
-                       
+                        let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-
-                         await productOutput.insertMany(salida)
-                         .then( async function(outputStored){
-                             if(!outputStored){
-
-                             }else{
-                                 salidaId= outputStored.map( item=>{return item._id}).toString();
-                                console.log("SALIDA",salidaId);
+                        //cambios de cantidad ingresada 
+                        let proIngresados=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Entregados')
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        let quantityInvoice=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Quantity')
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        
+                        let cantidad=0.0;
+                        let ingresos=0.0;
+                        let productRestante=0.0;
+                        let ingresoUpdate=0.0;
+                        
+                        console.log("PRODUCTOS ENTREGADOS",proIngresados);
+                        console.log("PRODUCTOS de factura",quantityInvoice);
+                        ingresos=parseFloat(proIngresados.Entregados) + parseFloat(item.Quantity);
+                        console.log("a entregar",ingresos);
+                              //cambiando estados e ingresos de  detalle factur
+                              if(proIngresados!==null){
+                                if(parseFloat(ingresos)===parseFloat(quantityInvoice.Quantity)){
+                                    console.log('COMPLETADO INGRESO');
+                                   await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                        Entregados:ingresos,
+                                        State:true
+                                    })
+                                    .catch(err => {console.log(err);})
+                                    
+                                }
+                                 else{
+                                console.log('NO COMPLETADO INGRESO');
+    
+                                await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                    Entregados:ingresos,
+                                    State:false
+                                }).catch(err => {console.log(err);})
                                 
-                               
-                                 datos.map(async item =>{
-                                      
-                                      //obteniendo stock de producto  (bodega principal)
-                                      let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
-                                      .then(async resultado =>{ 
-                                      
-                                        return resultado});
-                                       let productreserved=await inventory.findOne({Product:  infoInventary.Product, _id: { $nin:  infoInventary._id }},['Stock','Product'])
-                                        .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
-                                        .then(async resultado =>resultado)
-                                      console.log('EN STOCK:',infoInventary);
-    
-                                      
-                                      console.log("bodega reserva",productreserved);
-                                      let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
-                                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                               }
+                               actualizado=true;
+                            } 
+
+                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
+                                //descontando cantidad que se reservara
+                                inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                    Stock:parseFloat(infoInventary.Stock - item.Quantity),
+                                }).then(async function(update){
+                                    if(!update){
+
+                                    }
+                                    else{
+                                        let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
+                                            return c
+                                            });
                                         
-                                        console.log("movimiento", movementId);
-                                         outputDataDetail.push({
-                                            SaleInvoiceDetail:item._id,
-                                            ProductOutput:salidaId,
-                                            Quantity:item.Quantity,
-                                            Inventory: !companyParams.AvailableReservation?infoInventary._id :productreserved._id,
-                                            ProductName:item.ProductName,
-                                            Price:item.Price,
-                                            Measure:item.Measure,
-                                            CodProduct:item.CodProduct,
-                                            Product:item.Product
-                                             });
-
-                                             console.log("lista detalles",outputDataDetail);
-    
-                                  
-                                    if(parseFloat( infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation ){
-                                        //descontando cantidad que se reservara
-                                        console.log("VERIFICANDO ENTRADA");
-                                        inventory.findByIdAndUpdate({_id:item.Inventory},{
-                                            Stock:parseFloat(infoInventary.Stock - item.Quantity),
-                                        }).then(async function(update){
-                                            if(!update){
-    
-                                            }
-                                            else{
-                                                outputDataDetail.push({
-                                                    SaleInvoiceDetail:item._id,
-                                                    ProductOutput:salidaId,
-                                                    Quantity:item.Quantity,
-                                                    Inventory:infoInventary._id,
-                                                    ProductName:item.ProductName,
-                                                    Price:item.Price,
-                                                    Measure:item.Measure,
-                                                    CodProduct:item.CodProduct,
-                                                    Product:item.Product
-                                                     });
-                                                 let exist= productOutputDetail.find({ProductName:item.ProductName, ProductOutput:salidaId})
-                                                 .then(resultado =>{return resultado})
-                                                 console.log("existe",exist);
-                                                 if(exist.length<0){
-                                                    productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
-                                                        console.log("INSERTANDO SALIDA DETALLE");
-                                                        console.log(outputStored);
-                                                            if(outputStored){
-                                                                const inventorytraceability= new inventoryTraceability();
-                                                                inventorytraceability.Quantity=item.Quantity;
-                                                                inventorytraceability.Product=item.Product;
-                                                                inventorytraceability.WarehouseDestination=null; //destino
-                                                                inventorytraceability.MovementType=movementId._id;
-                                                                inventorytraceability.MovDate=creacion;
-                                                                inventorytraceability.WarehouseOrigin=item.Inventory; //origen
-                                                                inventorytraceability.User=User;
-                                                                inventorytraceability.Company=companyId;
-                                                                inventorytraceability.DocumentId=invoiceId;
-                                                                inventorytraceability.save((err, traceabilityStored)=>{
-                                                                    if(err){
-                                                                        // res.status(500).send({message: err});
-        
-                                                                    }else {
-                                                                        if(!traceabilityStored){
-                                                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                                            console.log(traceabilityStored);
-                                                                        }
-                                                                        else{
-        
-                                                                        }
-                                                                    }
-                                                                });
-        
-                                                            }
-                                                    }).catch(err => console.log(err))
-    
-                                                 }
+                                            let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
+                                            console.log(count); return (count)
+                                            });
+                                            console.log('PURCHASE INVOICE',SaleInvoiceId);
+                                            console.log('completados',completados);
+                                            console.log('todos',registrados);
+                                            //validando si todos los productos estan ingresados
+                                            if(parseInt(completados)===parseInt(registrados)){
+                                            console.log("cambiando");
+                                            saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
+                                                Entregada:true,
+                                            })
+                                            .catch(err => {console.log(err);}); 
                                             
-                                                console.log('id del moviminto de reserva', movementId);
-                                                //registro de movimiento
-    
-                                                res.status(200).send({orden: detalles});
-                                            }
-                                        })
-                                        .catch(err => {console.log(err);});
-    
-                                       
-    
-                                  }
-                                  else if( parseFloat( productreserved.Stock)>=parseFloat(item.Quantity) &&  companyParams.AvailableReservation ){
-                                    console.log("EMPRESA HABILITADA PARA RESERVAS");
-                                    console.log('BODEGA RESERVA');
-                                    // outputDataDetail.push({
-                                    //     SaleInvoiceDetail:item._id,
-                                    //     ProductOutput:salidaId,
-                                    //     Quantity:item.Quantity,
-                                    //     Inventory:productreserved._id,
-                                    //     ProductName:item.ProductName,
-                                    //     Price:item.Price,
-                                    //     Measure:item.Measure,
-                                    //     CodProduct:item.CodProduct,
-                                    //     Product:item.Product
-                                    //      });
+                                        }
+                                            const inventorytraceability= new inventoryTraceability();
+                                            inventorytraceability.Quantity=item.Quantity;
+                                            inventorytraceability.Product=item.Product;
+                                            inventorytraceability.WarehouseDestination=null; //destino
+                                            inventorytraceability.MovementType=movementId._id;
+                                            inventorytraceability.MovDate=creacion;
+                                            inventorytraceability.WarehouseOrigin=item.Inventory; //origen
+                                            inventorytraceability.User=User;
+                                            inventorytraceability.Company=Company;
+                                            inventorytraceability.DocumentId=salidaId;
+                                            inventorytraceability.save((err, traceabilityStored)=>{
+                                                if(err){
+                                                    // res.status(500).send({message: err});
+
+                                                }else {
+                                                    if(!traceabilityStored){
+                                                        // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                        console.log(traceabilityStored);
+                                                    }
+                                                    else{
+
+                                                    }
+                                                }
+                                            });
 
                                        
-                                     productOutputDetail.insertMany(outputDataDetail) .then(async function (outputStored) {
-                                            console.log("INSERTANDO SALIDA DETALLE");
-                                            console.log(outputDataDetail);
-                                                if(outputStored){
+                                        console.log('id del moviminto de reserva', movementId);
+                                        //registro de movimiento
+                                       
+                                        res.status(200).send({orden: detalles});
+                                    }
+                                })
+                                .catch(err => {console.log(err);});
+
+                                //stock de bodega de reserva
+                                console.log(infoInventary.Product);
+
+                        } 
+                        else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
+                            console.log("EMPRESA HABILITADA PARA RESERVAS");
+                            console.log('BODEGA RESERVA');
+                                console.log(productreserved);
+
+                                //actualizando el stock de reserva
+                                inventory.findByIdAndUpdate({_id:productreserved._id},{
+                                    Stock:parseFloat(productreserved.Stock - item.Quantity),
+                                }).then(async function(update){
+                                    if(!update){
+                                        res.status(500).send({message: "No se actualizo inventario"});
+                                    }else{
+                                
+                                       
+                                                    let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
+                                                        return c
+                                                      });
+                                                   
+                                                      let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
+                                                       console.log(count); return (count)
+                                                      });
+                                                      console.log('PURCHASE INVOICE',SaleInvoiceId);
+                                                      console.log('completados',completados);
+                                                      console.log('todos',registrados);
+                                                      //validando si todos los productos estan ingresados
+                                                      if(parseInt(completados)===parseInt(registrados)){
+                                                        console.log("cambiando");
+                                                        saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
+                                                            Entregada:true,
+                                                        })
+                                                        .catch(err => {console.log(err);}); 
+                                                      
+                                                    }
+
+                                                    //transaccion
                                                     const inventorytraceability= new inventoryTraceability();
                                                     inventorytraceability.Quantity=item.Quantity;
                                                     inventorytraceability.Product=item.Product;
@@ -2895,10 +2832,10 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     inventorytraceability.WarehouseOrigin=productreserved._id; //origen
                                                     inventorytraceability.User=User;
                                                     inventorytraceability.Company=companyId;
-                                                    inventorytraceability.DocumentId=invoiceId;
+                                                    inventorytraceability.DocumentId=salidaId;
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
-
+                                                        
                                                             res.status(500).send({message: "No se actualizo inventario"});
                                                         }else {
                                                             if(!traceabilityStored){
@@ -2910,97 +2847,33 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                             }
                                                         }
                                                     });
-                                                }
-                                            }).catch(err => console.log(err));
-                                        //actualizando el stock de reserva
-                                          inventory.findByIdAndUpdate({_id:productreserved._id},{
-                                            Stock:parseFloat(productreserved.Stock - item.Quantity),
-                                        }).then( function(update){
-                                            if(!update){
-                                                res.status(500).send({message: "No se actualizo inventario"});
-                                            }else{
-                                                console.log("entro a ingreso");
-                                                //  outputDataDetail.push({
-                                                //     SaleInvoiceDetail:item._id,
-                                                //     ProductOutput:salidaId,
-                                                //     Quantity:item.Quantity,
-                                                //     Inventory:productreserved._id,
-                                                //     ProductName:item.ProductName,
-                                                //     Price:item.Price,
-                                                //     Measure:item.Measure,
-                                                //     CodProduct:item.CodProduct,
-                                                //     Product:item.Product
-                                                //      });
                                                
-                                               
-                                                 
-    
-                                                       
-                                                
-    
-    
-                                            }
-    
-                                        })
-                                        .catch(err => {console.log(err);});
-    
-    
                                       
-    
                                         
-    
-                                }
-                                else{
-    
-                                    res.status(500).send({ message: "Verificar Inventario" });
-    
-                                }
-                                  
+                                    }
                                 
-                               }) 
-                            
-
-                             }
-                           
-                        
-                            
-                        }) .catch(function (err) {
-                            console.log(err);
-                        });
-
+                                })
+                                .catch(err => {console.log(err);});    
+                                
                         }
-                        
-                    }
-                     
-                    }
-                    
-                   
-                 
+                        else{
 
-                     
-                    
-                      
-                
+                            res.status(500).send({ message: "Verificar Inventario" });
+                            
+                        }
+
+                        })
+                            }
+                    })
+                    }
+                })
+              
+            
+
             }
-           return 
-        })
-        deOrden=[];
-        totalfactura=0.0;
-        sumimpuestos=0.0;
-        contador +=nLineas;
-        i+=1;
-        correlativeNumber=parseInt(correlativeNumber)+1;
-        console.log("CONTADOR FINAL while",contador); 
-       
-       }//fin del while
-        res.status(200).send({orden: "cambios"});
-       
-    }
-    
-    if(!companyParams.OrderWithWallet && deudor){
-        res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
-    }
 
+        });
+    }
 
 
 
@@ -3018,11 +2891,11 @@ async function getSalesForUsers(req,res){
         {
             $lookup: {
                 from:"saleorderinvoices",
-               
+
                 let:{userId:"$_id"},
                 pipeline: [
                     { $match:
-                       
+
                         { $expr:
                             { $and:
                                [
@@ -3036,24 +2909,24 @@ async function getSalesForUsers(req,res){
                     {
                         $lookup: {
                             from:"saleinvoicedetails",
-                           
+
                             let:{ordenId:"$_id"},
                             pipeline: [
                                 { $match:
                                     { $expr:
-                                       
+
                                             { $eq: [ "$SaleOrderInvoice",  "$$ordenId" ] }
-                                           
+
                                         }
                                     },
                                     {"$lookup": {
                                         "from": "products" ,
-                                        "let": {"productId": "$Product"}, 
+                                        "let": {"productId": "$Product"},
                                         "pipeline": [
                                             { $match:{ $expr:
-                                       
+
                                                 { $eq: [ "$_id",  "$$productId" ] }
-                                               
+
                                             }},
                                             {
                                                 "$lookup": {
@@ -3062,44 +2935,59 @@ async function getSalesForUsers(req,res){
                                                      pipeline:[
                                                         { $match:
                                                             { $expr:
-                                                               
+
                                                                     { $eq: [ "$_id",  "$$catId" ] }
-                                                                   
+
                                                                 }
                                                             },
                                                      ],
                                                      as:"medidas"
                                                 }
-                
+
                                             }
                                         ],
                                         "as": "producto"
                                     }
                                     }
-                                    
-                
+
+
                             ],
                             as:"detalles",
-                            
+
                         },
-                        
-                          
-                        
+
+
+
+                    },
+                    {$lookup: {
+                        from: "customers" ,
+                        let: {customerId: "$Customer"},
+                        pipeline: [
+                            { $match:  { $expr:
+
+                                { $eq: [ "$_id",  "$$customerId" ] }
+
+                           } },
+
+                        ],
+                        as: "cliente"
                     }
+                    },
+
                 ],
-              
+
                 as:"facturas",
-                
+
             }
         },
         { $project: { BirthDate: 0, LastLogin: 0 } }
-       
-        
-        
+
+
+
     ]).then(result => {
-     
+
         res.status(200).send(result);
-        
+
     }).catch(err => {console.log(err)})
 }
 
@@ -3116,15 +3004,15 @@ async function getSalesForProducts(req,res){
         {
             $lookup: {
                 from:"saleorderinvoices",
-               
+
                 let:{productId:"$_id"},
                 pipeline: [
                     { $match:
-                       
+
                         { $expr:
                             { $and:
                                [
-                               
+
                                  { $lte: [ "$CreationDate", f1 ] },
                                  { $gte: [ "$CreationDate", f2] },
                                ]
@@ -3134,15 +3022,15 @@ async function getSalesForProducts(req,res){
                     {
                         $lookup: {
                             from:"saleinvoicedetails",
-                           
+
                             let:{ordenId:"$_id"},
                             pipeline: [
                                 { $match:
-                       
+
                                     { $expr:
                                         { $and:
                                            [
-                                           
+
                                             { $eq: [ "$SaleOrderInvoice",  "$$ordenId" ] },
                                              { $eq: [ "$Product", "$$productId"] },
                                            ]
@@ -3151,12 +3039,12 @@ async function getSalesForProducts(req,res){
                                 },
                                     {"$lookup": {
                                         "from": "products" ,
-                                        "let": {"productId": "$Product"}, 
+                                        "let": {"productId": "$Product"},
                                         "pipeline": [
                                             { $match:{ $expr:
-                                       
+
                                                 { $eq: [ "$_id",  "$$productId" ] }
-                                               
+
                                             }},
                                             {
                                                 "$lookup": {
@@ -3165,46 +3053,60 @@ async function getSalesForProducts(req,res){
                                                      pipeline:[
                                                         { $match:
                                                             { $expr:
-                                                               
+
                                                                     { $eq: [ "$_id",  "$$catId" ] }
-                                                                   
+
                                                                 }
                                                             },
                                                      ],
                                                      as:"medidas"
                                                 }
-                
+
                                             }
                                         ],
                                         "as": "producto"
                                     }
                                     }
-                                    
-                
+
+
                             ],
                             as:"detalles",
-                            
+
                         },
-                        
-                          
-                        
+
+
+
+                    },
+                    {$lookup: {
+                        from: "customers" ,
+                        let: {customerId: "$Customer"},
+                        pipeline: [
+                            { $match:  { $expr:
+
+                                { $eq: [ "$_id",  "$$customerId" ] }
+
+                           } },
+
+                        ],
+                        as: "cliente"
+                    }
                     }
                 ],
-              
+
                 as:"facturas",
-                
+
             }
         },
         {$lookup: {
             from: "catproducts" ,
-            let: {catId: "$CatProduct"}, 
+            let: {catId: "$CatProduct"},
             pipeline: [
                 { $match:  { $expr:
-            
+
                     { $eq: [ "$_id",  "$$catId" ] }
-                   
+
                } },
-              
+
             ],
             as: "categoria"
         }
@@ -3212,14 +3114,14 @@ async function getSalesForProducts(req,res){
         {
             $lookup: {
             from: "brands" ,
-            let: {brandId: "$Brand"}, 
+            let: {brandId: "$Brand"},
             pipeline: [
                 { $match:  { $expr:
-            
+
                     { $eq: [ "$_id",  "$$brandId" ] }
-                   
+
                } },
-              
+
             ],
             as: "marca"
           }
@@ -3227,27 +3129,767 @@ async function getSalesForProducts(req,res){
         {
             $lookup: {
             from: "measures" ,
-            let: {meedidaId: "$Measure"}, 
+            let: {meedidaId: "$Measure"},
             pipeline: [
                 { $match:  { $expr:
-            
+
                     { $eq: [ "$_id",  "$$meedidaId" ] }
-                   
+
                } },
-              
+
             ],
             as: "medida"
           }
         },
         { $project: { BirthDate: 0, LastLogin: 0 } }
-       
-        
-        
+
+
+
     ]).then(result => {
-     
+
         res.status(200).send(result);
-        
+
     }).catch(err => {console.log(err)})
+}
+
+
+async function createSaleOrderInvoice2(req, res){
+
+    const SaleOrderInvoice= new saleOrderInvoice();
+    const ProductOuput= new productOutput();
+    const payment=new CustomerPayment();
+    const paymentDetails=new CustomerPaymentDetails();
+    let messageError=false;
+    const saledetails=req.body.details;
+
+    let dePurchaseOrder=req.body.details;
+    let addTaxes=req.body.impuestos;
+    const detalle=[];
+    let outputDataDetail=[];
+
+    let deudor=false;
+    moment.locale();
+    // let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
+
+    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
+        diasCredito,InvoiceComments,condicionPago,Reason,PaymentMethodName,PaymentMethodId,Monto,NumberAccount,BankName,NoTransaction} = req.body;
+
+    let details=[];
+    let deOrden=[];
+    let impuestos=[];
+
+
+    let codigo=0;
+    let codigoSalidas=0;
+
+    let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
+    .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
+
+            if(doc){
+                    if(doc.CodInvoice!==null){
+                return(doc.CodInvoice)
+            }
+        }
+    });
+    //para generar el correctivo del ingreso en caso de que sea requerido
+    let codOutput=await productOutput.findOne({Company:companyId}).sort({CodOutput:-1})
+    .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
+            if(doc){
+                    if(doc.CodOutput!==null){
+                return(doc.CodOutput)
+            }
+        }
+    });
+    //obteniendo informacion de la compañia para validar
+    let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    .then(params => {
+        if(!params){
+            res.status(404).send({message:"No hay "});
+        }else{
+            return(params)
+        }
+    });
+
+
+    //Deuda ppor cobrar actual
+    let deudaAct=await customer.findOne({_id:Customer}).then(function(doc){
+
+            if(doc){
+                    if(doc.AccountsReceivable!==null){
+                return(doc.AccountsReceivable)
+            }
+        }
+    });
+    let deuda=deudaAct;
+    //OBTENCION DE CORRELATIVOS
+    //OBTENIENDO TIPO DE CLIENTE
+    let customerType=await customer.findOne({_id:Customer}).then(function(doc){
+
+            if(doc){
+                    if(doc.TypeofTaxpayer!==null){
+                return(doc.TypeofTaxpayer)
+            }
+        }
+    });
+     console.log("type",customerType);
+     var tipo=customerType.toString();
+     console.log(tipo);
+
+    let correlativosselect= await correlativeDocument.find({ State:true})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
+    .then(docCorrelative => {
+       if(docCorrelative){
+          return docCorrelative
+       }
+
+    });
+    var correlativos = correlativosselect.filter(function (item) {
+        return item.DocumentType != null ;
+      });
+
+
+
+    let lengEndNumber=(correlativos.map(item => item.EndNumber)).toString().length;
+    let nLineas=parseInt(companyParams.InvoiceLines);
+    let iniNumber=correlativos.map(item => item.CurrentNumber);
+
+    console.log(iniNumber);
+    console.log("lineas", nLineas);
+    let longitudArreglo=dePurchaseOrder.length;
+    console.log(longitudArreglo);
+    let contador=0;
+    let i=0;
+    let step=0;
+    let correlativeNumber=parseInt(iniNumber);
+
+    //FIN DE OBTENCION DE CORRELATIVOS
+    //Creacion de correlativo de doc
+
+    if(!codigoSaleOrderInvoice){
+        codigo =1;
+    }else {codigo=codigoSaleOrderInvoice+1}
+
+
+    if(!codOutput){
+        codigoSalidas =1;
+    }else {codigoSalidas=codOutput+1}
+
+    //IMPUESTOS
+    let impuestosList=await taxes.find({document:'venta',Company:companyId})
+    .then(taxes => {
+        return(taxes)
+
+    })
+    //
+
+
+        //++++++++++++++ verificando deudas +++++++++++++++++++
+        //obtener fecha de facturas relacionadas con el cliente
+        let invoices=await customerInvoice.find({Pagada:false, Customer: Customer},'CreationDate')
+        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+        invoices.map(item =>{
+            //  let date = moment(item.CreationDate).format('DD/MM/YYYY');
+
+            let now= new Date();
+            let fecha=now.getTime();
+            var date = new Date(item.CreationDate);
+
+            date.setDate(date.getDate() + diasCredito);
+            let fechaPago=date.toISOString().substring(0, 10);
+            let fechaAct=now.toISOString().substring(0, 10);
+
+            if(fechaPago <= fechaAct){
+               deudor=true;
+            } else { deudor=false;}
+
+        });
+
+        if(deudor){
+           console.log('esta en deuda');
+        }else{
+          console.log('agregar ingreso');
+        }
+     //++++++++++++++  FIN  +++++++++++++++++++
+
+    
+    let  invoiceId=null;
+    let totalfactura=0.0;
+    let sumimpuestos=0.0;
+    let arreglo=[];
+    let arregloFacturas=[];
+    if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
+
+        SaleOrderInvoice.InvoiceNumber=correlativeNumber;
+
+       while(contador<longitudArreglo){
+        let band=false;
+
+
+        while (correlativeNumber.toString().length < lengEndNumber) {
+
+            correlativeNumber = "0" + correlativeNumber;
+
+        }
+
+        let factura=[{
+            CodInvoice:codigo,
+            Customer:Customer,
+            Total:Total,
+            Active:true,
+            User:User,
+            CreationDate: creacion,
+            State:'Creada',
+            InvoiceComments:InvoiceComments,
+            CommentsofSale:"",
+            CustomerName:CustomerName,
+            SaleOrder:null,
+            InvoiceDate:InvoiceDate,
+            Pagada:false,
+            Entregada:!companyParams.RequieredOutput?true:false,
+            InvoiceNumber:correlativeNumber,
+            DocumentCorrelative: correlativos.map(item => item._id)
+        }]
+        console.log("save",correlativeNumber);
+        console.log("CONTADOR ",contador);
+
+        await saleOrderInvoice.insertMany(factura).then(async function (SaleOrderStored) {
+            if(!SaleOrderStored){
+                res.status(500).send({message: 'error'});
+
+            }else {
+                band=true;
+                    arregloFacturas.push(SaleOrderStored);
+                    invoiceId=SaleOrderStored.map(item=>{return item._id}).toString();
+                   let invoiceNumber=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
+
+                   let correlativoId=correlativos.map(item => item._id);
+
+                   await correlativeDocument.findByIdAndUpdate({_id:correlativoId},{CurrentNumber:parseInt(invoiceNumber)+1},async (err,update)=>{
+                       if(err){
+                           console.log(err);
+                       }
+                       if(update){
+
+                       }});
+                    let quoteId=SaleOrderStored.CustomerQuote;
+                    //cambio de estado a orden de venta
+
+                    // saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
+                    //     if(err){
+                    //         res.status(500).send({ message: "Error del servidor." });
+                    //     }
+                    //     if(update){}});
+                    if(invoiceId){
+
+
+                        for(let i=0; i<nLineas;i++){
+
+                            if(dePurchaseOrder[contador+ i]){
+                               //    console.log("prueba",dePurchaseOrder[contador+ i].dato);
+
+                               totalfactura+=(parseFloat(dePurchaseOrder[contador+ i].total));
+                                  deOrden.push({
+
+                                        ProductName:dePurchaseOrder[contador+ i].Name,
+                                        SaleOrderInvoice:invoiceId,
+                                        Quantity:parseFloat(dePurchaseOrder[contador+ i].Quantity) ,
+                                        Discount:parseFloat(dePurchaseOrder[contador+ i].Discount),
+                                        Price:parseFloat(dePurchaseOrder[contador+ i].Price),
+                                        Inventory :dePurchaseOrder[contador+ i].Inventory,
+                                        SubTotal: parseFloat(dePurchaseOrder[contador+ i].total),
+                                        Entregados:!companyParams.RequieredOutput?dePurchaseOrder[contador+ i].Quantity:0,
+                                        State:!companyParams.RequieredOutput?true:false,
+                                        Measure:dePurchaseOrder[contador+ i].Measures,
+                                        CodProduct:dePurchaseOrder[contador+ i].codproducts,
+                                        Product:dePurchaseOrder[contador+ i].ProductId,
+                                       
+                                        iniQuantity:dePurchaseOrder[contador+ i].Quantity,
+                                        BuyPrice:parseFloat(dePurchaseOrder[contador+ i].BuyPrice),
+                                        PriceDiscount:parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento)?
+                                        parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento):parseFloat(dePurchaseOrder[contador+ i].Descuento)
+                                  })
+
+                            }
+                            else{deOrden[null]}
+                        }
+                       
+
+                    if(customerType.toString()==="CreditoFiscal"){
+                         impuestosList.map(item=>{
+                        sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                       })
+                    }else{sumimpuestos=0}
+
+                       totalfactura=totalfactura+sumimpuestos;
+
+                       saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Total:totalfactura},async (err,update)=>{
+                        if(err){
+
+                        }
+                        if(update){}});
+                        console.log("AREGGLO DEL DETALLE DE LA FACTURA", deOrden);
+                     if(deOrden.length>0 || deOrden!==null){    //insertando detalles de los detalles de la orden
+                        await saleOrderInvoiceDetails.insertMany(deOrden)
+                        .then(async function (detalles) {
+                            //si ingreso no requerido
+                            console.log("DETALLES INGRESADOS", detalles);
+                            if( detalles){
+                                arreglo.push(detalles);
+                                //cuenta por cobrar
+                                let iddetalle=detalles.map(item=>{return item._id}).toString();
+
+                               customer.findByIdAndUpdate({_id:Customer},{
+                                    AccountsReceivable:parseFloat(deudaAct)+parseFloat(Total),
+                                }).then(function(update){
+                                    if(!update){
+
+                                    }
+                                    else{}}).catch(err =>{console.log(err)});
+
+                                    if(condicionPago==='Contado'){
+                                        await saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                            if(err){
+
+                                                console.log(err);
+                                            }else{}
+                                        });
+
+
+                                        let pago=[{
+                                         SaleOrderInvoice:invoiceId,
+                                         DatePayment:creacion,
+                                         User:User,
+                                         codpayment:codigo,
+                                         Saldo:0,
+                                         Customer:Customer
+                                        }]
+
+
+
+                                      await CustomerPayment.insertMany(pago)
+                                      .then(function (paymentStored) {
+                                            //   res.status(500).send({message: err});
+
+
+                                              if(!paymentStored){
+                                                  res.status(500).send({message: "No se inserto registro"});
+
+                                              }
+                                              else{
+
+                                                  let paymentid=paymentStored.map(item=>{return item._id}).toString();
+                                                  let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
+                                                  let payDetail=[{
+                                                    CreationDate:creacion,
+                                                    Reason:Reason,
+                                                    PaymentMethods:PaymentMethodId,
+                                                    Cancelled:false,
+                                                    Amount:(totalfactura).toFixed(2),
+                                                    CustomerPayment:paymentid,
+                                                    SaleOrderInvoice:codInvoice,
+                                                    NumberAccount:PaymentMethodName,
+                                                    BankName: BankName,
+                                                    NoTransaction: NoTransaction,
+                                                  }]
+
+                                                  CustomerPaymentDetails.insertMany(payDetail)
+                                                    .then(async function (detailStored) {
+
+                                                          if(!detailStored){
+                                                              // res.status(500).send({message: err});
+                                                              console.log(err);
+                                                          }
+                                                          else{
+                                                              let paymentDetailId=detailStored.map(item=>{return item._id});
+
+                                                              if(paymentDetailId){
+                                                                  let sumMontos=await CustomerPaymentDetails.aggregate([
+                                                                      {$match :{CustomerPayment: paymentid}},
+
+                                                                      {
+                                                                          $group:{
+                                                                              _id:null,
+                                                                          "sumAmount":{$sum: '$Amount'}
+                                                                      }
+                                                                      },
+
+                                                                  ]);
+                                                                  let sumaMontos=0.0;
+                                                                  sumMontos.map(item =>{
+                                                                      sumaMontos=item.sumAmount;
+                                                                  })
+                                                                  //actualizando deuda con cliente
+                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat((totalfactura)).toFixed(2)},(err,updateDeuda)=>{
+                                                                      if(err){
+
+                                                                          console.log(err);
+                                                                      }else{}
+                                                                  });
+
+
+
+
+
+                                                              }
+
+                                                          }
+
+                                                  });
+
+
+                                              }
+
+                                      })
+                                  }
+
+                            }else{
+                                res.status(500).send({ message: "No se registraron detalles" });
+                            }
+
+
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                        });
+                    }
+
+
+
+                    }
+
+
+
+
+
+
+
+
+            }
+           return
+        })
+        deOrden=[];
+        totalfactura=0.0;
+        sumimpuestos=0.0;
+        contador +=nLineas;
+        codigo+=1;
+        correlativeNumber=parseInt(correlativeNumber)+1;
+        console.log("CONTADOR FINAL while",contador);
+
+       }//fin del while
+        res.status(200).send({orden: "cambios"});
+
+    }
+
+    if(!companyParams.OrderWithWallet && deudor){
+        res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
+    }
+
+
+    if(!companyParams.RequieredOutput){
+      
+        let salida=[];
+        
+        let  datosFactura=[];
+        let  datosDetalles=[];
+        let idsalida=null;
+        let count=0;
+        arregloFacturas.map(async item=>{
+            let id= item.forEach(item=>{
+                datosFactura.push(item)
+              
+
+            });
+         });
+         arreglo.map(item=>{
+            // console.log("arreglo final", item);
+            item.forEach(item=>{
+                 datosDetalles.push(item);
+                
+            })
+
+
+        })
+      
+
+        datosFactura.map(item=>{
+             salida.push(
+                 {
+                    EntryDate:creacion,
+                    User:User,
+                    Comments:"Ingreso automatico "+creacion,
+                    State:true,
+                    CodOutput:codigoSalidas,
+                    Company:companyId,
+                    SaleOrderInvoice:item._id,
+                    Customer:Customer,
+                    InvoiceNumber:item.InvoiceNumber,
+
+                 }
+             )
+
+
+        })
+        await productOutput.insertMany(salida).then(async function (outputStored) {
+            if(!outputStored){
+
+
+            }else {
+                var detalles=[];
+                 let cont=0;
+               
+                
+                 outputStored.map(async  item=> {
+                    let long=outputStored.length;
+                    console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
+                    let idfactura=item.SaleOrderInvoice;
+                   let id= item._id;
+                    console.log("ID+++++++++++++++++++++++++++++",id);
+                     let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura}).then(async function(data){
+                         return data;
+
+
+                     });
+                     data.map( item =>{
+                       detalles.push(
+                           {
+                               SaleInvoiceDetail:item._id,
+                               ProductOutput:id,
+                               Quantity:item.Quantity,
+                               Inventory:item.Inventory,
+                               ProductName:item.ProductName,
+                               Price:item.Price,
+                               Measure:item.Measure,
+                               CodProduct:item.CodProduct,
+                               Product:item.Product, 
+                               SaleOrderInvoice:item.SaleOrderInvoice
+
+                           }
+                       );
+
+                   })
+                   if(parseInt(long)<=parseInt(cont)){
+                       console.log("gola ");
+                   }
+                   
+                  cont+=1;
+                  if(parseInt(long)===parseInt(cont)){
+                    productOutputDetail.insertMany(detalles) .then(async function (outputStored) {
+                        console.log("INSERTANDO DETALLES");
+                        console.log(outputStored);
+                            if(outputStored){
+                                outputStored.map(async item=>{
+                                    let SaleInvoiceId=item.SaleOrderInvoice;
+                                    let salidaId=item.ProductOutput;
+                                       //obteniendo stock de producto  (bodega principal)
+
+                        let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        console.log('EN STOCK:',infoInventary);
+
+                        let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
+                        .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        
+                        //obteniendo id del movimiento de tipo reserva
+                        let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                        //cambios de cantidad ingresada 
+                        let proIngresados=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Entregados')
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        let quantityInvoice=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Quantity')
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        
+                        let cantidad=0.0;
+                        let ingresos=0.0;
+                        let productRestante=0.0;
+                        let ingresoUpdate=0.0;
+                        
+                        console.log("PRODUCTOS ENTREGADOS",proIngresados);
+                        console.log("PRODUCTOS de factura",quantityInvoice);
+                        ingresos=parseFloat(proIngresados.Entregados) + parseFloat(item.Quantity);
+                        console.log("a entregar",ingresos);
+                              //cambiando estados e ingresos de  detalle factur
+                              if(proIngresados!==null){
+                                if(parseFloat(ingresos)===parseFloat(quantityInvoice.Quantity)){
+                                    console.log('COMPLETADO INGRESO');
+                                   await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                        Entregados:ingresos,
+                                        State:true
+                                    })
+                                    .catch(err => {console.log(err);})
+                                    
+                                }
+                                 else{
+                                console.log('NO COMPLETADO INGRESO');
+    
+                                await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                    Entregados:ingresos,
+                                    State:false
+                                }).catch(err => {console.log(err);})
+                                
+                               }
+                               actualizado=true;
+                            } 
+
+                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
+                                //descontando cantidad que se reservara
+                                inventory.findByIdAndUpdate({_id:item.Inventory},{
+                                    Stock:parseFloat(infoInventary.Stock - item.Quantity),
+                                }).then(async function(update){
+                                    if(!update){
+
+                                    }
+                                    else{
+                                        let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
+                                            return c
+                                            });
+                                        
+                                            let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
+                                            console.log(count); return (count)
+                                            });
+                                            console.log('PURCHASE INVOICE',SaleInvoiceId);
+                                            console.log('completados',completados);
+                                            console.log('todos',registrados);
+                                            //validando si todos los productos estan ingresados
+                                            if(parseInt(completados)===parseInt(registrados)){
+                                            console.log("cambiando");
+                                            saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
+                                                Entregada:true,
+                                            })
+                                            .catch(err => {console.log(err);}); 
+                                            
+                                        }
+                                            const inventorytraceability= new inventoryTraceability();
+                                            inventorytraceability.Quantity=item.Quantity;
+                                            inventorytraceability.Product=item.Product;
+                                            inventorytraceability.WarehouseDestination=null; //destino
+                                            inventorytraceability.MovementType=movementId._id;
+                                            inventorytraceability.MovDate=creacion;
+                                            inventorytraceability.WarehouseOrigin=item.Inventory; //origen
+                                            inventorytraceability.User=User;
+                                            inventorytraceability.Company=Company;
+                                            inventorytraceability.DocumentId=salidaId;
+                                            inventorytraceability.save((err, traceabilityStored)=>{
+                                                if(err){
+                                                    // res.status(500).send({message: err});
+
+                                                }else {
+                                                    if(!traceabilityStored){
+                                                        // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                        console.log(traceabilityStored);
+                                                    }
+                                                    else{
+
+                                                    }
+                                                }
+                                            });
+
+                                       
+                                        console.log('id del moviminto de reserva', movementId);
+                                        //registro de movimiento
+                                       
+                                        res.status(200).send({orden: detalles});
+                                    }
+                                })
+                                .catch(err => {console.log(err);});
+
+                                //stock de bodega de reserva
+                                console.log(infoInventary.Product);
+
+                        } 
+                        else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
+                            console.log("EMPRESA HABILITADA PARA RESERVAS");
+                            console.log('BODEGA RESERVA');
+                                console.log(productreserved);
+
+                                //actualizando el stock de reserva
+                                inventory.findByIdAndUpdate({_id:productreserved._id},{
+                                    Stock:parseFloat(productreserved.Stock - item.Quantity),
+                                }).then(async function(update){
+                                    if(!update){
+                                        res.status(500).send({message: "No se actualizo inventario"});
+                                    }else{
+                                
+                                       
+                                                    let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
+                                                        return c
+                                                      });
+                                                   
+                                                      let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
+                                                       console.log(count); return (count)
+                                                      });
+                                                      console.log('PURCHASE INVOICE',SaleInvoiceId);
+                                                      console.log('completados',completados);
+                                                      console.log('todos',registrados);
+                                                      //validando si todos los productos estan ingresados
+                                                      if(parseInt(completados)===parseInt(registrados)){
+                                                        console.log("cambiando");
+                                                        saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
+                                                            Entregada:true,
+                                                        })
+                                                        .catch(err => {console.log(err);}); 
+                                                      
+                                                    }
+
+                                                    //transaccion
+                                                    const inventorytraceability= new inventoryTraceability();
+                                                    inventorytraceability.Quantity=item.Quantity;
+                                                    inventorytraceability.Product=item.Product;
+                                                    inventorytraceability.WarehouseDestination=null; //destino
+                                                    inventorytraceability.MovementType=movementId._id;
+                                                    inventorytraceability.MovDate=creacion;
+                                                    inventorytraceability.WarehouseOrigin=productreserved._id; //origen
+                                                    inventorytraceability.User=User;
+                                                    inventorytraceability.Company=companyId;
+                                                    inventorytraceability.DocumentId=salidaId;
+                                                    inventorytraceability.save((err, traceabilityStored)=>{
+                                                        if(err){
+                                                        
+                                                            res.status(500).send({message: "No se actualizo inventario"});
+                                                        }else {
+                                                            if(!traceabilityStored){
+                                                                // // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                                // console.log(traceabilityStored);
+                                                            }
+                                                            else{
+                                                                console.log(traceabilityStored);
+                                                            }
+                                                        }
+                                                    });
+                                               
+                                      
+                                        
+                                    }
+                                
+                                })
+                                .catch(err => {console.log(err);});    
+                                
+                        }
+                        else{
+
+                            res.status(500).send({ message: "Verificar Inventario" });
+                            
+                        }
+
+                        })
+                            }
+                    })
+                    }
+                })
+              
+            
+
+            }
+
+        });
+    }
+
+
+
 }
 
 module.exports={
@@ -3272,5 +3914,8 @@ module.exports={
     getSalesForUsers,
     getSalesForProducts,
     getExportInfoFacturas,
-    getDetallesVentaContribuyente
+    getDetallesVentaContribuyente,
+    getExportInfoFacturas,
+    getDetallesVentaContribuyente,
+    createSaleOrderInvoice2
 }

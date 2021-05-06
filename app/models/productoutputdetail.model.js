@@ -2,12 +2,17 @@ const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const Inventory = require('./inventory.model');
 const ProductOutput = require('./productoutput.model');
+const SaleOrderInvoice = require('./saleorderinvoice.model');
 const SaleInvoiceDetail= require('./saleorderinvoicedetails.model');
 const Product = require('./product.model');
 
 const ProductOutputDetailSchema = Schema({
   SaleInvoiceDetail: {type: Schema.ObjectId, 
     ref: "PurchaseInvoiceDetail",
+    // autopopulate: true,
+  },
+  SaleOrderInvoice:{type: Schema.ObjectId, 
+    ref: "SaleOrderInvoice",
     // autopopulate: true,
   },
   ProductOutput: {type: Schema.ObjectId, 
