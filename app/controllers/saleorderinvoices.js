@@ -37,8 +37,31 @@ function getDetallesVentaContribuyente(req, res){
     const  company  = req.params.id;
    saleOrderInvoice.find()
    .populate({path: 'Customer', model: 'Customer', match:{TypeofTaxpayer: 'CreditoFiscal'}}).sort({CodInvoice:-1})
-   .populate({path: 'User', model: 'User',match:{Company: company}})
+   .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}
+   ,match:{Company: company}})
    .populate({path: 'SaleOrder', model: 'SaleOrder'})
+   .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+    ,populate:{path: 'DocumentType', model: 'DocumentType'}})
+    .then(invoices => {
+        if(!invoices){
+            console.log("no entro");
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(("Si entro"));
+            res.status(200).send({invoices})
+        }
+    });
+}
+
+function getDetallesVentaConsumidorFinal(req, res){
+    const  company  = req.params.id;
+   saleOrderInvoice.find()
+   .populate({path: 'Customer', model: 'Customer', match:{TypeofTaxpayer: 'CreditoFiscal'}}).sort({CodInvoice:-1})
+   .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}
+   ,match:{Company: company}})
+   .populate({path: 'SaleOrder', model: 'SaleOrder'})
+   .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+    ,populate:{path: 'DocumentType', model: 'DocumentType'}})
     .then(invoices => {
         if(!invoices){
             console.log("no entro");
@@ -3228,6 +3251,7 @@ async function getSalesForProducts(req,res){
 }
 
 module.exports={
+
     getSaleOrderInvoices,
     getSaleOrdersClosed,
     getSaleOrderInfo,
