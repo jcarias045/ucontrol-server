@@ -1131,7 +1131,7 @@ async function createSaleOrderInvoice(req, res){
 
 function getSaleInvoiceDetails(req, res){
     let invoiceId = req.params.id;
-    console.log("OBTENIENDO DETAÑÑES");
+    
     saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',

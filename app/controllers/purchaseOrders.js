@@ -14,7 +14,7 @@ const Supplier = require ('../models/supplier.model')
 function getPurchaseOrders(req, res){
     const { id,company } = req.params;
    
-    PurchaseOrder.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}})
+    PurchaseOrder.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}}).sort({CodPurchase:-1})
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
