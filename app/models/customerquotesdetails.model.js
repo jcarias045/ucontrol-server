@@ -23,6 +23,7 @@ const CustomerQuoteDetailsSchema = Schema({
  
   SubTotal:Number,
   OnRequest:Boolean,
+  GrossSellPrice:Number
 
 
  

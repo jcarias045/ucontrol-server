@@ -95,7 +95,7 @@ async function createSupplierInvoice(req, res){
            return(income.AverageCost) 
         }
     });
-    console.log(averageCost);
+    console.log("COSTO PROMEDOP",averageCost);
     //obteniendo deuda actual con proveedor
     let deudaAct=await supplier.findById(Supplier) //esta variable la mando a llamar luego que se ingreso factura
     .then(deuda => {
@@ -490,6 +490,8 @@ async function createNewSupplierInvoice(req, res){
            return(income.AverageCost) 
         }
     });
+
+    console.log("COSTO PROMEDIO",averageCost);
     //obteniendo deuda actual con proveedor
     let deudaAct=await supplier.findById(Supplier) //esta variable la mando a llamar luego que se ingreso factura
     .then(deuda => {

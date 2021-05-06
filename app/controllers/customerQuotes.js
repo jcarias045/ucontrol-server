@@ -6,6 +6,7 @@ const QuoteDetails= require("../models/customerquotesdetails.model");
 function getCustomerQuote(req, res){
     const { id,company } = req.params;
     CustomerQuote.find({User:id}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
+    .sort({CodCustomerQuote:-1})
     .then(quotes => {
         if(!quotes){
             res.status(404).send({message:"No hay "});
@@ -84,7 +85,8 @@ async function createCustomerQuote(req,res){
                         CodProduct:item.codproducts,
                         SubTotal: parseFloat(item.Quantity * item.Price)-parseFloat(item.Quantity * item.Price)*parseFloat(item.Discount/100),
                         // Priceiva:parseFloat(item.Priceiva)
-                        OnRequest:false
+                        OnRequest:false,
+                        GrossSellPrice:parseFloat(item.GrossSellPrice)
                     })
                  });
                  console.log(detalle);
@@ -109,6 +111,7 @@ async function createCustomerQuote(req,res){
 
 function getCustomerQuotesDetails(req, res){
     let customerQuoteId = req.params.id; 
+    console.log("DETALLE DE LA COTIZACION",customerQuoteId );
     QuoteDetails.find({CustomerQuote:customerQuoteId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
