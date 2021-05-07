@@ -13,8 +13,9 @@ const customerInvoice = require("../models/saleorderinvoice.model");
 
 async function getSaleOrders(req, res){
     const { id,company } = req.params;
+    console.log("LISTADO ORDENES");
     saleOrder.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company},
-     populate:{path:'Discount', model: 'Discount'}})
+     populate:{path:'Discount', model: 'Discount'}}).sort({CodSaleOrder:-1})
     .then(order => {
         if(!order){
             res.status(404).send({message:"No hay "});
@@ -460,8 +461,8 @@ async function createSaleOrderWithQuote(req, res){
     const saledetails=req.body.details;
     const detalle=[];
     let deudor=false;
-    moment.locale();
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
 
 
     const {CodCustomerQuote,CustomerName,Description,Total,User,companyId,CustomerQuote,SubTotal,Customer,Comments,diasCredito} = req.body;

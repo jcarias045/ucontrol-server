@@ -1270,6 +1270,7 @@ function getPaymentToSuppliers(req, res){
                             { $and:
                             [
                                 { $eq: [ "$Supplier",  "$$supplierId" ] },
+                                { $eq: [ "$Pagada", false ] },
                                 
                             ]
                             }

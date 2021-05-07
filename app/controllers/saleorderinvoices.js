@@ -1870,7 +1870,7 @@ function getChargestoCustomers(req, res){
                             { $and:
                             [
                                 { $eq: [ "$Customer",  "$$customerId" ] },
-
+                                { $eq: [ "$Pagada",  false ] },
                             ]
                             }
                         }
