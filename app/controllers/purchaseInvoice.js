@@ -132,7 +132,7 @@ async function createSupplierInvoice(req, res){
     // invoice.Recibida=false;
     invoice.CodInvoice=codigo;
     
-    updateDeuda.DebsToPay=parseFloat(deudaAct)+parseFloat(Total);
+    updateDeuda.DebsToPay=parseFloat(deudaAct).toFixed(2)+parseFloat(Total).toFixed(2);
 
     //a utilizar para formar objectos
     let details=[];
@@ -415,7 +415,7 @@ async function createSupplierInvoice(req, res){
                     }
                 });
                
-                let totalDeuda=parseFloat(Total)+parseFloat(deudaAct);
+                let totalDeuda=parseFloat(Total).toFixed(2)+parseFloat(deudaAct).toFixed(2);
                 supplier.findByIdAndUpdate({_id:Supplier},{DebsToPay:totalDeuda},(err,updateDeuda)=>{
                     if(err){
                         res.status(500).send({message: "Error del Servidor."});
@@ -738,7 +738,7 @@ async function createNewSupplierInvoice(req, res){
                 
                                 
                 }
-                let totalDeuda=parseFloat(Total)+parseFloat(deudaAct);
+                let totalDeuda=parseFloat(Total).toFixed(2)+parseFloat(deudaAct).toFixed(2);
                 supplier.findByIdAndUpdate({_id:Supplier},{DebsToPay:totalDeuda},(err,updateDeuda)=>{
                     if(err){
                         res.status(500).send({message: "Error del Servidor."});
