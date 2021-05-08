@@ -1170,6 +1170,7 @@ async function updateSaleOrderInvoice(req, res){
     let detailsAnt=req.body.ordenAnt;
     let companyId=req.body.Company;
     let Customer=req.body.Customer;
+    let iva=req.body.iva;
     let User=req.body.User;
     let updateInvoice={};
     let tipoProveedor=req.body.tipoProveedor;
@@ -1184,6 +1185,7 @@ async function updateSaleOrderInvoice(req, res){
     updateInvoice.Total=parseFloat((req.body.Total).toFixed(2));
     updateInvoice.InvoiceComments=req.body.InvoiceComments;
     updateInvoice.InvoiceDate=req.body.InvoiceDate;
+    updateInvoice.iva=req.body.iva;
 
     let detallePrev={};
     let detalle=[];
@@ -1871,6 +1873,7 @@ function getChargestoCustomers(req, res){
                             [
                                 { $eq: [ "$Customer",  "$$customerId" ] },
                                 { $eq: [ "$Pagada",  false ] },
+                                { $nen: [ "$ne",  "Anulada" ] },
                             ]
                             }
                         }
@@ -2121,8 +2124,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     // let creacion = moment().format('DD/MM/YYYY');
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
-
-    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
+    console.log("DETALLES",req.body);
+    
+    const {iva,InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
         diasCredito,InvoiceComments,condicionPago,Reason,PaymentMethodName,PaymentMethodId,Monto,NumberAccount,BankName,NoTransaction} = req.body;
 
     let details=[];
@@ -2314,7 +2318,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             Pagada:false,
             Entregada:!companyParams.RequieredOutput?true:false,
             InvoiceNumber:correlativeNumber,
-            DocumentCorrelative: correlativos.map(item => item._id)
+            DocumentCorrelative: correlativos.map(item => item._id),
+            iva:parseFloat(iva)
         }]
         console.log("save",correlativeNumber);
         console.log("CONTADOR ",contador);
@@ -3149,8 +3154,8 @@ async function createSaleOrderInvoice2(req, res){
     // let creacion = moment().format('DD/MM/YYYY');
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
-
-    const {InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
+    console.log("DETALLES",req.body);
+    const {iva,InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
         diasCredito,InvoiceComments,condicionPago,Reason,PaymentMethodName,PaymentMethodId,Monto,NumberAccount,BankName,NoTransaction} = req.body;
 
     let details=[];
@@ -3327,7 +3332,8 @@ async function createSaleOrderInvoice2(req, res){
             Pagada:false,
             Entregada:!companyParams.RequieredOutput?true:false,
             InvoiceNumber:correlativeNumber,
-            DocumentCorrelative: correlativos.map(item => item._id)
+            DocumentCorrelative: correlativos.map(item => item._id),
+            iva:parseFloat(iva)
         }]
         console.log("save",correlativeNumber);
         console.log("CONTADOR ",contador);

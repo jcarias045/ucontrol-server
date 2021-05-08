@@ -35,7 +35,7 @@ const SaleOrderInvoiceSchema = Schema({
     ref: "DocumentCorrelative",
     // autopopulate: true,
   },
-  
+  iva:Number
  
 })
 
