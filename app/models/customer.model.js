@@ -50,6 +50,7 @@ const CustomerSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Sector"
   },
+  Address: String,
 })
 
 module.exports = moongose.model('Customer', CustomerSchema)
