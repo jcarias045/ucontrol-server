@@ -65,7 +65,7 @@ let docTypeRoutes= require('./app/routers/documentype.route');
 let docCorrelativeRoutes= require('./app/routers/documentcorrelatives.route');
 
 const app=express();
-
+//funcion cors
 // const cors = require('cors');
 // const corsOptions = {
 //     // origin: 'https://ucontrolsoftware.netlify.app',
