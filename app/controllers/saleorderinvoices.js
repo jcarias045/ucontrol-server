@@ -18,7 +18,9 @@ const correlativeDocument= require('../models/documentcorrelatives.model');
 const taxes= require('../models/taxes.model');
 const users= require('../models/user.model');
 const product= require('../models/product.model');
-
+const fs =require("fs");
+const path=require("path");
+const PDFDocument=require('pdfkit'); 
 
 function getSaleOrderInvoices(req, res){
    const { id,company } = req.params;
@@ -37,8 +39,31 @@ function getDetallesVentaContribuyente(req, res){
     const  company  = req.params.id;
    saleOrderInvoice.find()
    .populate({path: 'Customer', model: 'Customer', match:{TypeofTaxpayer: 'CreditoFiscal'}}).sort({CodInvoice:-1})
-   .populate({path: 'User', model: 'User',match:{Company: company}})
+   .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}
+   ,match:{Company: company}})
    .populate({path: 'SaleOrder', model: 'SaleOrder'})
+   .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+    ,populate:{path: 'DocumentType', model: 'DocumentType'}})
+    .then(invoices => {
+        if(!invoices){
+            console.log("no entro");
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(("Si entro"));
+            res.status(200).send({invoices})
+        }
+    });
+}
+
+function getDetallesVentaConsumidorFinal(req, res){
+    const  company  = req.params.id;
+   saleOrderInvoice.find()
+   .populate({path: 'Customer', model: 'Customer', match:{TypeofTaxpayer: 'CreditoFiscal'}}).sort({CodInvoice:-1})
+   .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}
+   ,match:{Company: company}})
+   .populate({path: 'SaleOrder', model: 'SaleOrder'})
+   .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+    ,populate:{path: 'DocumentType', model: 'DocumentType'}})
     .then(invoices => {
         if(!invoices){
             console.log("no entro");
@@ -2856,16 +2881,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                     })
                     }
                 })
-              
-            
-
             }
-
         });
     }
-
-
-
 }
 
 async function getSalesForUsers(req,res){
@@ -3873,19 +3891,78 @@ async function createSaleOrderInvoice2(req, res){
                     })
                     }
                 })
-              
-            
-
             }
-
         });
     }
+}
+
+async function ImprimirPdf (req,res){
+    const {id} = req.params.id;
+
+    let facturas = await saleOrderInvoice.findOne({_id: req.params.id})
+    .populate({path: 'Customer', model: 'Customer'
+    ,populate:{path: 'Sector', model: 'Sector'}})
+    .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
+    .populate({path: 'SaleOrder', model: 'SaleOrder'})
+    .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+    ,populate:{path: 'DocumentType', model: 'DocumentType'}})
+    .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
+    console.log(facturas);
+    let resultado = await saleOrderInvoiceDetails.find({SaleOrderInvoice: facturas._id})
+    .populate({path: 'Inventory', model: 'Inventory',
+    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    populate:({path: 'Product',model:'Product',
+    populate:{path: 'Measure',model:'Measure'}}
+    )})
+    .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
+    .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
+        
 
 
+        const cantidad=(resultado)=>{
+            return(
+                resultado.Quantity
+            )
+        }
 
+        let arrayCantidad=[];
+        resultado.map((items)=> arrayCantidad.push(items.Quantity))
+        console.log(arrayCantidad);
+
+            const doc = new PDFDocument();
+            doc.pipe(fs.createWriteStream('Factura.pdf'));
+            doc.pipe(res);
+
+            doc
+            .font('Times-Roman',7)
+            .text(facturas.SaleOrder.CodSaleOrder,335,130)
+            .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, 160,145)
+            .text(facturas.InvoiceDate,335,145)
+            .text(facturas.Customer.Address,160,160,)
+            .text(facturas.Customer.Sector.Name,260,160)
+            .text(facturas.Customer.Ncr,260,175)
+            .text(facturas.Customer.City,160,190)
+            .text(facturas.Customer.Nit, 260, 190)
+            .text(facturas.Customer.PaymentCondition, 260, 205)
+            .moveDown();
+
+            const table ={
+                Headers: ["Cantidad", "Descripcion", "PrecioUnitario", "ventaGravada ", "cantidad"],
+                rows: []
+            };
+            console.log(resultado.length);
+            resultado.forEach(resultado=>{
+                table.rows.push([resultado.Quantity,resultado.ProductName, cantidad, resultado.SubTotal, resultado.PriceDiscount])
+            });
+
+            doc.moveDown();
+            doc.table(table,10,125, {width:590})
+
+            doc.end();
 }
 
 module.exports={
+
     getSaleOrderInvoices,
     getSaleOrdersClosed,
     getSaleOrderInfo,
@@ -3905,9 +3982,10 @@ module.exports={
     createSaleOrderInvoiceWithOrder2,
     getSalesForUsers,
     getSalesForProducts,
-
     getExportInfoFacturas,
     getDetallesVentaContribuyente,
-  
-    createSaleOrderInvoice2
+    getExportInfoFacturas,
+    getDetallesVentaContribuyente,
+    createSaleOrderInvoice2,
+    ImprimirPdf
 }

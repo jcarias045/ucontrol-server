@@ -1,4 +1,6 @@
 const product = require('../models/product.model');
+const SaleOrderInvoice = require('../models/saleorderinvoice.model');
+const SaleOrderInvoiceDetails = require('../models/saleorderinvoicedetails.model');
 const fs =require("fs");
 const PDFDocument = require('pdfkit') 
 
@@ -38,4 +40,31 @@ function ExportProductList(req, res){
 
     doc.end();
 
+}
+
+function ImprimirPdf (req,res){
+    const id = req.params.id;
+
+    const facturas = SaleOrderInvoice.findById({_id: req.params.id})
+    .populate({path: 'Customer', model: 'Customer'})
+    .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
+    .populate({path: 'SaleOrder', model: 'SaleOrder'})
+    .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+    ,populate:{path: 'DocumentType', model: 'DocumentType'}})
+    .then(invoices => {
+        if(!invoices){
+            console.log("no entro");
+            res.status(404).send({message:"No hay "});
+        }else{
+            console.log(("Si entro"));
+            res.status(200).send({invoices})
+        }
+    });
+
+    console.log(facturas);
+}
+
+module.exports={
+    ImprimirPdf,
+    ExportProductList
 }
