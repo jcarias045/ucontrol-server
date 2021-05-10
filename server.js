@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 
 require("dotenv").config({
     path: "./config.env"
-})   
+})
 
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
@@ -108,7 +108,7 @@ app.use('/api', catproductRoutes);
 app.use('./api', ProductRoutes );
 app.use('/api',systemOpRoutes);
 app.use('/api',systemOpRoutes);
-app.use('/api', catproductRoutes); 
+app.use('/api', catproductRoutes);
 app.use('/api', ProductRoutes );
 //app.use('/api',systemOpRoutes);
 app.use('/api',orderRoutes)
@@ -167,12 +167,13 @@ if(process.env.NODE_ENV === 'production'){
 
 // Create a Server
 // const server = app.listen(3050, function () {
- 
+
 //   let host = server.address().address
 //   let port = server.address().port
 
-//   console.log("App listening at http://%s:%s", host, port); 
+//   console.log("App listening at http://%s:%s", host, port);
 // })
+//conexion
 const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
 const PORT = process.env.PORT || 3050 ;
 //const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
@@ -183,6 +184,6 @@ mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifie
         console.log(`Server Running on Port: http://localhost:3050`)
     }))
     .catch((error) => console.log(`${error} did not connect`))
-    
-    
+
+
     mongoose.set('useFindAndModify', false);
