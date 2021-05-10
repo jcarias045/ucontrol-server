@@ -327,8 +327,9 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
                             if(detalles){
                                 //cuenta por cobrar
+                                let nuevaCuenta=parseFloat(deudaAct) + parseFloat(Total)
                                 customer.findByIdAndUpdate({_id:Customer},{
-                                    AccountsReceivable:parseFloat(deudaAct).toFixed(2)+parseFloat(Total).toFixed(2),
+                                    AccountsReceivable:nuevaCuenta.toFixed(2),
                                 }).then(function(update){
                                     if(!update){
 
@@ -592,7 +593,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                           sumaMontos=item.sumAmount;
                                                       })
                                                       //actualizando deuda con cliente
-                                                      customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat(Monto).toFixed(2)},(err,updateDeuda)=>{
+                                                      let nuevaCuenta=parseFloat(deuda)-parseFloat(Monto)
+                                                      customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
                                                           if(err){
 
                                                               console.log(err);
@@ -881,7 +883,8 @@ async function createSaleOrderInvoice(req, res){
                                                                     sumaMontos=item.sumAmount;
                                                                 })
                                                                 //actualizando deuda con cliente
-                                                                customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat(Monto).toFixed(2)},(err,updateDeuda)=>{
+                                                                let nuevaCuenta =parseFloat(deuda) -parseFloat(Monto);
+                                                                customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
                                                                     if(err){
 
                                                                         console.log(err);
@@ -911,8 +914,9 @@ async function createSaleOrderInvoice(req, res){
                                 }
                             if(detalles){
                                 //cuenta por cobrar
+                                let nuevaCuenta =parseFloat(deudaAct)+parseFloat(Total);
                                 customer.findByIdAndUpdate({_id:Customer},{
-                                    AccountsReceivable:parseFloat(deudaAct).toFixed(2)+parseFloat(Total).toFixed(2),
+                                    AccountsReceivable:nuevaCuenta.toFixed(2),
                                 }).then(function(update){
                                     if(!update){
 
@@ -1493,8 +1497,9 @@ async function deleteSaleInvoiceDetails(req,res){
     console.log("deuda",deudaAct);
     saleOrderInvoiceDetails.find({_id: _id}).then(function (detalles){
              //cuenta por cobrar
+             let nuevaCuenta =parseFloat(deudaAct)-parseFloat(SubTotal);
              customer.findByIdAndUpdate({_id: Customer},{
-                AccountsReceivable:(parseFloat(deudaAct).toFixed(2)-parseFloat(SubTotal).toFixed(2)),
+                AccountsReceivable:nuevaCuenta.toFixed(2),
             }).then(function(update){
                 if(!update){
 
@@ -1666,8 +1671,9 @@ async function anularSaleInovice(req,res){
         }
         if(update){
                //cuenta por cobrar
+               let nuevaCuenta=parseFloat(deudaAct) -parseFloat(Total)
             customer.findByIdAndUpdate({_id: Customer},{
-                AccountsReceivable:(parseFloat(deudaAct).toFixed(2)-parseFloat(Total).toFixed(2)),
+                AccountsReceivable:nuevaCuenta.toFixed(2),
             }).then(function(update){
                 if(!update){
 
@@ -2409,9 +2415,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                 arreglo.push(detalles);
                                 //cuenta por cobrar
                                 let iddetalle=detalles.map(item=>{return item._id}).toString();
-
+                               let nuevaCuenta=parseFloat(deudaAct)+parseFloat(Total);
                                customer.findByIdAndUpdate({_id:Customer},{
-                                    AccountsReceivable:parseFloat(deudaAct).toFixed(2)+parseFloat(Total).toFixed(2),
+                                    AccountsReceivable:nuevaCuenta.toFixed(2),
                                 }).then(function(update){
                                     if(!update){
 
@@ -2491,7 +2497,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                                       sumaMontos=item.sumAmount;
                                                                   })
                                                                   //actualizando deuda con cliente
-                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat((totalfactura)).toFixed(2)},(err,updateDeuda)=>{
+                                                                  let nuevaCuenta=parseFloat(deuda)-parseFloat((totalfactura));
+                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
                                                                       if(err){
 
                                                                           console.log(err);
@@ -3423,9 +3430,9 @@ async function createSaleOrderInvoice2(req, res){
                                 arreglo.push(detalles);
                                 //cuenta por cobrar
                                 let iddetalle=detalles.map(item=>{return item._id}).toString();
-
+                               let cuentaNueva=parseFloat(deudaAct)+parseFloat(Total);
                                customer.findByIdAndUpdate({_id:Customer},{
-                                    AccountsReceivable:parseFloat(deudaAct).toFixed(2)+parseFloat(Total).toFixed(2),
+                                    AccountsReceivable:cuentaNueva.toFixed(2),
                                 }).then(function(update){
                                     if(!update){
 
@@ -3505,7 +3512,10 @@ async function createSaleOrderInvoice2(req, res){
                                                                       sumaMontos=item.sumAmount;
                                                                   })
                                                                   //actualizando deuda con cliente
-                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:parseFloat(deuda).toFixed(2)-parseFloat((totalfactura)).toFixed(2)},(err,updateDeuda)=>{
+                                                                     let cuentaNueva=parseFloat(deuda)+parseFloat(totalfactura);
+
+                                                                  
+                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:cuentaNueva.toFixed(2)},(err,updateDeuda)=>{
                                                                       if(err){
 
                                                                           console.log(err);

@@ -132,7 +132,7 @@ async function createSupplierInvoice(req, res){
     // invoice.Recibida=false;
     invoice.CodInvoice=codigo;
     
-    updateDeuda.DebsToPay=parseFloat(deudaAct).toFixed(2)+parseFloat(Total).toFixed(2);
+    updateDeuda.DebsToPay=parseFloat(deudaAct)+parseFloat(Total);
 
     //a utilizar para formar objectos
     let details=[];
@@ -158,6 +158,9 @@ async function createSupplierInvoice(req, res){
                     if(err){
                         res.status(500).send({message: "Error del Servidor."});
                         console.log(err);
+                    }
+                    else{
+                        console.log("**********SE ACTUALIZO LA DEUDA*****************");
                     }
                 });
                 if(invoiceDetalle.length>0){
@@ -415,8 +418,8 @@ async function createSupplierInvoice(req, res){
                     }
                 });
                
-                let totalDeuda=parseFloat(Total).toFixed(2)+parseFloat(deudaAct).toFixed(2);
-                supplier.findByIdAndUpdate({_id:Supplier},{DebsToPay:totalDeuda},(err,updateDeuda)=>{
+                let totalDeuda=parseFloat(Total)+parseFloat(deudaAct);
+                supplier.findByIdAndUpdate({_id:Supplier},{DebsToPay:(totalDeuda).toFixed(2)},(err,updateDeuda)=>{
                     if(err){
                         res.status(500).send({message: "Error del Servidor."});
                         console.log(err);
@@ -738,10 +741,11 @@ async function createNewSupplierInvoice(req, res){
                 
                                 
                 }
-                let totalDeuda=parseFloat(Total).toFixed(2)+parseFloat(deudaAct).toFixed(2);
-                supplier.findByIdAndUpdate({_id:Supplier},{DebsToPay:totalDeuda},(err,updateDeuda)=>{
+                let totalDeuda=parseFloat(Total)+parseFloat(deudaAct);
+                supplier.findByIdAndUpdate({_id:Supplier},{DebsToPay:(totalDeuda).toFixed(2)},(err,updateDeuda)=>{
                     if(err){
-                        res.status(500).send({message: "Error del Servidor."});
+                        // res.status(500).send({message: "Error del Servidor."});
+                        console.log(err);
                         console.log(err);
                     }
                 });
