@@ -18,7 +18,8 @@ function getBookingSupplier(req,res){
 
 function createBookingSupplier(req,res){
     const BookingSupplier = new bookingSupplier()
-
+    
+    console.log("bookin proveedor", req.body);
     const {StartDate, EndDate, Description, State,
         User, Customer,  Name, StartTime, EndTime } = req.body
     
@@ -66,7 +67,7 @@ function updateBookingSupplier(req,res){
 function deleteBookingSupplier(req,res){
     const { id } = req.params;
   
-    bodega.findByIdAndRemove(id, (err, bodegaDeleted) => {
+    bookingSupplier.findByIdAndRemove(id, (err, bodegaDeleted) => {
       if (err) {
         res.status(500).send({ message: "Error del servidor." });
       } else {
@@ -81,11 +82,23 @@ function deleteBookingSupplier(req,res){
     });
 }
 
+function getBookingAllSupplier(req,res){
+    bookingSupplier.find({User: req.params.id}).populate({ path: 'User', model: 'User'}).
+    populate({ path: 'Supplier', model: 'Supplier'})
+    .then(bookingSupplier => {
+        if(!bookingSupplier){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bookingSupplier})
+        }
+    });
+} 
 
 module.exports={
     getBookingSupplier,
     createBookingSupplier,
     updateBookingSupplier,
-    deleteBookingSupplier
+    deleteBookingSupplier,
+    getBookingAllSupplier
     
 }

@@ -38,7 +38,8 @@ const ProductSchema = Schema({
         // autopopulate: true,
       },
    
-    AverageCost: Number
+    AverageCost: Number,
+    Classification:String
 })
 
 module.exports = moongose.model('Product', ProductSchema );

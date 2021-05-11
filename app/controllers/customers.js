@@ -10,7 +10,7 @@ function createCustomer(req, res) {
     const { Name,LastName,codCustomer,Email, Password,Country,City,ZipCode,
             Phone,MobilPhone,idNumber,Images,AccountsReceivable,Access,
             PaymentTime, Discount, User, Company, Active, Sector, Sector1, Sector2,
-            Nit,Ncr,TypeofTaxpayer,PaymentCondition} = req.body;
+            Nit,Ncr,TypeofTaxpayer,PaymentCondition, Classification} = req.body;
         
             customerNew.Name = Name;
             customerNew.LastName = LastName;
@@ -38,6 +38,7 @@ function createCustomer(req, res) {
             customerNew.Nit=Nit;
             customerNew.TypeofTaxpayer = TypeofTaxpayer;
             customerNew.PaymentCondition= PaymentCondition;
+            customerNew.Classification=Classification;
             console.log(customerNew.codCustomer);
             const comparar = customerNew.codCustomer;
             console.log(comparar);
@@ -131,7 +132,7 @@ async function desactivateCustomer(req, res){
 async function updateCustomer(req,res){
     let customerData = req.body;
     const params = req.params;
-
+    console.log(req.body);
     Customer.findByIdAndUpdate({_id: params.id}, customerData, (err, customerUpdate)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
