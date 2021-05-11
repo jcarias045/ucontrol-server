@@ -12,7 +12,7 @@ async function addPaymentToInvoice(req, res){
 
     let codigo=0;
     let now= new Date();
-    let creacion = moment().format('DD/MM/YYYY');
+    let creacion=now.toISOString().substring(0, 10);
     const {Company,User,PurchaseInvoiceId,Supplierid,Monto,Total,Reason,
         PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
 
@@ -64,12 +64,13 @@ async function addPaymentToInvoice(req, res){
             let paymentId=null;
             
             payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto);
-            if(parseFloat(saldoActual)<parseFloat(Monto)){
+            if(parseFloat(saldoActual).toFixed(2)<parseFloat(Monto).toFixed(2)){
                 res.status(500).send({message:"Monto Superior a Deuda"});
             }
             else{
+                let updateSaldo= parseFloat(saldoActual)-parseFloat(Monto);
                 PaymentToSupplier.updateOne({PurchaseInvoice:PurchaseInvoiceId},
-                    {Saldo: parseFloat(saldoActual)-parseFloat(Monto)}).catch(err => {console.log(err);});
+                    {Saldo:updateSaldo.toFixed(2)}).catch(err => {console.log(err);});
                 
                 //para obtener el id del pago realizado
                 let getPaymentId=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'_id')
@@ -137,7 +138,7 @@ async function addPaymentToInvoice(req, res){
                                     }
                                     //actualizando deuda con proveedor
                                     let actMonto=parseFloat(deuda)-parseFloat(Monto);
-                                    Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:actMonto},(err,updateDeuda)=>{
+                                    Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:actMonto.toFixed(2)},(err,updateDeuda)=>{
                                     if(err){
                                         
                                         console.log(err);
@@ -231,7 +232,8 @@ async function addPaymentToInvoice(req, res){
                                             console.log(err);
                                         }
                                     });
-                                    if(parseFloat(sumMontos)===parseFloat(totalaPagarInvoice.Total)){
+                                    console.log("SUMANDOS",sumaMontos," factura",totalaPagarInvoice.Total);
+                                    if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalaPagarInvoice.Total).toFixed(2)){
                                         console.log('SUMANDO MONTOS');
                                         PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
                                             if(err){
@@ -318,7 +320,7 @@ async function updatePaymentInvoice(req, res){
                     .then(resultado =>{return resultado}).catch(err =>{return err});
                     console.log('nuevo saldo',nuevoSaldo);
                     console.log('nuevo cuenta',nuevaCuentaxPagar.DebsToPay);
-                    if(parseFloat(nuevoSaldo.Saldo)>= parseFloat(cambios.Amount) )
+                    if(parseFloat(nuevoSaldo.Saldo).toFixed(2)>= parseFloat(cambios.Amount) )
                     {
                         console.log("PERMITEE PAGOOO");
                         Supplier.findByIdAndUpdate({_id:SupplierId},{DebsToPay: parseFloat(deuda)-parseFloat(cambios.Amount)},(err,purchaseUpdate)=>{
@@ -365,7 +367,7 @@ async function updatePaymentInvoice(req, res){
                                         sumaMontos=item.sumAmount;
                                     })
                                  console.log('suma',sumaMontos);
-                                 if(parseFloat(sumaMontos)===parseFloat(Total)){
+                                 if(parseFloat(sumaMontos).toFixed(2)===parseFloat(Total).toFixed(2)){
                                     console.log('SUMANDO MONTOS');
                                     PurchaseInvoice.findByIdAndUpdate({_id:_id},{Pagada:true},(err,updateDeuda)=>{
                                         if(err){

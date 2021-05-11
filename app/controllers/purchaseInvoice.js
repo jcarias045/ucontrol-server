@@ -1242,9 +1242,17 @@ function getInvoiceSupplierExport(req, res){
 function getPaymentToSuppliers(req, res){
     const { id } = req.params;
     supplier.aggregate([
-        {
-           
-            $lookup: {
+       
+            {  $match: 
+                { $expr:
+                   
+                        { $ne: [ "$DebsToPay",  0 ] },
+                       
+                    
+                }
+            },
+            { 
+                $lookup: {
                 from: "companies" ,
                 let: {companyId: "$Company"},
                 pipeline: [
@@ -1275,7 +1283,7 @@ function getPaymentToSuppliers(req, res){
                             [
                                 { $eq: [ "$Supplier",  "$$supplierId" ] },
                                 { $eq: [ "$Pagada", false ] },
-                                
+                                { $ne: [ "$State",  "Anulada" ] },
                             ]
                             }
                         }

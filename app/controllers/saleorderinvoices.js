@@ -1871,6 +1871,14 @@ function getChargestoCustomers(req, res){
 
 
     customer.aggregate([
+        {  $match: 
+            { $expr:
+               
+                    { $ne: [ "$AccountsReceivable",  0 ] },
+                   
+                
+            }
+        },
         {
 
             $lookup: {
@@ -1904,7 +1912,7 @@ function getChargestoCustomers(req, res){
                             [
                                 { $eq: [ "$Customer",  "$$customerId" ] },
                                 { $eq: [ "$Pagada",  false ] },
-                                { $nen: [ "$ne",  "Anulada" ] },
+                                { $ne: [ "$State",  "Anulada" ] },
                             ]
                             }
                         }

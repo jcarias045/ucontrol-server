@@ -340,7 +340,8 @@ async function updatePaymentInvoice(req, res){
                 } 
             });
             console.log('registrado',montoRegistrado,saldopendiente);
-            CustomerPayment.findByIdAndUpdate({_id:idpayment},{Saldo: parseFloat(saldopendiente).toFixed(2)+parseFloat(montoRegistrado).toFixed(2)},async (err,purchaseUpdate)=>{
+            let actSaldo= parseFloat(saldopendiente) + parseFloat(montoRegistrado);
+            CustomerPayment.findByIdAndUpdate({_id:idpayment},{Saldo:actSaldo.toFixed(2) },async (err,purchaseUpdate)=>{
                 if(err){
                     console.log(err);
                 } else{
