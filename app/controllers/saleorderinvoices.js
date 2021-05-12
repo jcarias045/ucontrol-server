@@ -21,6 +21,10 @@ const product= require('../models/product.model');
 const fs =require("fs");
 const path=require("path");
 const PDFDocument=require('pdfkit'); 
+const PDFTable = require('voilab-pdf-table');
+const { options } = require("joi");
+// const { table } = require("console");
+// const { text } = require("pdfkit/js/mixins/text");
 
 function getSaleOrderInvoices(req, res){
    const { id,company } = req.params;
@@ -3924,26 +3928,21 @@ async function ImprimirPdf (req,res){
     )})
     .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
     .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
-        
+    
+    var i = 0
+    let total = 0
+    console.log(Cantidad);
+    console.log(arrayQuantity);
+    console.log(resultado.length);
 
 
-        const cantidad=(resultado)=>{
-            return(
-                resultado.Quantity
-            )
-        }
-
-        let arrayCantidad=[];
-        resultado.map((items)=> arrayCantidad.push(items.Quantity))
-        console.log(arrayCantidad);
-
-            const doc = new PDFDocument();
-            doc.pipe(fs.createWriteStream('Factura.pdf'));
+    const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
+            const doc = new PDFDocument()
+            doc.pipe(fs.createWriteStream('CreditoFiscal-' + facturas.CodInvoice + '.pdf'));
             doc.pipe(res);
-
             doc
             .font('Times-Roman',7)
-            .text(facturas.SaleOrder.CodSaleOrder,335,130)
+            .text(facturas.CodInvoice,335,130)
             .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, 160,145)
             .text(facturas.InvoiceDate,335,145)
             .text(facturas.Customer.Address,160,160,)
@@ -3952,20 +3951,21 @@ async function ImprimirPdf (req,res){
             .text(facturas.Customer.City,160,190)
             .text(facturas.Customer.Nit, 260, 190)
             .text(facturas.Customer.PaymentCondition, 260, 205)
+            doc.y = 220;
+            resultado.forEach(function(valor, indice, resultado){
+                 let yPos = doc.y + 10 
+                doc.text(valor.Quantity,160, yPos )
+                .text(valor.ProductName,180,yPos  )
+                .text(valor.Price.toFixed(2), 335,yPos)
+                .text(valor.SubTotal.toFixed(2), 370, yPos )
+                total = valor.SubTotal + total;
+                doc.moveDown()
+            })
+            console.log(total);
+            doc.text(total.toFixed(2),370,440)
+            .text((total-(total/1.13)).toFixed(2) , 370,460)
+            .text((total+(total-(total/1.13))).toFixed(2),370,520)
             .moveDown();
-
-            const table ={
-                Headers: ["Cantidad", "Descripcion", "PrecioUnitario", "ventaGravada ", "cantidad"],
-                rows: []
-            };
-            console.log(resultado.length);
-            resultado.forEach(resultado=>{
-                table.rows.push([resultado.Quantity,resultado.ProductName, cantidad, resultado.SubTotal, resultado.PriceDiscount])
-            });
-
-            doc.moveDown();
-            doc.table(table,10,125, {width:590})
-
             doc.end();
 }
 
