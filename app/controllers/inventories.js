@@ -20,17 +20,9 @@ function getInventory(req, res){
 
 function getInventories(req, res){
     const { id } = req.params;
+    var ObjectID = require('mongodb').ObjectID;
     Inventory.aggregate([
-        {$match:{ $expr:
-            { $and:
-               [
-                 { Company: id},
-               
-                
-               ]
-            }
-         }},
-        
+        {  $match: {Company:ObjectID(id)}},
             {
                 
                 $lookup: {

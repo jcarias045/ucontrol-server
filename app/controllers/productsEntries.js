@@ -13,8 +13,10 @@ const MovementTypes = require("../models/movementtype.model");
 
 function getEntries(req, res){
    const { id } = req.params;
+   var ObjectID = require('mongodb').ObjectID;
 //    productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
     productEntry.aggregate([
+        {  $match: {User:ObjectID(id)}},
         {
             $lookup: {
                 from:"entrydetails",

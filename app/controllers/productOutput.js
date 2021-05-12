@@ -8,14 +8,12 @@ const saleOrderInvoice = require("../models/saleorderinvoice.model");
 const saleOrderInvoiceDetails = require("../models/saleorderinvoicedetails.model");
 
 function getProductOutput(req, res){
+
     const { id } = req.params;
+    var ObjectID = require('mongodb').ObjectID;
  //    productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
        productOutput.aggregate([
-        {$match:{ $expr:
-            {
-                  User: id    
-            }
-         }},
+        {  $match: {User:ObjectID(id)}},
          {
              $lookup: {
                  from:"productoutputdetails",

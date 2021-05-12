@@ -39,7 +39,8 @@ const ProductSchema = Schema({
       },
    
     AverageCost: Number,
-    Classification:String
+    Classification:String,
+    isRecipe:Boolean,
 })
 
 module.exports = moongose.model('Product', ProductSchema );

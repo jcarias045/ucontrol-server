@@ -4,7 +4,8 @@ const jwt=require('../services/jwt');
 
 
 function getBodega(req, res) {
-    bodega.find().populate({path: 'Company', model: 'Company' })
+    const {id}=req.params;
+    bodega.find({Company:id}).populate({path: 'Company', model: 'Company' })
     .then(bodega => {
         if(!bodega){
             res.status(404).send({message:"No hay "});

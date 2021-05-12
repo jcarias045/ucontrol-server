@@ -31,7 +31,7 @@ async function createProduct(req, res){
     const Inventory=new inventory();
     const InventoryReserva=new inventory();
     const { Name, Brand, SellPrice, ShortName, Company, CatProduct, Supplier,
-    Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, AverageCost, Classification} = req.body
+    Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, AverageCost, Classification, isRecipe} = req.body
 
   
     //obteniendo informacion de la compañia para validar
@@ -59,6 +59,7 @@ async function createProduct(req, res){
         Product.codproducts = codproducts;
         Product.AverageCost= 0;
         Product.Classification= Classification;
+        Product.isRecipe= isRecipe;
 
 
                 console.log(Product);

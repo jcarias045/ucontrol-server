@@ -1867,15 +1867,20 @@ function getSaleInvoicePendientesIngreso(req, res){
 
 
 function getChargestoCustomers(req, res){
-    const { id } = req.params;
+    const { id ,user} = req.params;
 
-
+  console.log("ID COMPA{IA",user);
     customer.aggregate([
         {  $match: 
             { $expr:
                
-                    { $ne: [ "$AccountsReceivable",  0 ] },
                    
+                    { $and:
+                        [
+                            { $ne: [ "$AccountsReceivable",  0 ] },
+                            { User:user }
+                        ]
+                        }
                 
             }
         },
@@ -2902,7 +2907,7 @@ async function getSalesForUsers(req,res){
     let f2=new Date(req.params.fecha2);
     var ObjectID = require('mongodb').ObjectID;
     users.aggregate([
-        // {  $match: {_id:ObjectID(id)}},
+        {  $match: {Company:ObjectID(companyId)}},
         {
             $lookup: {
                 from:"saleorderinvoices",
@@ -3015,7 +3020,7 @@ async function getSalesForProducts(req,res){
     let f2=new Date(req.params.fecha2);
     var ObjectID = require('mongodb').ObjectID;
     product.aggregate([
-        // {  $match: {_id:ObjectID(id)}},
+        {  $match: {Company:ObjectID(companyId)}},
         {
             $lookup: {
                 from:"saleorderinvoices",

@@ -491,8 +491,8 @@ async function cancelledPaymentInvoice(req, res){
 }
 
 async function getAllPayments(req, res){
-    
-    PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
+    const {id}=req.params;
+    PaymentToSupplier.find({User:id}).populate({path: 'User', model: 'User'})
     .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice', populate:{path: 'Supplier',model:'Supplier'}})
     .then(pagos => {
         if(!pagos){

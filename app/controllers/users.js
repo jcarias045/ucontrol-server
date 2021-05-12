@@ -116,14 +116,16 @@ function signIn(req, res) {
     const params = req.body;
     const Email = params.Email;
     const Password = params.Password;
-    
+    console.log(req.body);
     User.findOne( { Email }, function (err, userStored) {
             if (err) {
                 res.status(500).send({ message: "Error del servidor." });
+                console.log(userStored);
             } else {
                 if (!userStored) {
                     res.status(404).send({ message: "Usuario no encontrado." });
                 } else {
+                    console.log(userStored);
                     bcrypt.compare(Password, userStored.Password, (err, check) => {
                         if (err) {
                             res.status(500).send({ message: "Error del servidor." });
