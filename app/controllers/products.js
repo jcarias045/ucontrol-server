@@ -6,7 +6,7 @@ const company = require('../models/company.model');
 const fs =require("fs");
 const path=require("path");
 const PDFDocument=require('pdfkit'); 
-
+const recipe = require('../models/recipe.model')
 
 function getPoducts(req, res){
 
@@ -31,8 +31,10 @@ async function createProduct(req, res){
     const Inventory=new inventory();
     const InventoryReserva=new inventory();
     const { Name, Brand, SellPrice, ShortName, Company, CatProduct, Supplier,
-    Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, AverageCost, Classification, isRecipe} = req.body
-
+    Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, 
+    AverageCost, Classification, isRecipe, receta} = req.body
+    
+    let detalle=[];
   
     //obteniendo informacion de la compañia para validar
     let companyParams=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
@@ -72,8 +74,8 @@ async function createProduct(req, res){
                         }else{
                             let productId=ProductStored._id;
                             let nombreProduct=ProductStored.Name;
-                           //obteniendo id de la bodega pricipal de la empresa
-                           let bodegaPrincipal=await bodega.findOne({Name:'Principal', Company:Company},['_id'])
+                            //obteniendo id de la bodega pricipal de la empresa
+                            let bodegaPrincipal=await bodega.findOne({Name:'Principal', Company:Company},['_id'])
                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                             //obteniendo id de la bodega de reserva de la empresa
                             let bodegaReserva=await bodega.findOne({Name:'Reserva', Company:Company},['_id'])
@@ -110,6 +112,30 @@ async function createProduct(req, res){
                                         }else{}
                                     }
                                 });
+                            }
+                            if(isRecipe){
+                                receta.map(async item => {
+                                    detalle.push({
+                                        Product:productId,
+                                        RecipeProduct:item.ProductId,
+                                        Quantity:parseFloat(item.Quantity) ,
+                                        Measure:item.Measures,
+                                        Codigo: item.codproducts,
+                                        Name:item.Name
+                                    })
+                                 });
+                                 if(detalle.length>0){
+                                    recipe.insertMany(detalle)
+                                    .then(function () {
+                                        
+                                        console.log("receta creada");
+                                        
+                                    })
+                                    .catch(function (err) {
+                                        console.log(err);
+                                    });
+                                }
+
                             }
                             res.status(200).send({Product: ProductStored})
                         }
@@ -189,7 +215,10 @@ function getLogo(req,res){
 async function updateProduct(req, res){
     let productData = req.body;
     const params = req.params;
-
+    let detailsAnt=req.body.receta;
+    let newData=req.body.recetaNueva;
+    let detallePrev={};
+    let detalle=[];
     product.findByIdAndUpdate({_id: params.id}, productData, (err, productUpdate)=>{
         if(err){
             res.status(500).sen({message: "Error del Servidor."});
@@ -197,7 +226,52 @@ async function updateProduct(req, res){
             if(!productUpdate){
                 res.status(404).sen({message: "No hay"});
             }else{
-                res.status(200).send({message: "Producto Actualizado"})
+               if(productData.isRecipe){
+                    if(detailsAnt.length > 0) {
+                        detailsAnt.map(async item => {  
+                        
+                        detallePrev.Quantity=parseFloat(item.Quantity) ,
+                        recipe.updateMany({_id: item._id ,Product:params.id},detallePrev)
+                            .then(function () {
+                                
+                                console.log("Actualizados");
+                                
+                            })
+                            .catch(function (err) {
+                                console.log(err);
+                            });
+                        });
+                        console.log(detallePrev);
+                        
+                }
+                if(newData.length > 0){
+                    newData.map(async item => {
+                        detalle.push({
+                            Product:params.id,
+                            RecipeProduct:item.ProductId,
+                            Quantity:parseFloat(item.Quantity) ,
+                            Measure:item.Measures,
+                            Codigo: item.codproducts,
+                            Name:item.Name
+                        })
+                     });
+                     if(detalle.length>0){
+                        recipe.insertMany(detalle)
+                        .then(function () {
+                            
+                            console.log("receta creada");
+                            
+                        })
+                        .catch(function (err) {
+                            console.log(err);
+                        });
+                    }
+
+                }
+
+               }
+               
+                res.status(200).send({product: productUpdate})
             }
         }
     })
@@ -609,6 +683,43 @@ function ExportProductList(req, res){
     
 
 }
+
+function getRecipe(req, res){
+    const { id}=req.params;
+    try{
+        recipe.find({Product:id})
+        .then(recipe => {
+            res.status(200).send({recipe});
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+async function deleteRecipeItem(req, res){
+    const { id } = req.params;
+  
+    recipe.findByIdAndRemove(id, (err, productDeleted) => {
+      if (err) {
+        res.status(500).send({ message: "Error del servidor." });
+      } else {
+        if (!productDeleted) {
+          res.status(404).send({ message: "Producto no encontrado." });
+        } else {
+          res
+            .status(200)
+            .send({ deleted: productDeleted });
+        }
+      }
+    });
+}
  
 module.exports={
     getPoducts,
@@ -625,6 +736,8 @@ module.exports={
     ExportProductList,
     // getProduct
     // getProduct,
-    getProductByInventory
+    getProductByInventory,
+    getRecipe,
+    deleteRecipeItem
 
 }

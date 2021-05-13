@@ -3262,7 +3262,7 @@ async function createSaleOrderInvoice2(req, res){
      console.log(tipo);
 
     let correlativosselect= await correlativeDocument.find({ State:true})
-    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo, Company:companyId}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
@@ -3425,7 +3425,7 @@ async function createSaleOrderInvoice2(req, res){
                                         Price:parseFloat(dePurchaseOrder[contador+ i].Price),
                                         Inventory :dePurchaseOrder[contador+ i].Inventory,
                                         SubTotal: parseFloat(dePurchaseOrder[contador+ i].total),
-                                        Entregados:!companyParams.RequieredOutput?dePurchaseOrder[contador+ i].Quantity:0,
+                                        Entregados:!companyParams.RequieredOutput?parseFloat(dePurchaseOrder[contador+ i].Quantity):0,
                                         State:!companyParams.RequieredOutput?true:false,
                                         Measure:dePurchaseOrder[contador+ i].Measures,
                                         CodProduct:dePurchaseOrder[contador+ i].codproducts,
@@ -3712,7 +3712,7 @@ async function createSaleOrderInvoice2(req, res){
                                     let SaleInvoiceId=item.SaleOrderInvoice;
                                     let salidaId=item.ProductOutput;
                                        //obteniendo stock de producto  (bodega principal)
-
+                              
                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         console.log('EN STOCK:',infoInventary);
@@ -3744,20 +3744,20 @@ async function createSaleOrderInvoice2(req, res){
                               if(proIngresados!==null){
                                 if(parseFloat(ingresos)===parseFloat(quantityInvoice.Quantity)){
                                     console.log('COMPLETADO INGRESO');
-                                   await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
-                                        Entregados:ingresos,
-                                        State:true
-                                    })
-                                    .catch(err => {console.log(err);})
+                                //    await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                //         Entregados:ingresos,
+                                //         State:true
+                                //     })
+                                //     .catch(err => {console.log(err);})
                                     
                                 }
                                  else{
                                 console.log('NO COMPLETADO INGRESO');
     
-                                await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
-                                    Entregados:ingresos,
-                                    State:false
-                                }).catch(err => {console.log(err);})
+                                // await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                //     Entregados:ingresos,
+                                //     State:false
+                                // }).catch(err => {console.log(err);})
                                 
                                }
                                actualizado=true;

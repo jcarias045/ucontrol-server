@@ -214,6 +214,8 @@ async function createProductOutput(req, res) {
                                             inventorytraceability.User=User;
                                             inventorytraceability.Company=Company;
                                             inventorytraceability.DocumentId=salidaId;
+                                            inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
                                                     // res.status(500).send({message: err});
@@ -287,6 +289,8 @@ async function createProductOutput(req, res) {
                                                     inventorytraceability.User=User;
                                                     inventorytraceability.Company=Company;
                                                     inventorytraceability.DocumentId=salidaId;
+                                                    inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
                                                         
@@ -459,6 +463,8 @@ async function createProductOutputsinInvoice(req, res) {
                                             inventorytraceability.User=User;
                                             inventorytraceability.Company=Company;
                                             inventorytraceability.DocumentId=salidaId;
+                                            inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
                                                     // res.status(500).send({message: err});
@@ -500,9 +506,6 @@ async function createProductOutputsinInvoice(req, res) {
                                         res.status(500).send({message: "No se actualizo inventario"});
                                     }else{
                                 
-                                       
-                                              
-
                                                     //transaccion
                                                     const inventorytraceability= new inventoryTraceability();
                                                     inventorytraceability.Quantity=item.Quantity;
@@ -514,6 +517,8 @@ async function createProductOutputsinInvoice(req, res) {
                                                     inventorytraceability.User=User;
                                                     inventorytraceability.Company=Company;
                                                     inventorytraceability.DocumentId=salidaId;
+                                                    inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
                                                         
@@ -644,7 +649,7 @@ async function anularOutput(req, res){
                             console.log("PRODUCTOS ENTREGADOS",proIngresados);
                             console.log("PRODUCTOS de factura",quantityInvoice);
                             ingresos=parseFloat(proIngresados.Entregados) + parseFloat(item.Quantity);
-                            ingresoUpdate=parseFloat(proIngresados.Entregados -item.Quantity);
+                            ingresoUpdate=parseFloat(proIngresados.Entregados - item.Quantity);
                             console.log("ACTUALIZAR LOS INGRESADOS",ingresoUpdate);
                             saleOrderInvoiceDetails.findByIdAndUpdate({_id:item.SaleInvoiceDetail},{
                                 Entregados:parseFloat(ingresoUpdate),
@@ -680,6 +685,8 @@ async function anularOutput(req, res){
                                 inventorytraceability.User=User;
                                 inventorytraceability.Company=Company;
                                 inventorytraceability.DocumentId=item.SaleOrderInvoice;
+                                inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
@@ -715,6 +722,8 @@ async function anularOutput(req, res){
                             inventorytraceability.User=User;
                             inventorytraceability.Company=Company;
                             inventorytraceability.DocumentId=item.SaleOrderInvoice;
+                            inventorytraceability.ProductDestiny=null;
+                            inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                             inventorytraceability.save((err, traceabilityStored)=>{
                                 if(err){

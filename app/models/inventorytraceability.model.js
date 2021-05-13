@@ -33,7 +33,12 @@ User:{
 Company: { type: Schema.ObjectId, 
   ref: "Company",},
     
-  DocumentId:String
+  DocumentId:String,
+  ProductDestiny:{type: Schema.ObjectId, 
+    ref: "Product",
+    // autopopulate: true,
+  },
+  Cost:Number
 })
 
 module.exports = mongoose.model('InventoryTraceability', InventoryTraceabilitySchema)

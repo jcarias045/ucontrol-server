@@ -21,5 +21,8 @@ router.get('/get-pdfproductlist/:id', products.ExportProductList)
 router.get('/get-recommended-products/:id/:supplier',products.getRecommendedProducts);
 router.get('/get-recommended-productsinventary/:id/:supplier',products.getRecommendedProductsInventory);
 router.get('/get-productsinventory/:id/:company',products.getProductByInventory);
+router.get('/get-recipe/:id',products.getRecipe);
+router.delete('/delete-recipeitem/:id', products.deleteRecipeItem);
+
 
 module.exports = router;
