@@ -2239,7 +2239,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
      console.log(tipo);
 
     let correlativosselect= await correlativeDocument.find({ State:true})
-    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo, Company: companyId}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
@@ -3262,7 +3262,7 @@ async function createSaleOrderInvoice2(req, res){
      console.log(tipo);
 
     let correlativosselect= await correlativeDocument.find({ State:true})
-    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo, Company: companyId}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
