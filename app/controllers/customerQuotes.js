@@ -1,6 +1,11 @@
 const moment=require("moment");
 const CustomerQuote = require("../models/customerquotes.model");
 const QuoteDetails= require("../models/customerquotesdetails.model");
+const Company= require("../models/company.model");
+const Sector= require("../models/sector.model");
+const PDFDocument = require('pdfkit-construct');
+const fs =require("fs");
+const path=require("path");
 
 
 function getCustomerQuote(req, res){
@@ -264,7 +269,6 @@ function getCustomerAllQuotesDetails(req, res){
     });
 }
 
-
 function getQuotesbyCustomers(req, res){
     let supplierId = req.params.id; 
     let companyId = req.params.company;
@@ -331,6 +335,60 @@ function getQuotesbyCustomers(req, res){
     }
 }
 
+async function ImprimirCotizacionPDF(req,res) {
+
+    const {id} = req.params.id;
+
+    let cotizacion = await CustomerQuote.findOne({_id: req.params.id})
+    .populate({path: 'Customer', model: 'Customer'
+    ,populate:{path: 'Sector', model: 'Sector'}})
+    .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
+    .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
+    console.log(cotizacion);
+    console.log("terminaCotizacion");
+
+    let Sector1 = cotizacion.User.Company.ActividadPrimaria
+    console.log(Sector1);
+    let actividad1 = await Sector.findOne({_id: Sector1})
+    .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
+    console.log(actividad1);
+    console.log("finaliza primero");
+
+    let Sector2 = cotizacion.User.Company.ActividadSecundaria
+    console.log(Sector2);
+    let actividad2 = await Sector.findOne({_id: Sector2})
+    .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
+    console.log(actividad2);
+    console.log("Finaliza Segundo");
+
+    let Sector3 = cotizacion.User.Company.ActividadTerciaria
+    console.log(Sector3);
+    let actividad3 = await Sector.findOne({_id: Sector3})
+    .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
+    console.log(actividad3);
+    console.log("actividad3");
+    console.log(cotizacion._id);
+    let detalles = await  QuoteDetails.findOne({CustomerQuote:cotizacion._id})
+    .populate({path: 'Inventory', model: 'Inventory',
+    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
+    .then((details)=>{return details}).catch(err=>{console.log("error en server");return err})
+    console.log(detalles);
+    console.log("Finaliza Detalles");
+    let img = "app/uploads/avatar/SolucionesDiversas.jpeg"
+    const QuotesName = 'Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf';
+    const doc = new PDFDocument()
+    doc.pipe(fs.createWriteStream(QuotesName));
+    doc.pipe(res);
+    doc.font('Times-Roman',14)
+    .text(cotizacion.User.Company.Name,20,35).font('Times-Roman',16)
+    .image(path.resolve(img),{scale:0.25}).moveDown()
+    .text(cotizacion.User.Company.Web,20,45)
+    .moveDown();
+    doc.end();
+}
+
+
 module.exports={
     getCustomerQuote,
     createCustomerQuote,
@@ -339,5 +397,6 @@ module.exports={
     deleteQuoteDetail,
     changeQuoteState,
     getCustomerAllQuotesDetails,
-    getQuotesbyCustomers
+    getQuotesbyCustomers,
+    ImprimirCotizacionPDF
 }

@@ -6,6 +6,7 @@ const quotes = require('../controllers/customerQuotes');
 
 
 router.get('/get-customerquotes/:id', quotes.getCustomerQuote);
+router.get('/get-customerquotespdf/:id', quotes.ImprimirCotizacionPDF);
 router.post('/create-customerquotes', quotes.createCustomerQuote);
 router.get('/get-customerquotesdetails/:id', quotes.getCustomerQuotesDetails);
 router.get('/get-customerallquotesdetails', quotes.getCustomerAllQuotesDetails);
