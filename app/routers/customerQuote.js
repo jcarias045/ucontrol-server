@@ -15,5 +15,4 @@ router.put('/update-customerquotestate/:id', quotes.changeQuoteState);
 router.get('/get-quotesbycustomer/:id/:fecha1/:fecha2', quotes.getQuotesbyCustomers);
 
 
-
 module.exports = router;

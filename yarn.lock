@@ -1637,6 +1637,11 @@ path-to-regexp@0.1.7:
   resolved "https://registry.yarnpkg.com/path-to-regexp/-/path-to-regexp-0.1.7.tgz#df604178005f522f15eb4490e7247a1bfaa67f8c"
   integrity sha1-32BBeABfUi8V60SQ5yR6G/qmf4w=
 
+pdfkit-construct@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/pdfkit-construct/-/pdfkit-construct-1.2.3.tgz#e00b648a569d3da4cab857957481233853e6262b"
+  integrity sha512-yMWnYSgRpNSxkALe55U4yAbAWd7lu5tGjY0vqy2eZZIn+bCzph5lOJ5Ixb9LR6nRzgzDCbfBDqtSD+KJtUWQoA==
+
 pdfkit@^0.12.1:
   version "0.12.1"
   resolved "https://registry.yarnpkg.com/pdfkit/-/pdfkit-0.12.1.tgz#0df246b46cffd3d8fb99b1ea33dc1854430a9199"
