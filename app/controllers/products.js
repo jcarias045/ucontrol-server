@@ -475,7 +475,7 @@ function getRecommendedProductsInventory(req,res){
     console.log(id);
     console.log(company);
     
-    inventory.find().populate({path: 'Bodega', model: 'Bodega',match:{Name: { $eq: 'Principal' }}})
+    inventory.find( { Stock: { $ne: 0 } }).populate({path: 'Bodega', model: 'Bodega',match:{Name: { $eq: 'Principal' }}})
     .populate({path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'},match:{Company: company}})
     // inventory.aggregate([
     //     {

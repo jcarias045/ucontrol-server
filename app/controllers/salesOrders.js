@@ -455,7 +455,7 @@ async function createSaleOrder(req, res){
 }
 
 async function createSaleOrderWithQuote(req, res){
-
+   
     const SaleOrder= new saleOrder();
     let messageError=false;
     const saledetails=req.body.details;
@@ -463,7 +463,7 @@ async function createSaleOrderWithQuote(req, res){
     let deudor=false;
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
-
+    console.log("CON COTIZACION",saledetails );
 
     const {CodCustomerQuote,CustomerName,Description,Total,User,companyId,CustomerQuote,SubTotal,Customer,Comments,diasCredito} = req.body;
 
@@ -553,7 +553,7 @@ async function createSaleOrderWithQuote(req, res){
                     let SaleOrderId=SaleOrderStored._id;
                     let quoteId=SaleOrderStored.CustomerQuote;
                     if(SaleOrderId){
-
+                        console.log("INGRESANDO LOS DETALLLES ");
                         saledetails.map(async item => {
                         detalle.push({
                             ProductName:item.ProductName,
@@ -564,19 +564,19 @@ async function createSaleOrderWithQuote(req, res){
                             Inventory :item.Inventory._id,
                             Measure:item.Inventory.Product.Measure.Name,
                             CodProduct:item.CodProduct,
-                            SubTotal: parseFloat(SubTotal),
+                            SubTotal: parseFloat(item.Price) * parseFloat(item.Quantity),
                             Product:item.Inventory.Product._id,
                             iniQuantity:parseFloat(item.Quantity) ,
                             // Priceiva:parseFloat(item.Priceiva)
                             // OnRequest:false
                         })
                      });
-                     console.log(detalle);
+                     console.log("EL DETALLE INSERTADO",detalle);
                         if(detalle.length>0){
                             saleOrderDetails.insertMany(detalle)
                             .then(function (detalles) {
                                 console.log("PROCESO DE RESERVA");
-                                console.log(detalles);
+                                console.log(saledetails);
                                 saledetails.map(async item=>{
                                     customerQuotesDetails.findByIdAndUpdate({_id:item._id},{OnRequest:true},async (err,update)=>{
                                         if(err){
@@ -737,14 +737,14 @@ async function createSaleOrderWithQuote(req, res){
                             Inventory :item.Inventory._id,
                             Measure:item.Inventory.Product.Measure.Name,
                             CodProduct:item.CodProduct,
-                            SubTotal: parseFloat(SubTotal),
+                            SubTotal: parseFloat(item.Price) * parseFloat(item.Quantity),
                             Product:item.Inventory.Product._id,
                             iniQuantity:parseFloat(item.Quantity) ,
                             // Priceiva:parseFloat(item.Priceiva)
                             // OnRequest:false
                         })
                      });
-                     console.log(detalle);
+                     console.log("DETALLE INGRESO", detalle);
                         if(detalle.length>0){
                             saleOrderDetails.insertMany(detalle)
                             .then(function (detalles) {
@@ -776,7 +776,7 @@ async function createSaleOrderWithQuote(req, res){
                                                             console.log(err);
                                                         }
                                                         if(update){
-                                                            res.status(200).send({orden: SaleOrderStored});
+                                                            // res.status(200).send({orden: SaleOrderStored});
                                                         }
                                                     })
                                                    }else if(parseInt(inRequest)=== parseInt(allDetails)){
@@ -785,7 +785,7 @@ async function createSaleOrderWithQuote(req, res){
                                                             console.log(err);
                                                         }
                                                         if(update){
-                                                            res.status(200).send({orden: SaleOrderStored});
+                                                            // res.status(200).send({orden: SaleOrderStored});
                                                         }
                                                     })
                                                    }
