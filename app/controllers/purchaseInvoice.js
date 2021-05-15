@@ -747,6 +747,8 @@ async function createNewSupplierInvoice(req, res){
                         // res.status(500).send({message: "Error del Servidor."});
                         console.log(err);
                         console.log(err);
+                    }else{
+                        console.log("DEUDA ACTUATILZADA",updateDeuda);
                     }
                 });
           

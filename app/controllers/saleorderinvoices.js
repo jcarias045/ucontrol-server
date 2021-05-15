@@ -2240,7 +2240,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
      console.log(tipo);
 
     let correlativosselect= await correlativeDocument.find({ State:true})
-    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo, Company: companyId}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
@@ -3263,7 +3263,7 @@ async function createSaleOrderInvoice2(req, res){
      console.log(tipo);
 
     let correlativosselect= await correlativeDocument.find({ State:true})
-    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo}})
+    .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo, Company: companyId}})
     .then(docCorrelative => {
        if(docCorrelative){
           return docCorrelative
@@ -3736,9 +3736,10 @@ async function createSaleOrderInvoice2(req, res){
                         let ingresos=0.0;
                         let productRestante=0.0;
                         let ingresoUpdate=0.0;
-                        
+                        console.log("RESERVA",productreserved);
                         console.log("PRODUCTOS ENTREGADOS",proIngresados);
                         console.log("PRODUCTOS de factura",quantityInvoice);
+                        console.log("compamnia habitada reserva",companyParams.AvailableReservation);
                         ingresos=parseFloat(proIngresados.Entregados) + parseFloat(item.Quantity);
                         console.log("a entregar",ingresos);
                               //cambiando estados e ingresos de  detalle factur
@@ -3800,7 +3801,7 @@ async function createSaleOrderInvoice2(req, res){
                                             inventorytraceability.MovDate=creacion;
                                             inventorytraceability.WarehouseOrigin=item.Inventory; //origen
                                             inventorytraceability.User=User;
-                                            inventorytraceability.Company=Company;
+                                            inventorytraceability.Company=companyId;
                                             inventorytraceability.DocumentId=salidaId;
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
