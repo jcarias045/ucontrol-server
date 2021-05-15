@@ -22,7 +22,8 @@ const fs =require("fs");
 const path=require("path");
 const PDFDocument=require('pdfkit'); 
 const PDFTable = require('voilab-pdf-table');
-const { options } = require("joi");
+const blobStream = require('blob-stream');
+//const { options, function } = require("joi");
 // const { table } = require("console");
 // const { text } = require("pdfkit/js/mixins/text");
 
@@ -3925,6 +3926,7 @@ async function ImprimirPdf (req,res){
     ,populate:{path: 'DocumentType', model: 'DocumentType'}})
     .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
     console.log(facturas);
+    
     let resultado = await saleOrderInvoiceDetails.find({SaleOrderInvoice: facturas._id})
     .populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
@@ -3939,7 +3941,6 @@ async function ImprimirPdf (req,res){
     console.log(Cantidad);
     console.log(arrayQuantity);
     console.log(resultado.length);
-
 
     const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
             const doc = new PDFDocument()
@@ -3971,7 +3972,12 @@ async function ImprimirPdf (req,res){
             .text((total-(total/1.13)).toFixed(2) , 370,460)
             .text((total+(total-(total/1.13))).toFixed(2),370,520)
             .moveDown();
+            const stream = doc.pipe(blobStream())
             doc.end();
+
+            stream.on('finish',function(){
+
+            })
 }
 
 module.exports={

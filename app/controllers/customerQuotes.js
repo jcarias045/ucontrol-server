@@ -8,6 +8,7 @@ const fs =require("fs");
 const path=require("path");
 
 
+
 function getCustomerQuote(req, res){
     const { id,company } = req.params;
     CustomerQuote.find({User:id}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
@@ -335,10 +336,9 @@ function getQuotesbyCustomers(req, res){
     }
 }
 
-async function ImprimirCotizacionPDF(req,res) {
+async function ImprimirCotizacionPDF2(req,res) {
 
     const {id} = req.params.id;
-
     let cotizacion = await CustomerQuote.findOne({_id: req.params.id})
     .populate({path: 'Customer', model: 'Customer'
     ,populate:{path: 'Sector', model: 'Sector'}})
@@ -347,46 +347,287 @@ async function ImprimirCotizacionPDF(req,res) {
     console.log(cotizacion);
     console.log("terminaCotizacion");
 
-    let Sector1 = cotizacion.User.Company.ActividadPrimaria
-    console.log(Sector1);
-    let actividad1 = await Sector.findOne({_id: Sector1})
-    .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
-    console.log(actividad1);
-    console.log("finaliza primero");
+    // let Sector1 = cotizacion.User.Company.ActividadPrimaria
+    // console.log(Sector1);
+    // let actividad1 = await Sector.findOne({_id: Sector1})
+    // .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
+    // console.log(actividad1);
+    // console.log("finaliza primero");
 
-    let Sector2 = cotizacion.User.Company.ActividadSecundaria
-    console.log(Sector2);
-    let actividad2 = await Sector.findOne({_id: Sector2})
-    .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
-    console.log(actividad2);
-    console.log("Finaliza Segundo");
+    // let Sector2 = cotizacion.User.Company.ActividadSecundaria
+    // console.log(Sector2);
+    // let actividad2 = await Sector.findOne({_id: Sector2})
+    // .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
+    // console.log(actividad2);
+    // console.log("Finaliza Segundo");
 
-    let Sector3 = cotizacion.User.Company.ActividadTerciaria
-    console.log(Sector3);
-    let actividad3 = await Sector.findOne({_id: Sector3})
-    .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
-    console.log(actividad3);
-    console.log("actividad3");
+    // let Sector3 = cotizacion.User.Company.ActividadTerciaria
+    // console.log(Sector3);
+    // let actividad3 = await Sector.findOne({_id: Sector3})
+    // .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
+    // console.log(actividad3);
+    // console.log("actividad3");
+
     console.log(cotizacion._id);
-    let detalles = await  QuoteDetails.findOne({CustomerQuote:cotizacion._id})
+    let detalles = await  QuoteDetails.find({CustomerQuote:cotizacion._id})
     .populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
     .then((details)=>{return details}).catch(err=>{console.log("error en server");return err})
     console.log(detalles);
     console.log("Finaliza Detalles");
-    let img = "app/uploads/avatar/SolucionesDiversas.jpeg"
+    
+    let total = 0
+    let img = "app/uploads/avatar/LogoSolucionesDiversas.jpeg"
     const QuotesName = 'Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf';
     const doc = new PDFDocument()
     doc.pipe(fs.createWriteStream(QuotesName));
     doc.pipe(res);
     doc.font('Times-Roman',14)
-    .text(cotizacion.User.Company.Name,20,35).font('Times-Roman',16)
-    .image(path.resolve(img),{scale:0.25}).moveDown()
-    .text(cotizacion.User.Company.Web,20,45)
-    .moveDown();
+    .image(path.resolve(img),0,10,{scale:0.25}).moveDown()
+    .text(cotizacion.User.Company.Web,20,300)
+    .text(cotizacion.User.Company.Name,20,325)
+    .text("Fecha Cotizacion: "+cotizacion.CreationDate,300,300)
+    .text("Codigo Cotizacion: "+cotizacion.CodCustomerQuote,300,325)
+    .text("Cliente: "+cotizacion.Customer.Name, 20,335)
+    doc.y = 450;
+    detalles.map(function(valor, indice, resultado){
+    let yPos = doc.y + 10 
+    doc.text(valor.Quantity,20, yPos )
+    .text(valor.ProductName,100, yPos )
+    .text(valor.Price.toFixed(2), 335,yPos)
+    .text(valor.SubTotal.toFixed(2), 370, yPos )
+    total = valor.SubTotal + total;
+    doc.moveDown()
+    })
+    doc.text(total.toFixed(2),370,600)
+    let subtotal = (parseFloat(cotizacion.Total)-total);
+    console.log(subtotal);
+    doc.text("IVA " + subtotal.toFixed(2) , 370,650)
+    .text("Total "+parseFloat(cotizacion.Total).toFixed(2),370,680)
+    console.log(total);
+    doc.moveDown();
     doc.end();
 }
+
+async function ImprimirCotizacionPDF(req,res) {
+
+        const {id} = req.params.id;
+        let img = "app/uploads/avatar/LogoSolucionesDiversas.jpeg";
+
+        let cotizacion = await CustomerQuote.findOne({_id: req.params.id})
+        .populate({path: 'Customer', model: 'Customer'
+        ,populate:{path: 'Sector', model: 'Sector'}})
+        .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
+        .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
+        console.log(cotizacion);
+        console.log("terminaCotizacion");
+
+        console.log(cotizacion._id);
+        let detalles = await  QuoteDetails.find({CustomerQuote:cotizacion._id})
+        .populate({path: 'Inventory', model: 'Inventory',
+        populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+        populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
+        .then((details)=>{return details}).catch(err=>{console.log("error en server");return err})
+        console.log(detalles);
+        console.log("Finaliza Detalles");
+
+        const QuotesName = 'Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf';
+        createInvoice(cotizacion,QuotesName, detalles)
+        console.log("paso");
+    
+    async function createInvoice(cotizacion, QuotesName, detalles) {
+        let doc = new PDFDocument({ size: "A4", margin: 50 });
+        console.log("funcion de crear");
+        generateHeader(doc,cotizacion);
+        generateCustomerInformation(doc, cotizacion);
+        generateInvoiceTable(doc, cotizacion, detalles);
+        generateFooter(doc, cotizacion);
+      
+        doc.end();
+        doc.pipe(fs.createWriteStream(QuotesName));
+      }
+      
+    async  function generateHeader(doc,cotizacion) {
+        doc
+          .image(path.resolve(img), 50, 45, { width: 50 })
+          .fillColor("#444444")
+          .fontSize(20)
+          //.text(cotizacion.User.Company.Name, 110, 57)
+          .fontSize(10)
+          .text(cotizacion.User.Company.Name, 200, 50, { align: "right" })
+          .text("Centro Comercial Novocentro,local 23b", 200, 65, { align: "right" })
+          .text("Santa Tecla, El Salvaodr", 200, 80, { align: "right" })
+          .text(cotizacion.User.Company.Web, 200, 95, { align: "right" })
+          .moveDown();
+      }
+      
+    async  function generateCustomerInformation(doc, invoice) {
+        doc
+          .fillColor("#444444")
+          .fontSize(20)
+          .text("Cotización", 50, 160);
+      
+        generateHr(doc, 185);
+      
+        const customerInformationTop = 200;
+      
+        doc
+          .fontSize(10)
+          .text("Cotización Numero:", 50, customerInformationTop)
+          .font("Helvetica-Bold")
+          .text(invoice.CodCustomerQuote, 150, customerInformationTop)
+          .font("Helvetica")
+          .text("Fecha Cotizacion", 50, customerInformationTop + 15)
+          .text(invoice.CreationDate, 150, customerInformationTop + 15)
+          .text("Total", 50, customerInformationTop + 30)
+          .text(
+            formatCurrency(invoice.Total.toFixed(2)),
+            150,
+            customerInformationTop + 30
+          )
+      
+          .font("Helvetica-Bold")
+          .text(invoice.Customer.Name, 300, customerInformationTop)
+          .font("Helvetica")
+          .text(invoice.Customer.Email, 300, customerInformationTop + 15)
+          .text(
+            invoice.Customer.City +
+              ", " +
+              invoice.Customer.Country +
+              "," + 
+              invoice.Customer.ZipCode,
+            300,
+            customerInformationTop + 30
+          )
+          .moveDown();
+      
+        generateHr(doc, 252);
+      }
+      
+    async  function generateInvoiceTable(doc, invoice, detalles) {
+        let i;
+        const invoiceTableTop = 330;
+        let TotalSinIva =0 ;
+        doc.font("Helvetica-Bold");
+        generateTableRow(
+          doc,
+          invoiceTableTop,
+          "Cantidad",
+          "Producto",
+          "Medida",
+          "Precio Unitario",
+          "Total"
+        );
+        generateHr(doc, invoiceTableTop + 20);
+        doc.font("Helvetica");
+      
+        for (i = 0; i < detalles.length; i++) {
+          const item = detalles[i];
+          const position = invoiceTableTop + (i + 1) * 30;
+          generateTableRow(
+            doc,
+            position,
+            item.Quantity,
+            item.ProductName,
+            item.Measure,
+            formatCurrency(item.Price.toFixed(2)),
+            formatCurrency(item.SubTotal.toFixed(2))
+          );
+          
+          TotalSinIva = item.SubTotal + TotalSinIva
+      
+          generateHr(doc, position + 20);
+        }
+        
+        console.log(TotalSinIva);
+        const IvaCotizacion = (invoice.Total - TotalSinIva).toFixed(2)
+
+        
+
+        const subtotalPosition = invoiceTableTop + (i + 1) * 30;
+        generateTableRow(
+          doc,
+          subtotalPosition,
+          "",
+          "",
+          "Subtotal",
+          "",
+          formatCurrency(TotalSinIva.toFixed(2))
+        );
+      
+        const paidToDatePosition = subtotalPosition + 20;
+        generateTableRow(
+          doc,
+          paidToDatePosition,
+          "",
+          "",
+          "IVA",
+          "",
+          formatCurrency(IvaCotizacion)
+        );
+      
+        const duePosition = paidToDatePosition + 25;
+        doc.font("Helvetica-Bold");
+        generateTableRow(
+          doc,
+          duePosition,
+          "",
+          "",
+          "Total",
+          "",
+          formatCurrency(invoice.Total.toFixed(2))
+        );
+        doc.font("Helvetica");
+      }
+      
+      function generateFooter(doc, invoice) {
+        doc
+          .fontSize(10)
+          .text(
+            "Gracias por la preferencia, " +invoice.Customer.Name +
+            ", saludos, "+ invoice.User.Company.Name,
+            50,
+            780,
+            { align: "center", width: 500 }
+          );
+      }
+      
+      function generateTableRow(
+        doc,
+        y,
+        item,
+        description,
+        unitCost,
+        quantity,
+        lineTotal
+      ) {
+        doc
+          .fontSize(10)
+          .text(item, 50, y)
+          .text(description, 150, y)
+          .text(unitCost, 280, y, { width: 90, align: "right" })
+          .text(quantity, 370, y, { width: 90, align: "right" })
+          .text(lineTotal, 0, y, { align: "right" });
+      }
+      
+      function generateHr(doc, y) {
+        doc
+          .strokeColor("#aaaaaa")
+          .lineWidth(1)
+          .moveTo(50, y)
+          .lineTo(550, y)
+          .stroke();
+      }
+      
+      function formatCurrency(cents) {
+        return "$"+cents ;
+      }
+      
+      
+      
+}
+
 
 
 module.exports={
