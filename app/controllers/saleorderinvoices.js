@@ -3939,8 +3939,6 @@ async function ImprimirPdf (req,res){
     
     var i = 0
     let total = 0
-    console.log(Cantidad);
-    console.log(arrayQuantity);
     console.log(resultado.length);
 
     const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
@@ -3973,11 +3971,17 @@ async function ImprimirPdf (req,res){
             .text((total-(total/1.13)).toFixed(2) , 370,460)
             .text((total+(total-(total/1.13))).toFixed(2),370,520)
             .moveDown();
-            const stream = doc.pipe(blobStream())
+            var stream = doc.pipe(blobStream())
+            stream.
+            pipe(blobStream()) 
             doc.end();
 
-            stream.on('finish',function(){
-
+            stream
+            .pipe(blobStream())
+            .on('finish',function(){
+                console.log("entra");
+                var url = this.toBlobURL('application/pdf')
+                window.open(url)
             })
 }
 

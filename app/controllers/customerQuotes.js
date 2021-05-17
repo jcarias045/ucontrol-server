@@ -6,6 +6,7 @@ const Sector= require("../models/sector.model");
 const PDFDocument = require('pdfkit-construct');
 const fs =require("fs");
 const path=require("path");
+const blobStream = require('blob-stream');
 
 
 
