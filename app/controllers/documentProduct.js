@@ -11,6 +11,7 @@ function uploadDocument(req,res) {
     documents.title = title,
     documents.description = description,
     documents.Product = Product
+    documents.User = User
 
     if (req.files) {
         let filePath = req.files.file.path;
@@ -73,8 +74,8 @@ function uploadDocument(req,res) {
 
 
 function getDocument(req, res) {
-
-    DocumentProduct.find()
+     const {id,user} = req.params
+    DocumentProduct.find({Product:id,User:user})
     .then(Document => {
         if(!Document){
             res.status(404).send({message:"No hay "});

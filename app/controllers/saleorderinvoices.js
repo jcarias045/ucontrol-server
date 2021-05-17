@@ -2392,13 +2392,13 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                        }});
                     let quoteId=SaleOrderStored.CustomerQuote;
-                    //cambio de estado a orden de venta
+                    // cambio de estado a orden de venta
 
-                    // saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
-                    //     if(err){
-                    //         res.status(500).send({ message: "Error del servidor." });
-                    //     }
-                    //     if(update){}});
+                    saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
+                        if(err){
+                            res.status(500).send({ message: "Error del servidor." });
+                        }
+                        if(update){}});
                     if(invoiceId){
 
 

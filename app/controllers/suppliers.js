@@ -133,8 +133,9 @@ function getSuppliersInfo(req, res){
     let companyId = req.params.id;
     console.log('proveedores');
     console.log(companyId);
+     var ObjectID = require('mongodb').ObjectID;
     try{
-        supplier.find({Company: companyId})
+        supplier.find({Company:companyId})
         .populate({path: 'SupplierType', model: 'SupplierType'})
         .then(suppliers => {
             res.status(200).send(suppliers);          

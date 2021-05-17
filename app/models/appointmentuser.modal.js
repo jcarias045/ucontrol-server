@@ -29,6 +29,7 @@ const AppointmenUserSchema = Schema({
   Name: String,
   StartTime: String,
   EndTime: String,
+  Color:String
 })
 
 module.exports = mongoose.model('BookingUser', AppointmenUserSchema)

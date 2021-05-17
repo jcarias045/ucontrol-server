@@ -57,6 +57,7 @@ function createBookingCustomer(req,res){
     bookingCustomer.Name = Name;
     bookingCustomer.StartTime = StartTime;
     bookingCustomer.EndTime = EndTime;
+    bookingCustomer.Color = "#70CAC9";
 
    console.log(bookingCustomer);
    bookingCustomer.save((err, BookingCustomerStored)=>{
