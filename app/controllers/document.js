@@ -1,13 +1,14 @@
 const Document = require('../models/document')
 const fs =require("fs");
 const path=require("path");
+const { log } = require('console');
 
 function uploadDocument(req,res) {
     const documents = new Document();
     //const { Url } = req.files;
     const { title, description, User, Customer} = req.body
    
-    console.log(req.files)
+    console.log(req.body)
     documents.title = title,
     documents.description = description,
     documents.Customer = Customer,
@@ -21,23 +22,33 @@ function uploadDocument(req,res) {
 
 
         let extSplit = fileName.split(".");
-        let fileExt = extSplit[1];
+        let fileExt = extSplit[1].toString();
         documents.Url = fileName;
+        console.log("la extension es:", fileExt);
+        // if(fileExt.toString() !== "png" || fileExt.toString()!=="jpg" ||  fileExt.toString()!=="pdf" ||  fileExt.toString()!=="jpeg" ||  fileExt.toString()!=="doc"
+        // ||  fileExt.toString()!=="txt" ||  fileExt.toString()!=="csv" ||  fileExt.toString()!=="xlsx"){
+        //     console.log("eror",fileExt.toString());
+        //     res.status(500).send({message: "Archivo Incorrecto"});
+        // }
+        // else{
+            console.log(documents)
+            documents.save((err, documentStored)=>{
+                if(err){
+                    res.status(500).send({message: err});
+                }else{
+                    if(!documentStored){
+                            res.status(500).send({message: "Error"});
+                    }else{
+                            
+                        res.status(200).send({bank: documentStored})
+                    }
+                }
+            });
+
+        // }
     }
 
-    console.log(documents)
-    documents.save((err, documentStored)=>{
-        if(err){
-            res.status(500).send({message: err});
-        }else{
-            if(!documentStored){
-                    res.status(500).send({message: "Error"});
-            }else{
-                    
-                res.status(200).send({bank: documentStored})
-            }
-        }
-    });
+  
 
 
     //   const { title, description } = req.body;
@@ -74,9 +85,8 @@ function uploadDocument(req,res) {
 
 
 function getDocument(req, res) {
-
-    Document.find()
-    .then(Document => {
+  const {id}=req.params;
+    Document.find({Customer:id}).then(Document => {
         if(!Document){
             res.status(404).send({message:"No hay "});
         }else{

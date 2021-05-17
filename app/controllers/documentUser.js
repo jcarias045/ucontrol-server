@@ -73,8 +73,9 @@ function uploadDocument(req,res) {
 
 
 function getDocument(req, res) {
-
-    DocumentUser.find()
+   const {id} = req.params;
+   console.log("DOCUMENTOS USUARIOP");
+    DocumentUser.find({User:id})
     .then(Document => {
         if(!Document){
             res.status(404).send({message:"No hay "});

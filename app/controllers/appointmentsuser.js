@@ -42,16 +42,19 @@ function createBookingUser(req,res){
     bookingUser.Name = Name;
     bookingUser.StartTime = StartTime;
     bookingUser.EndTime = EndTime;
+    bookingUser.Color = "#1565A6";
 
    console.log(bookingUser);
    bookingUser.save((err, BookingUserStored)=>{
        if(err){
            res.status(500).send({message: err});
+           console.log(err);
        }else{
            if(!BookingUserStored){
                res.status(500).send({message: "Error"});
            }else{
                res.status(200).send({BookingUser: BookingUserStored})
+               console.log("EVENTO INSERTADO DE USUARIO",BookingUserStored);
            }
        }
    });

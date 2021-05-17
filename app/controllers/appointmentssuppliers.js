@@ -5,7 +5,8 @@ const moment=require("moment");
 const jwt= require('../services/jwt');
 
 function getBookingSupplier(req,res){
-    bookingSupplier.find().populate({ path: 'User', model: 'User'}).
+    const {supplierid}=req.params;
+    bookingSupplier.find({Supplier:supplierid}).populate({ path: 'User', model: 'User'}).
     populate({ path: 'Supplier', model: 'Supplier'})
     .then(bookingSupplier => {
         if(!bookingSupplier){
@@ -21,17 +22,19 @@ function createBookingSupplier(req,res){
     
     console.log("bookin proveedor", req.body);
     const {StartDate, EndDate, Description, State,
-        User, Customer,  Name, StartTime, EndTime } = req.body
+        User, Supplier,  Name, StartTime, EndTime } = req.body
     
        BookingSupplier.StartDate = StartDate;
+       BookingSupplier.Supplier = Supplier;
        BookingSupplier.EndDate = EndDate;
        BookingSupplier.Description = Description;
        BookingSupplier.State = State;
        BookingSupplier.User = User;
-       BookingSupplier.Customer = Customer;
+       
        BookingSupplier.Name = Name;
        BookingSupplier.StartTime = StartTime;
        BookingSupplier.EndTime = EndTime;
+       BookingSupplier.Color = "#15A68D";
 
    console.log(BookingSupplier);
    BookingSupplier.save((err, BookingSupplierStored)=>{

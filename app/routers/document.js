@@ -24,7 +24,7 @@ const md_upload_avatar=multipart({uploadDir: "./app/uploads/document"});
 
 
 router.post('/upload',md_upload_avatar, Document.uploadDocument);
-router.get('/get-files', Document.getDocument)
+router.get('/get-files/:id', Document.getDocument)
 router.get('/getAvatar/:FileName', Document.getAvatar)
 
 // router.post("/upload", upload.single("file"), async function(req, res, next) {
