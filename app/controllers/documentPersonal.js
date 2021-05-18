@@ -16,7 +16,8 @@ function uploadDocument(req,res) {
     if (req.files) {
         let filePath = req.files.file.path;
         console.log(filePath)
-        let fileSplit = filePath.split("\\");
+        // let fileSplit = filePath.split("\\");
+        let fileSplit = filePath.split("/");
         let fileName = fileSplit[3];
 
 
