@@ -7,7 +7,7 @@ function uploadDocument(req,res) {
     //const { Url } = req.files;
     const { title, description, User, Product} = req.body
    
-    console.log(req.files)
+    console.log(req.files.file.path)
     documents.title = title,
     documents.description = description,
     documents.Product = Product
@@ -16,7 +16,7 @@ function uploadDocument(req,res) {
     if (req.files) {
         let filePath = req.files.file.path;
         console.log(filePath)
-        let fileSplit = filePath.split("\\");
+        let fileSplit = filePath.split("/");
         let fileName = fileSplit[3];
 
 
