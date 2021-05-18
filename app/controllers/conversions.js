@@ -44,10 +44,7 @@ async function createConversion(req, res){
         else{ return null}
     });
     console.log(exist);
-    if(exist){
-        
-       res.status(500).send({message: "Ya existe conversión"});
-    }else{
+
         Conversion.save((err, ConversionStored)=>{
             if(err){
                 res.status(500).send({message: err});
@@ -77,7 +74,7 @@ async function createConversion(req, res){
             }
         });
        
-    }
+    
  
 }
 
