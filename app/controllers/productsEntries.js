@@ -538,6 +538,7 @@ async function createProductEntryWithoutInvoice(req, res){
 
 function getProductEntries(req, res){
     let invoiceId = req.params.id;
+    console.log("id",invoiceId);
     productEntryDetails.find({ProductEntry:invoiceId}).populate({path: 'Inventory', model: 'Inventory', 
     populate:{path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'}}})
     .then(supplier => {

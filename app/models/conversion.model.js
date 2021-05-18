@@ -14,7 +14,12 @@ const ConversionSchema = Schema({
     Receta: { type: Schema.ObjectId, 
         ref: "Product",
         // autopopulate: true,
-        },
+        }, 
+    Codigo: Number,
+    State:String,
+    Quantity:Number,
+
+
 })
 
 module.exports = moongose.model('Conversion', ConversionSchema)

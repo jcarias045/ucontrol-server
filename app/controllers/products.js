@@ -30,6 +30,8 @@ async function createProduct(req, res){
     const Product = new product()
     const Inventory=new inventory();
     const InventoryReserva=new inventory();
+    const InventoryReProceso=new inventory();
+    const Anticipo=new inventory();
     const { Name, Brand, SellPrice, ShortName, Company, CatProduct, Supplier,
     Logo, MinStock, MaxStock, Active, BuyPrice, codproducts, Measure, Inventary, 
     AverageCost, Classification, isRecipe, receta} = req.body
@@ -81,7 +83,14 @@ async function createProduct(req, res){
                             let bodegaReserva=await bodega.findOne({Name:'Reserva', Company:Company},['_id'])
                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                             
-                           
+                             //obteniendo id de la bodega de REPROCESO de la empresa (CONVERSION DE PRODUCTO)
+                             let bodegaReproceso=await bodega.findOne({Name:'Reproceso', Company:Company},['_id'])
+                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                             
+                            //obteniendo id de la bodega de ANTICIPO de la empresa (CONVERSION DE PRODUCTO)
+                            let bodegaAnticipo=await bodega.findOne({Name:'Anticipo', Company:Company},['_id'])
+                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                            
                             Inventory.Product=productId;
                             Inventory.Stock=0;
                             Inventory.Description="Inventario principal producto: "+ nombreProduct;
@@ -89,6 +98,34 @@ async function createProduct(req, res){
                             Inventory.Company=Company;
                         
                             Inventory.save(async (err, inventoryStored)=>{
+                                if(err){
+                                    res.status(500).send({message: err});
+                                }else{
+                                    if(!inventoryStored){
+                                        res.status(500).send({message: "Error"});
+                                    }else{}
+                                }
+                            });
+                            InventoryReProceso.Product=productId;
+                            InventoryReProceso.Stock=0;
+                            InventoryReProceso.Description="Inventario anticipo producto: "+ nombreProduct;
+                            InventoryReProceso.Bodega=bodegaAnticipo._id;
+                            InventoryReProceso.Company=Company;
+                            InventoryReProceso.save(async (err, inventoryStored)=>{
+                                if(err){
+                                    res.status(500).send({message: err});
+                                }else{
+                                    if(!inventoryStored){
+                                        res.status(500).send({message: "Error"});
+                                    }else{}
+                                }
+                            });
+                            Anticipo.Product=productId;
+                            Anticipo.Stock=0;
+                            Anticipo.Description="Inventario reproceso producto: "+ nombreProduct;
+                            Anticipo.Bodega=bodegaReproceso._id;
+                            Anticipo.Company=Company;
+                            Anticipo.save(async (err, inventoryStored)=>{
                                 if(err){
                                     res.status(500).send({message: err});
                                 }else{
@@ -687,10 +724,12 @@ function ExportProductList(req, res){
 function getRecipe(req, res){
     const { id}=req.params;
     try{
-        recipe.find({Product:id})
+        recipe.find({Product:id}).populate({path: 'Product', model: 'Product',  populate:{path: 'Measure', model: 'Measure'}})
+        .populate({path: 'RecipeProduct', model: 'Product', populate:{path: 'Measure', model: 'Measure'}})
+   
         .then(recipe => {
             res.status(200).send({recipe});
-          
+          console.log(recipe);
         })
     }catch(error) {
         // imprimimos a consola
@@ -720,6 +759,135 @@ async function deleteRecipeItem(req, res){
       }
     });
 }
+
+async function getProductsRecipes(req, res){
+    const {id}= req.params;
+    product.find({Company: req.params.id, isRecipe: true}).
+    populate({path: 'Supplier', model: 'Supplier'}).
+    populate({path: 'Brand', model: 'Brand'}).
+    populate({path: 'CatProduct', model: 'CatProduct'}).
+    populate({path: 'Measure', model: 'Measure'})
+   
+    .then(product => {
+        if(!product){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({product})
+        }
+    });
+    console.log(product);
+}
+
+function getProductData(req, res){
+    const { id}=req.params;
+    try{
+        product.findOne({_id:id}).populate({path: 'Measure', model: 'Measure'})
+     
+        .then(product => {
+            res.status(200).send({product});
+          console.log(product);
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+async function getRecipeDetails(req, res){
+    var ObjectID = require('mongodb').ObjectID
+    const { id,company}=req.params;
+    let productreserved=await inventory.findOne({Product:id, Company:company},['Stock','Product'])
+    .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
+    console.log(productreserved);
+    recipe.aggregate([
+        {  $match: {Product:ObjectID(id),}},
+    
+        {
+            $lookup: {
+                from:"inventories",
+               
+                let:{productId:"$RecipeProduct" },
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                                [
+                                    { $eq: [ "$Product",  "$$productId" ] },
+                                
+                                 
+                                ]
+                             }
+                           
+                               
+                               
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from:"bodegas",
+                                let: {idinventario:"$Bodega"},
+                                pipeline: [
+                                    { $match:
+                                        { $expr:
+                                            { $and:
+                                                [
+                                                    { $eq: [ "$_id",  "$$idinventario" ] },
+                                                    { $eq: [ "$Name",  "Principal" ] },
+                                                
+                                                 
+                                                ]
+                                             }
+                                           
+                                            }
+                                        },
+                                    ],
+                                    as:"bodega"
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from:"products",
+                                let: {idproduct:"$Product"},
+                                pipeline: [
+                                    { $match:
+                                        { $expr:
+                                            { $and:
+                                                [
+                                                    { $eq: [ "$_id",  "$$productId" ] },
+                                                    
+                                                 
+                                                ]
+                                             }
+                                           
+                                            }
+                                        },
+                                    ],
+                                    as:"infoProducto"
+                            }
+                        },
+                   
+
+                ],
+                as:"product",
+                
+            },
+            
+              
+            
+        }, 
+       
+        
+    ])
+    .then(recipe => {
+        res.status(200).send({recipe});
+      console.log(recipe);
+    })
+}
  
 module.exports={
     getPoducts,
@@ -738,6 +906,9 @@ module.exports={
     // getProduct,
     getProductByInventory,
     getRecipe,
-    deleteRecipeItem
+    deleteRecipeItem,
+    getProductsRecipes,
+    getProductData,
+    getRecipeDetails
 
 }
