@@ -21,5 +21,10 @@ router.get('/get-pdfproductlist/:id', products.ExportProductList)
 router.get('/get-recommended-products/:id/:supplier',products.getRecommendedProducts);
 router.get('/get-recommended-productsinventary/:id/:supplier',products.getRecommendedProductsInventory);
 router.get('/get-productsinventory/:id/:company',products.getProductByInventory);
+router.get('/get-recipe/:id',products.getRecipe);
+router.delete('/delete-recipeitem/:id', products.deleteRecipeItem);
+router.get('/get-productifrecipe/:id', products.getProductsRecipes); //para obtener productos que son receta
+router.get('/get-productdata/:id', products.getProductData); //para obtener solo informacion del prodcuto seleccionado
+router.get('/get-recipedetailsinventary/:id/:company', products.getRecipeDetails); //para obtener solo informacion del prodcuto seleccionado
 
 module.exports = router;

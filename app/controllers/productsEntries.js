@@ -104,13 +104,13 @@ function getEntries(req, res){
 async function createProductEntry(req, res){
     const entryData=new productEntry();
     const entryDataDetail=[];
-    let creacion = moment().format('DD/MM/YYYY');
-
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
     let companyId = req.params.company;
     let detalles=req.body.entries;
     let inventaryUpdate={};
-
-    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId,SupplierName} = req.body;
+    console.log( "DETALLES DE ENTRADA",req.body);
+    const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId,SupplierName,InvoiceNumber} = req.body;
       //para generar el correctivo del ingreso en caso de que sea requerido
       let codEntry=await productEntry.findOne({Company:Company}).sort({CodEntry:-1})
       .then(function(doc){
@@ -142,7 +142,7 @@ async function createProductEntry(req, res){
            return(tipo.SupplierType.Name) 
         }
     });
-    console.log(tipoProveedor);
+    console.log("CODSIFO D FACTUA",InvoiceNumber);
 
     entryData.EntryDate=EntryDate;
     entryData.User=User;
@@ -150,8 +150,9 @@ async function createProductEntry(req, res){
     entryData.State=true;
     entryData.CodEntry=codigoEntradas;
     entryData.Company=Company;
-    entryData.PurchaseInvoice=null;
+    entryData.PurchaseInvoice=PurchaseInvoiceId;
     entryData.Supplier=SupplierName;
+    entryData.InvoiceNumber=InvoiceNumber;
     entryData.save(async (err, entryStored)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
@@ -192,7 +193,7 @@ async function createProductEntry(req, res){
                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                 let quantityInvoice=await purchaseInvoiceDetails.findOne({_id:item.PurchaseInvoiceDetail},'Quantity')
                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                console.log(quantityInvoice);
+                                console.log("INGRASADOS",proIngresados.Ingresados);
                                 let cantidad=0.0;
                                 let ingresos=0.0;
                                 let productRestante=0.0;
@@ -272,6 +273,8 @@ async function createProductEntry(req, res){
                                 inventorytraceability.User=User;
                                 inventorytraceability.Company=companyId;
                                 inventorytraceability.DocumentId=entryid;
+                                inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
@@ -465,7 +468,8 @@ async function createProductEntryWithoutInvoice(req, res){
                                 inventorytraceability.User=User;
                                 inventorytraceability.Company=companyId;
                                 inventorytraceability.DocumentId=entryid;
-
+                                inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
                                           console.log(err);
@@ -534,6 +538,7 @@ async function createProductEntryWithoutInvoice(req, res){
 
 function getProductEntries(req, res){
     let invoiceId = req.params.id;
+    console.log("id",invoiceId);
     productEntryDetails.find({ProductEntry:invoiceId}).populate({path: 'Inventory', model: 'Inventory', 
     populate:{path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'}}})
     .then(supplier => {
@@ -547,7 +552,9 @@ function getProductEntries(req, res){
 
 async function anularProductEntry(req, res){
     let entryId= req.params.id;
-
+    let now= new Date();
+   
+    let creacion=now.toISOString().substring(0, 10); 
     productEntry.findByIdAndUpdate(entryId,{State:false},async (err, entryUpdate)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});
@@ -575,12 +582,15 @@ async function anularProductEntry(req, res){
                 console.log(entryDetail);
                 entryDetail.map(async item =>{
                     let ingresados=null;
-                    let inStock=await inventory.findOne({_id:item.Inventory},'Stock')
+                    let inStock=await inventory.findOne({_id:item.Inventory},['Stock','Company'])
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                     if(item.PurchaseInvoiceDetail!==null){
                         ingresados=await purchaseInvoiceDetails.findOne({_id:item.PurchaseInvoiceDetail})
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                     } 
+                     //obteniendo id del movimiento de tipo reserva
+                     let movementId=await MovementTypes.findOne({Name:'reversion'},['_id'])
+                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                    
                     let cantidad=0.0;
                     let ingresoUpdate=0.0;
@@ -634,6 +644,33 @@ async function anularProductEntry(req, res){
                         })
                         .catch(err => {console.log(err);});
                     }
+                    const inventorytraceability= new inventoryTraceability();
+                    inventorytraceability.Quantity=item.Quantity;
+                    inventorytraceability.Product=item.Product;
+                    inventorytraceability.WarehouseDestination=null; //destino
+                    inventorytraceability.MovementType=movementId._id;
+                    inventorytraceability.MovDate=creacion;
+                    inventorytraceability.WarehouseOrigin=item.Inventory; //origen
+                    inventorytraceability.User=entryUpdate.User;
+                    inventorytraceability.Company=inStock.Company;
+                    inventorytraceability.DocumentId=entryId;
+                    inventorytraceability.ProductDestiny=null;
+                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
+                    inventorytraceability.save((err, traceabilityStored)=>{
+                        if(err){
+                            // res.status(500).send({message: err});
+                            console.log(err);
+
+                        }else {
+                            if(!traceabilityStored){
+                                // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                               
+                            }
+                            else{
+                                console.log(traceabilityStored);
+                            }
+                        }
+                    });
                     
                 });
                res.status(200).json(entryUpdate);

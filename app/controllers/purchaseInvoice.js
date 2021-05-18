@@ -315,7 +315,8 @@ async function createSupplierInvoice(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=productEntryID;
-
+                                                inventorytraceability.ProductDestiny=null;
+                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                         console.log(err);
@@ -639,7 +640,8 @@ async function createNewSupplierInvoice(req, res){
                                             Measure:item.Measure,
                                             CodProduct:item.CodProduct,
                                             ProductName:item.ProductName,
-                                            Product:item.Product
+                                            Product:item.Product,
+                                            Price:item.Price
                                              });
 
                                             purchaseInvoiceDetail.findByIdAndUpdate({_id: item._id},{
@@ -672,7 +674,8 @@ async function createNewSupplierInvoice(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=productEntryID;
-
+                                                inventorytraceability.ProductDestiny=null;
+                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                           console.log(err);
@@ -764,7 +767,7 @@ function getInvoiceDetails(req, res){
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
     populate:{path: 'Measure',model:'Measure'}}
-    )})
+    )}).populate({path: 'PurchaseInvoice', model:'PurchaseInvoice'})
     .then(details => {
         if(!details){
             res.status(404).send({message:"No hay "});

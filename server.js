@@ -63,6 +63,7 @@ let productOutputRoutes= require('./app/routers/productoutput.route');
 let sectorRoutes= require('./app/routers/sector.route');
 let docTypeRoutes= require('./app/routers/documentype.route');
 let docCorrelativeRoutes= require('./app/routers/documentcorrelatives.route');
+let conversionRoutes= require('./app/routers/conversion.route');
 
 const app=express();
 //funcion cors
@@ -153,6 +154,7 @@ app.use('/api',productOutputRoutes);
 app.use('/api',sectorRoutes);
 app.use('/api',docTypeRoutes);
 app.use('/api',docCorrelativeRoutes);
+app.use('/api',conversionRoutes);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));
@@ -178,8 +180,8 @@ const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-0
 const PORT = process.env.PORT || 3050 ;
 //const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
 // mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-//  mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+ mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+// mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 // mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 
     .then( () => app.listen(PORT, () => {

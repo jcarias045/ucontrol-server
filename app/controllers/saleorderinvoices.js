@@ -439,6 +439,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                                                     inventorytraceability.User=User;
                                                                                     inventorytraceability.Company=companyId;
                                                                                     inventorytraceability.DocumentId=invoiceId;
+                                                                                    inventorytraceability.ProductDestiny=null;
+                                                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
                                                                                             // res.status(500).send({message: err});
@@ -505,6 +507,8 @@ async function createSaleOrderInvoiceWithOrder(req, res){
                                                                                     inventorytraceability.User=User;
                                                                                     inventorytraceability.Company=companyId;
                                                                                     inventorytraceability.DocumentId=invoiceId;
+                                                                                    inventorytraceability.ProductDestiny=null;
+                                                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
 
@@ -1026,6 +1030,8 @@ async function createSaleOrderInvoice(req, res){
                                                                                     inventorytraceability.User=User;
                                                                                     inventorytraceability.Company=companyId;
                                                                                     inventorytraceability.DocumentId=invoiceId;
+                                                                                    inventorytraceability.ProductDestiny=null;
+                                                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
                                                                                             // res.status(500).send({message: err});
@@ -1092,6 +1098,8 @@ async function createSaleOrderInvoice(req, res){
                                                                                     inventorytraceability.User=User;
                                                                                     inventorytraceability.Company=companyId;
                                                                                     inventorytraceability.DocumentId=invoiceId;
+                                                                                    inventorytraceability.ProductDestiny=null;
+                                                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                                                         if(err){
 
@@ -1410,6 +1418,8 @@ async function updateSaleOrderInvoice(req, res){
                                     inventorytraceability.User=User;
                                     inventorytraceability.Company=companyId;
                                     inventorytraceability.DocumentId=saleId;
+                                    inventorytraceability.ProductDestiny=null;
+                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                     inventorytraceability.save((err, traceabilityStored)=>{
                                         if(err){
@@ -1457,6 +1467,8 @@ async function updateSaleOrderInvoice(req, res){
                                 inventorytraceability.User=User;
                                 inventorytraceability.Company=companyId;
                                 inventorytraceability.DocumentId=invoiceId;
+                                inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
@@ -1573,6 +1585,8 @@ async function deleteSaleInvoiceDetails(req,res){
                     inventorytraceability.User=User;
                     inventorytraceability.Company=companyId;
                     inventorytraceability.DocumentId=item.SaleOrderInvoice;
+                    inventorytraceability.ProductDestiny=null;
+                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                     inventorytraceability.save((err, traceabilityStored)=>{
                         if(err){
@@ -1626,6 +1640,8 @@ async function deleteSaleInvoiceDetails(req,res){
                         inventorytraceability.User=User;
                         inventorytraceability.Company=companyId;
                         inventorytraceability.DocumentId=item.SaleOrderInvoice;
+                        inventorytraceability.ProductDestiny=null;
+                        inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                         inventorytraceability.save((err, traceabilityStored)=>{
                             if(err){
@@ -1756,6 +1772,8 @@ async function anularSaleInovice(req,res){
                                 inventorytraceability.User=User;
                                 inventorytraceability.Company=companyId;
                                 inventorytraceability.DocumentId=item.SaleOrderInvoice;
+                                inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
@@ -1790,7 +1808,8 @@ async function anularSaleInovice(req,res){
                             inventorytraceability.User=User;
                             inventorytraceability.Company=companyId;
                             inventorytraceability.DocumentId=item.SaleOrderInvoice;
-
+                            inventorytraceability.ProductDestiny=null;
+                            inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                             inventorytraceability.save((err, traceabilityStored)=>{
                                 if(err){
                                     // res.status(500).send({message: err});
@@ -2792,6 +2811,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                             inventorytraceability.User=User;
                                             inventorytraceability.Company=Company;
                                             inventorytraceability.DocumentId=salidaId;
+                                            inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
                                                     // res.status(500).send({message: err});
@@ -2865,6 +2886,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     inventorytraceability.User=User;
                                                     inventorytraceability.Company=companyId;
                                                     inventorytraceability.DocumentId=salidaId;
+                                                    inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
                                                         
@@ -3426,7 +3449,7 @@ async function createSaleOrderInvoice2(req, res){
                                         Price:parseFloat(dePurchaseOrder[contador+ i].Price),
                                         Inventory :dePurchaseOrder[contador+ i].Inventory,
                                         SubTotal: parseFloat(dePurchaseOrder[contador+ i].total),
-                                        Entregados:!companyParams.RequieredOutput?dePurchaseOrder[contador+ i].Quantity:0,
+                                        Entregados:!companyParams.RequieredOutput?parseFloat(dePurchaseOrder[contador+ i].Quantity):0,
                                         State:!companyParams.RequieredOutput?true:false,
                                         Measure:dePurchaseOrder[contador+ i].Measures,
                                         CodProduct:dePurchaseOrder[contador+ i].codproducts,
@@ -3713,7 +3736,7 @@ async function createSaleOrderInvoice2(req, res){
                                     let SaleInvoiceId=item.SaleOrderInvoice;
                                     let salidaId=item.ProductOutput;
                                        //obteniendo stock de producto  (bodega principal)
-
+                              
                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         console.log('EN STOCK:',infoInventary);
@@ -3746,20 +3769,20 @@ async function createSaleOrderInvoice2(req, res){
                               if(proIngresados!==null){
                                 if(parseFloat(ingresos)===parseFloat(quantityInvoice.Quantity)){
                                     console.log('COMPLETADO INGRESO');
-                                   await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
-                                        Entregados:ingresos,
-                                        State:true
-                                    })
-                                    .catch(err => {console.log(err);})
+                                //    await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                //         Entregados:ingresos,
+                                //         State:true
+                                //     })
+                                //     .catch(err => {console.log(err);})
                                     
                                 }
                                  else{
                                 console.log('NO COMPLETADO INGRESO');
     
-                                await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
-                                    Entregados:ingresos,
-                                    State:false
-                                }).catch(err => {console.log(err);})
+                                // await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                //     Entregados:ingresos,
+                                //     State:false
+                                // }).catch(err => {console.log(err);})
                                 
                                }
                                actualizado=true;
@@ -3803,6 +3826,8 @@ async function createSaleOrderInvoice2(req, res){
                                             inventorytraceability.User=User;
                                             inventorytraceability.Company=companyId;
                                             inventorytraceability.DocumentId=salidaId;
+                                            inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
                                                     // res.status(500).send({message: err});
@@ -3876,6 +3901,8 @@ async function createSaleOrderInvoice2(req, res){
                                                     inventorytraceability.User=User;
                                                     inventorytraceability.Company=companyId;
                                                     inventorytraceability.DocumentId=salidaId;
+                                                    inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
                                                         
