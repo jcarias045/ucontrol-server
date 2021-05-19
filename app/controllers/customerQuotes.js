@@ -337,80 +337,6 @@ function getQuotesbyCustomers(req, res){
     }
 }
 
-async function ImprimirCotizacionPDF2(req,res) {
-
-    const {id} = req.params.id;
-    let cotizacion = await CustomerQuote.findOne({_id: req.params.id})
-    .populate({path: 'Customer', model: 'Customer'
-    ,populate:{path: 'Sector', model: 'Sector'}})
-    .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
-    .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
-    console.log(cotizacion);
-    console.log("terminaCotizacion");
-
-    // let Sector1 = cotizacion.User.Company.ActividadPrimaria
-    // console.log(Sector1);
-    // let actividad1 = await Sector.findOne({_id: Sector1})
-    // .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
-    // console.log(actividad1);
-    // console.log("finaliza primero");
-
-    // let Sector2 = cotizacion.User.Company.ActividadSecundaria
-    // console.log(Sector2);
-    // let actividad2 = await Sector.findOne({_id: Sector2})
-    // .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
-    // console.log(actividad2);
-    // console.log("Finaliza Segundo");
-
-    // let Sector3 = cotizacion.User.Company.ActividadTerciaria
-    // console.log(Sector3);
-    // let actividad3 = await Sector.findOne({_id: Sector3})
-    // .then((actividad) =>{ return actividad}).catch(err =>{console.log("error en proveedir");return err});
-    // console.log(actividad3);
-    // console.log("actividad3");
-
-    console.log(cotizacion._id);
-    let detalles = await  QuoteDetails.find({CustomerQuote:cotizacion._id})
-    .populate({path: 'Inventory', model: 'Inventory',
-    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
-    populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
-    .then((details)=>{return details}).catch(err=>{console.log("error en server");return err})
-    console.log(detalles);
-    console.log("Finaliza Detalles");
-    
-    let total = 0
-    let img = "app/uploads/avatar/LogoSolucionesDiversas.jpeg"
-    const QuotesName = 'Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf';
-    const doc = new PDFDocument()
-    doc.pipe(fs.createWriteStream(QuotesName));
-    doc.pipe(res);
-    doc.font('Times-Roman',14)
-    .image(path.resolve(img),0,10,{scale:0.25}).moveDown()
-    .text(cotizacion.User.Company.Web,20,300)
-    .text(cotizacion.User.Company.Name,20,325)
-    .text("Fecha Cotizacion: "+cotizacion.CreationDate,300,300)
-    .text("Codigo Cotizacion: "+cotizacion.CodCustomerQuote,300,325)
-    .text("Cliente: "+cotizacion.Customer.Name, 20,335)
-    doc.y = 450;
-    detalles.map(function(valor, indice, resultado){
-    let yPos = doc.y + 10 
-    doc.text(valor.Quantity,20, yPos )
-    .text(valor.ProductName,100, yPos )
-    .text(valor.Price.toFixed(2), 335,yPos)
-    .text(valor.SubTotal.toFixed(2), 370, yPos )
-    total = valor.SubTotal + total;
-    doc.moveDown()
-    })
-    doc.text(total.toFixed(2),370,600)
-    let subtotal = (parseFloat(cotizacion.Total)-total);
-    console.log(subtotal);
-    doc.text("IVA " + subtotal.toFixed(2) , 370,650)
-    .text("Total "+parseFloat(cotizacion.Total).toFixed(2),370,680)
-    console.log(total);
-    doc.moveDown();
-    doc.end();
-}
-
 async function ImprimirCotizacionPDF(req,res) {
 
         const {id} = req.params.id;
@@ -439,14 +365,28 @@ async function ImprimirCotizacionPDF(req,res) {
     
     async function createInvoice(cotizacion, QuotesName, detalles) {
         let doc = new PDFDocument({ size: "A4", margin: 50 });
+        doc.pipe(fs.createWriteStream('Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf'));
+        doc.pipe(res)
         console.log("funcion de crear");
         generateHeader(doc,cotizacion);
         generateCustomerInformation(doc, cotizacion);
         generateInvoiceTable(doc, cotizacion, detalles);
         generateFooter(doc, cotizacion);
-      
-        doc.end();
-        doc.pipe(fs.createWriteStream(QuotesName));
+        const stream = doc.pipe(blobStream())
+        doc.end();        
+        fs.readFile('Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf',(err,data)=>{
+            if(err){
+                console.log("error:", err);
+                console.log("entro al error");
+            }
+            else {                    
+                console.log("entro al else");
+                console.log(data);
+                fs.createReadStream('Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf');
+                res.sendFile(path.resolve('Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf'))
+            }
+        });
+        console.log("Termino")
       }
       
     async  function generateHeader(doc,cotizacion) {
