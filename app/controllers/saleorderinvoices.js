@@ -23,9 +23,7 @@ const path=require("path");
 const PDFDocument=require('pdfkit'); 
 const PDFTable = require('voilab-pdf-table');
 const blobStream = require('blob-stream');
-//const { options, function } = require("joi");
-// const { table } = require("console");
-// const { text } = require("pdfkit/js/mixins/text");
+
 
 function getSaleOrderInvoices(req, res){
    const { id,company } = req.params;
@@ -3917,6 +3915,7 @@ async function createSaleOrderInvoice2(req, res){
 
 async function ImprimirPdf (req,res){
     const {id} = req.params.id;
+    
 
     let facturas = await saleOrderInvoice.findOne({_id: req.params.id})
     .populate({path: 'Customer', model: 'Customer'
@@ -3943,7 +3942,8 @@ async function ImprimirPdf (req,res){
 
     const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
             const doc = new PDFDocument()
-            doc.pipe(fs.createWriteStream('CreditoFiscal-' + facturas.CodInvoice + '.pdf'));
+            const filePath = 'CreditoFiscal-'+facturas.CodInvoice+'.pdf';
+            doc.pipe(fs.createWriteStream('CreditoFiscal-'+facturas.CodInvoice+'.pdf'));
             doc.pipe(res);
             doc
             .font('Times-Roman',7)
@@ -3971,18 +3971,22 @@ async function ImprimirPdf (req,res){
             .text((total-(total/1.13)).toFixed(2) , 370,460)
             .text((total+(total-(total/1.13))).toFixed(2),370,520)
             .moveDown();
-            var stream = doc.pipe(blobStream())
-            stream.
-            pipe(blobStream()) 
+            const stream = doc.pipe(blobStream())
             doc.end();
-
-            stream
-            .pipe(blobStream())
-            .on('finish',function(){
-                console.log("entra");
-                var url = this.toBlobURL('application/pdf')
-                window.open(url)
-            })
+            fs.readFile('CreditoFiscal-'+facturas.CodInvoice+'.pdf',(err,data)=>{
+                if(err){
+                    console.log("error:", err);
+                    console.log("entro al error");
+                }
+                else {                    
+                    console.log("entro al else");
+                    console.log(data);
+                    fs.createReadStream('CreditoFiscal-'+facturas.CodInvoice+'.pdf');
+                    res.sendFile(path.resolve('CreditoFiscal-'+facturas.CodInvoice+'.pdf'))
+                }
+            });
+            console.log("Termino")
+                       
 }
 
 module.exports={

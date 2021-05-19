@@ -39,6 +39,7 @@
     "pdfkit": "^0.12.1",
     "pdfkit-construct": "^1.2.3",
     "sequelize": "^6.3.5",
+    "stream": "^0.0.2",
     "voilab-pdf-table": "^0.5.1"
   },
   "devDependencies": {
