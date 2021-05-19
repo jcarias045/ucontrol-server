@@ -20,7 +20,7 @@ const users= require('../models/user.model');
 const product= require('../models/product.model');
 const fs =require("fs");
 const path=require("path");
-const PDFDocument=require('pdfkit'); 
+const PDFDocument=require('pdfkit');
 const PDFTable = require('voilab-pdf-table');
 const blobStream = require('blob-stream');
 //const { options, function } = require("joi");
@@ -1173,7 +1173,7 @@ async function createSaleOrderInvoice(req, res){
 
 function getSaleInvoiceDetails(req, res){
     let invoiceId = req.params.id;
-    
+
     saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
@@ -1895,17 +1895,17 @@ function getChargestoCustomers(req, res){
 
   console.log("ID COMPA{IA",user);
     customer.aggregate([
-        {  $match: 
+        {  $match:
             { $expr:
-               
-                   
+
+
                     { $and:
                         [
                             { $ne: [ "$AccountsReceivable",  0 ] },
                             { User:user }
                         ]
                         }
-                
+
             }
         },
         {
@@ -2193,7 +2193,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
     console.log("DETALLES",req.body);
-    
+
     const {iva,InvoiceDate,CustomerName,SaleOrderId,CommentsSaleOrder,Total,User,companyId,InvoiceNumber,Customer,Comments,
         diasCredito,InvoiceComments,condicionPago,Reason,PaymentMethodName,PaymentMethodId,Monto,NumberAccount,BankName,NoTransaction} = req.body;
 
@@ -2477,14 +2477,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                 arreglo.push(detalles);
                                 //cuenta por cobrar
                                 let iddetalle=detalles.map(item=>{return item._id}).toString();
-                               let nuevaCuenta=parseFloat(deudaAct)+parseFloat(Total);
-                               customer.findByIdAndUpdate({_id:Customer},{
-                                    AccountsReceivable:nuevaCuenta.toFixed(2),
-                                }).then(function(update){
-                                    if(!update){
-
-                                    }
-                                    else{}}).catch(err =>{console.log(err)});
+                      
 
                                     if(condicionPago==='Contado'){
                                         await saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
@@ -2559,13 +2552,13 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                                       sumaMontos=item.sumAmount;
                                                                   })
                                                                   //actualizando deuda con cliente
-                                                                  let nuevaCuenta=parseFloat(deuda)-parseFloat((totalfactura));
-                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
-                                                                      if(err){
+                                                                //   let nuevaCuenta=parseFloat(deuda)-parseFloat((totalfactura));
+                                                                //  await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
+                                                                //       if(err){
 
-                                                                          console.log(err);
-                                                                      }else{}
-                                                                  });
+                                                                //           console.log(err);
+                                                                //       }else{}
+                                                                //   });
 
 
 
@@ -2581,6 +2574,15 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                               }
 
                                       })
+                                  }else{
+                                    let nuevaCuenta=parseFloat(deudaAct)+parseFloat(Total);
+                                    customer.findByIdAndUpdate({_id:Customer},{
+                                         AccountsReceivable:nuevaCuenta.toFixed(2),
+                                     }).then(function(update){
+                                         if(!update){
+     
+                                         }
+                                         else{}}).catch(err =>{console.log(err)});
                                   }
 
                             }else{
@@ -2627,9 +2629,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
 
     if(!companyParams.RequieredOutput){
-      
+
         let salida=[];
-        
+
         let  datosFactura=[];
         let  datosDetalles=[];
         let idsalida=null;
@@ -2637,7 +2639,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         arregloFacturas.map(async item=>{
             let id= item.forEach(item=>{
                 datosFactura.push(item)
-              
+
 
             });
          });
@@ -2645,12 +2647,12 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             // console.log("arreglo final", item);
             item.forEach(item=>{
                  datosDetalles.push(item);
-                
+
             })
 
 
         })
-      
+
 
         datosFactura.map(item=>{
              salida.push(
@@ -2677,8 +2679,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             }else {
                 var detalles=[];
                  let cont=0;
-               
-                
+
+
                  outputStored.map(async  item=> {
                     let long=outputStored.length;
                     console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
@@ -2701,7 +2703,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                Price:item.Price,
                                Measure:item.Measure,
                                CodProduct:item.CodProduct,
-                               Product:item.Product, 
+                               Product:item.Product,
                                SaleOrderInvoice:item.SaleOrderInvoice
 
                            }
@@ -2711,7 +2713,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                    if(parseInt(long)<=parseInt(cont)){
                        console.log("gola ");
                    }
-                   
+
                   cont+=1;
                   if(parseInt(long)===parseInt(cont)){
                     productOutputDetail.insertMany(detalles) .then(async function (outputStored) {
@@ -2730,22 +2732,22 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                        
+
                         //obteniendo id del movimiento de tipo reserva
                         let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-                        //cambios de cantidad ingresada 
+                        //cambios de cantidad ingresada
                         let proIngresados=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Entregados')
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         let quantityInvoice=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Quantity')
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                        
+
                         let cantidad=0.0;
                         let ingresos=0.0;
                         let productRestante=0.0;
                         let ingresoUpdate=0.0;
-                        
+
                         console.log("PRODUCTOS ENTREGADOS",proIngresados);
                         console.log("PRODUCTOS de factura",quantityInvoice);
                         ingresos=parseFloat(proIngresados.Entregados) + parseFloat(item.Quantity);
@@ -2759,19 +2761,19 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         State:true
                                     })
                                     .catch(err => {console.log(err);})
-                                    
+
                                 }
                                  else{
                                 console.log('NO COMPLETADO INGRESO');
-    
+
                                 await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
                                     Entregados:ingresos,
                                     State:false
                                 }).catch(err => {console.log(err);})
-                                
+
                                }
                                actualizado=true;
-                            } 
+                            }
 
                         if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
                                 //descontando cantidad que se reservara
@@ -2785,7 +2787,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
                                             return c
                                             });
-                                        
+
                                             let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
                                             console.log(count); return (count)
                                             });
@@ -2798,8 +2800,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                             saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
                                                 Entregada:true,
                                             })
-                                            .catch(err => {console.log(err);}); 
-                                            
+                                            .catch(err => {console.log(err);});
+
                                         }
                                             const inventorytraceability= new inventoryTraceability();
                                             inventorytraceability.Quantity=item.Quantity;
@@ -2828,10 +2830,10 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                 }
                                             });
 
-                                       
+
                                         console.log('id del moviminto de reserva', movementId);
                                         //registro de movimiento
-                                       
+
                                         res.status(200).send({orden: detalles});
                                     }
                                 })
@@ -2840,7 +2842,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                 //stock de bodega de reserva
                                 console.log(infoInventary.Product);
 
-                        } 
+                        }
                         else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
                             console.log("EMPRESA HABILITADA PARA RESERVAS");
                             console.log('BODEGA RESERVA');
@@ -2853,12 +2855,12 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                     if(!update){
                                         res.status(500).send({message: "No se actualizo inventario"});
                                     }else{
-                                
-                                       
+
+
                                                     let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
                                                         return c
                                                       });
-                                                   
+
                                                       let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
                                                        console.log(count); return (count)
                                                       });
@@ -2871,8 +2873,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                         saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
                                                             Entregada:true,
                                                         })
-                                                        .catch(err => {console.log(err);}); 
-                                                      
+                                                        .catch(err => {console.log(err);});
+
                                                     }
 
                                                     //transaccion
@@ -2890,7 +2892,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
-                                                        
+
                                                             res.status(500).send({message: "No se actualizo inventario"});
                                                         }else {
                                                             if(!traceabilityStored){
@@ -2902,19 +2904,19 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                             }
                                                         }
                                                     });
-                                               
-                                      
-                                        
+
+
+
                                     }
-                                
+
                                 })
-                                .catch(err => {console.log(err);});    
-                                
+                                .catch(err => {console.log(err);});
+
                         }
                         else{
 
                             res.status(500).send({ message: "Verificar Inventario" });
-                            
+
                         }
 
                         })
@@ -3362,7 +3364,7 @@ async function createSaleOrderInvoice2(req, res){
         }
      //++++++++++++++  FIN  +++++++++++++++++++
 
-    
+
     let  invoiceId=null;
     let totalfactura=0.0;
     let sumimpuestos=0.0;
@@ -3454,7 +3456,7 @@ async function createSaleOrderInvoice2(req, res){
                                         Measure:dePurchaseOrder[contador+ i].Measures,
                                         CodProduct:dePurchaseOrder[contador+ i].codproducts,
                                         Product:dePurchaseOrder[contador+ i].ProductId,
-                                       
+
                                         iniQuantity:dePurchaseOrder[contador+ i].Quantity,
                                         BuyPrice:parseFloat(dePurchaseOrder[contador+ i].BuyPrice),
                                         PriceDiscount:parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento)?
@@ -3464,7 +3466,7 @@ async function createSaleOrderInvoice2(req, res){
                             }
                             else{deOrden[null]}
                         }
-                       
+
 
                     if(customerType.toString()==="CreditoFiscal"){
                          impuestosList.map(item=>{
@@ -3489,14 +3491,7 @@ async function createSaleOrderInvoice2(req, res){
                                 arreglo.push(detalles);
                                 //cuenta por cobrar
                                 let iddetalle=detalles.map(item=>{return item._id}).toString();
-                               let cuentaNueva=parseFloat(deudaAct)+parseFloat(Total);
-                               customer.findByIdAndUpdate({_id:Customer},{
-                                    AccountsReceivable:cuentaNueva.toFixed(2),
-                                }).then(function(update){
-                                    if(!update){
-
-                                    }
-                                    else{}}).catch(err =>{console.log(err)});
+                             
 
                                     if(condicionPago==='Contado'){
                                         await saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
@@ -3573,13 +3568,13 @@ async function createSaleOrderInvoice2(req, res){
                                                                   //actualizando deuda con cliente
                                                                      let cuentaNueva=parseFloat(deuda)+parseFloat(totalfactura);
 
-                                                                  
-                                                                 await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:cuentaNueva.toFixed(2)},(err,updateDeuda)=>{
-                                                                      if(err){
 
-                                                                          console.log(err);
-                                                                      }else{}
-                                                                  });
+                                                                //  await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:cuentaNueva.toFixed(2)},(err,updateDeuda)=>{
+                                                                //       if(err){
+
+                                                                //           console.log(err);
+                                                                //       }else{}
+                                                                //   });
 
 
 
@@ -3595,6 +3590,15 @@ async function createSaleOrderInvoice2(req, res){
                                               }
 
                                       })
+                                  }else{
+                                    let cuentaNueva=parseFloat(deudaAct)+parseFloat(Total);
+                                    customer.findByIdAndUpdate({_id:Customer},{
+                                         AccountsReceivable:cuentaNueva.toFixed(2),
+                                     }).then(function(update){
+                                         if(!update){
+     
+                                         }
+                                         else{}}).catch(err =>{console.log(err)});
                                   }
 
                             }else{
@@ -3641,9 +3645,9 @@ async function createSaleOrderInvoice2(req, res){
 
 
     if(!companyParams.RequieredOutput){
-      
+
         let salida=[];
-        
+
         let  datosFactura=[];
         let  datosDetalles=[];
         let idsalida=null;
@@ -3651,7 +3655,7 @@ async function createSaleOrderInvoice2(req, res){
         arregloFacturas.map(async item=>{
             let id= item.forEach(item=>{
                 datosFactura.push(item)
-              
+
 
             });
          });
@@ -3659,12 +3663,12 @@ async function createSaleOrderInvoice2(req, res){
             // console.log("arreglo final", item);
             item.forEach(item=>{
                  datosDetalles.push(item);
-                
+
             })
 
 
         })
-      
+
 
         datosFactura.map(item=>{
              salida.push(
@@ -3691,8 +3695,8 @@ async function createSaleOrderInvoice2(req, res){
             }else {
                 var detalles=[];
                  let cont=0;
-               
-                
+
+
                  outputStored.map(async  item=> {
                     let long=outputStored.length;
                     console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
@@ -3715,7 +3719,7 @@ async function createSaleOrderInvoice2(req, res){
                                Price:item.Price,
                                Measure:item.Measure,
                                CodProduct:item.CodProduct,
-                               Product:item.Product, 
+                               Product:item.Product,
                                SaleOrderInvoice:item.SaleOrderInvoice
 
                            }
@@ -3725,7 +3729,7 @@ async function createSaleOrderInvoice2(req, res){
                    if(parseInt(long)<=parseInt(cont)){
                        console.log("gola ");
                    }
-                   
+
                   cont+=1;
                   if(parseInt(long)===parseInt(cont)){
                     productOutputDetail.insertMany(detalles) .then(async function (outputStored) {
@@ -3736,7 +3740,7 @@ async function createSaleOrderInvoice2(req, res){
                                     let SaleInvoiceId=item.SaleOrderInvoice;
                                     let salidaId=item.ProductOutput;
                                        //obteniendo stock de producto  (bodega principal)
-                              
+
                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         console.log('EN STOCK:',infoInventary);
@@ -3744,17 +3748,17 @@ async function createSaleOrderInvoice2(req, res){
                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                        
+
                         //obteniendo id del movimiento de tipo reserva
                         let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-                        //cambios de cantidad ingresada 
+                        //cambios de cantidad ingresada
                         let proIngresados=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Entregados')
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         let quantityInvoice=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Quantity')
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                        
+
                         let cantidad=0.0;
                         let ingresos=0.0;
                         let productRestante=0.0;
@@ -3774,19 +3778,19 @@ async function createSaleOrderInvoice2(req, res){
                                 //         State:true
                                 //     })
                                 //     .catch(err => {console.log(err);})
-                                    
+
                                 }
                                  else{
                                 console.log('NO COMPLETADO INGRESO');
-    
+
                                 // await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
                                 //     Entregados:ingresos,
                                 //     State:false
                                 // }).catch(err => {console.log(err);})
-                                
+
                                }
                                actualizado=true;
-                            } 
+                            }
 
                         if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
                                 //descontando cantidad que se reservara
@@ -3800,7 +3804,7 @@ async function createSaleOrderInvoice2(req, res){
                                         let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
                                             return c
                                             });
-                                        
+
                                             let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
                                             console.log(count); return (count)
                                             });
@@ -3813,8 +3817,8 @@ async function createSaleOrderInvoice2(req, res){
                                             saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
                                                 Entregada:true,
                                             })
-                                            .catch(err => {console.log(err);}); 
-                                            
+                                            .catch(err => {console.log(err);});
+
                                         }
                                             const inventorytraceability= new inventoryTraceability();
                                             inventorytraceability.Quantity=item.Quantity;
@@ -3843,10 +3847,10 @@ async function createSaleOrderInvoice2(req, res){
                                                 }
                                             });
 
-                                       
+
                                         console.log('id del moviminto de reserva', movementId);
                                         //registro de movimiento
-                                       
+
                                         res.status(200).send({orden: detalles});
                                     }
                                 })
@@ -3855,7 +3859,7 @@ async function createSaleOrderInvoice2(req, res){
                                 //stock de bodega de reserva
                                 console.log(infoInventary.Product);
 
-                        } 
+                        }
                         else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
                             console.log("EMPRESA HABILITADA PARA RESERVAS");
                             console.log('BODEGA RESERVA');
@@ -3868,12 +3872,12 @@ async function createSaleOrderInvoice2(req, res){
                                     if(!update){
                                         res.status(500).send({message: "No se actualizo inventario"});
                                     }else{
-                                
-                                       
+
+
                                                     let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
                                                         return c
                                                       });
-                                                   
+
                                                       let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
                                                        console.log(count); return (count)
                                                       });
@@ -3886,8 +3890,8 @@ async function createSaleOrderInvoice2(req, res){
                                                         saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
                                                             Entregada:true,
                                                         })
-                                                        .catch(err => {console.log(err);}); 
-                                                      
+                                                        .catch(err => {console.log(err);});
+
                                                     }
 
                                                     //transaccion
@@ -3905,7 +3909,7 @@ async function createSaleOrderInvoice2(req, res){
                                                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
-                                                        
+
                                                             res.status(500).send({message: "No se actualizo inventario"});
                                                         }else {
                                                             if(!traceabilityStored){
@@ -3917,19 +3921,19 @@ async function createSaleOrderInvoice2(req, res){
                                                             }
                                                         }
                                                     });
-                                               
-                                      
-                                        
+
+
+
                                     }
-                                
+
                                 })
-                                .catch(err => {console.log(err);});    
-                                
+                                .catch(err => {console.log(err);});
+
                         }
                         else{
 
                             res.status(500).send({ message: "Verificar Inventario" });
-                            
+
                         }
 
                         })
@@ -3954,7 +3958,7 @@ async function ImprimirPdf (req,res){
     ,populate:{path: 'DocumentType', model: 'DocumentType'}})
     .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
     console.log(facturas);
-    
+
     let resultado = await saleOrderInvoiceDetails.find({SaleOrderInvoice: facturas._id})
     .populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
@@ -3963,7 +3967,7 @@ async function ImprimirPdf (req,res){
     )})
     .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
     .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
-    
+
     var i = 0
     let total = 0
     console.log(resultado.length);
@@ -3985,7 +3989,7 @@ async function ImprimirPdf (req,res){
             .text(facturas.Customer.PaymentCondition, 260, 205)
             doc.y = 220;
             resultado.forEach(function(valor, indice, resultado){
-                 let yPos = doc.y + 10 
+                 let yPos = doc.y + 10
                 doc.text(valor.Quantity,160, yPos )
                 .text(valor.ProductName,180,yPos  )
                 .text(valor.Price.toFixed(2), 335,yPos)
@@ -4000,7 +4004,7 @@ async function ImprimirPdf (req,res){
             .moveDown();
             var stream = doc.pipe(blobStream())
             stream.
-            pipe(blobStream()) 
+            pipe(blobStream())
             doc.end();
 
             stream
