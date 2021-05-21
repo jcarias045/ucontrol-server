@@ -25,6 +25,8 @@ const SaleOderDetailSchema = Schema({
     ref: "Inventory",
     // autopopulate: true,
   },
+  GrossSellPrice:Number,
+  inAdvanced:Boolean,
  
  
 

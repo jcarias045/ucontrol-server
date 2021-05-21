@@ -23,6 +23,10 @@ const path=require("path");
 const PDFDocument=require('pdfkit');
 const PDFTable = require('voilab-pdf-table');
 const blobStream = require('blob-stream');
+const CustomerAdvance=require('../models/advancepayment.model');
+const CustomerAdvanceDetails=require('../models/advancepaymentdetails.model');
+const productAdvance= require("../models/advanceproductdetail.model");
+const bodega= require("../models/bodega.model")
 
 
 function getSaleOrderInvoices(req, res){
@@ -1284,8 +1288,9 @@ async function updateSaleOrderInvoice(req, res){
                             detallePrev.Quantity=parseFloat(item.Quantity) ,
                             detallePrev.Discount=parseFloat(item.Discount),
                             detallePrev.Price=parseFloat(item.Price),
+                            detallePrev.PriceDiscount=parseFloat(item.PrecioDescuento),
                             detallePrev.Inventory =item.Inventory._id,
-                            detallePrev.SubTotal=parseFloat((item.Price)*(item.Quantity))-parseFloat((item.Price)*(item.Quantity))*parseFloat(item.Discount/100)
+                            detallePrev.SubTotal=parseFloat((item.PrecioDescuento)*(item.Quantity))
                             saleOrderInvoiceDetails.updateMany({_id: item._id ,SaleOrderInvoice:invoiceId},detallePrev)
                                 .then(function (detalles) {
                                     if(!companyParams.RequieredOutput){
@@ -1315,17 +1320,25 @@ async function updateSaleOrderInvoice(req, res){
                             invoiceDetalle.map(async item => {
                             detalle.push({
                                 ProductName:item.Name,
-                                SaleOrderInvoice:invoiceId,
-                                Quantity:parseFloat(item.Quantity) ,
-                                Discount:parseFloat(item.Discount),
-                                Price:parseFloat(item.Price),
-                                Inventory :item.Inventory,
-                                Measure:item.Measures,
-                                CodProduct:item.codproducts,
-                                SubTotal: parseFloat(item.Quantity*item.Price)- parseFloat((item.Quantity*item.Price)*(item.Discount/100)),
+                                        SaleOrderInvoice:invoiceId,
+                                        Quantity:parseFloat(item.Quantity) ,
+                                        Discount:parseFloat(item.Discount),
+                                        Price:parseFloat(item.GrossSellPrice),
+                                        Inventory :item.Inventory,
+                                        SubTotal: parseFloat(item.total),
+                                        Entregados:!companyParams.RequieredOutput?parseFloat(item.Quantity):0,
+                                        State:!companyParams.RequieredOutput?true:false,
+                                        Measure:item.Measures,
+                                        CodProduct:item.codproducts,
+                                        Product:item.ProductId,
+
+                                        iniQuantity:item.Quantity,
+                                        BuyPrice:parseFloat(item.BuyPrice),
+                                        PriceDiscount:parseFloat(item.PrecioDescuento)?
+                                        parseFloat(item.PrecioDescuento):parseFloat(item.Descuento)
                             })
                             });
-                            console.log(detalle);
+                            console.log("DETALLLES A INSETRTAR",detalle);
                             if(detalle.length>0){
                                 saleOrderInvoiceDetails.insertMany(detalle)
                                 .then(async function (detalleStored) {
@@ -2410,13 +2423,19 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                        }});
                     let quoteId=SaleOrderStored.CustomerQuote;
-                    // cambio de estado a orden de venta
+                   // cambio de estado a orden de venta
 
                     saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
                         if(err){
                             res.status(500).send({ message: "Error del servidor." });
                         }
                         if(update){}});
+                        //OBTENIENDO INFORMACIÓN DE ANTICIPO 
+                        let anticipo=await  CustomerAdvance.find({SaleOrder: SaleOrderId})
+                        .then(result =>{return result});
+                        let detalleAnticipo=await  CustomerAdvanceDetails.find({SaleOrder: SaleOrderId})
+                        .then(result =>{return result});
+
                     if(invoiceId){
 
 
@@ -2444,8 +2463,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         iniQuantity:dePurchaseOrder[contador+ i].Quantity,
                                         BuyPrice:parseFloat(dePurchaseOrder[contador+ i].BuyPrice),
                                         PriceDiscount:parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento)?
-                                        parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento):parseFloat(dePurchaseOrder[contador+ i].Descuento)
-                                  })
+                                        parseFloat(dePurchaseOrder[contador+ i].PrecioDescuento):parseFloat(dePurchaseOrder[contador+ i].Descuento),
+                                        inAdvanced:dePurchaseOrder[contador+ i].inAdvanced
+
+                                  
+                                    })
 
                             }
                             else{deOrden[null]}
@@ -2476,7 +2498,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                 //cuenta por cobrar
                                 let iddetalle=detalles.map(item=>{return item._id}).toString();
                       
-
+                                      //CUANDO SE CONDICION DE PAGO =CONTADO
                                     if(condicionPago==='Contado'){
                                         await saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
                                             if(err){
@@ -2484,7 +2506,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                 console.log(err);
                                             }else{}
                                         });
-
+                                        
+                                        
 
                                         let pago=[{
                                          SaleOrderInvoice:invoiceId,
@@ -2507,7 +2530,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                                               }
                                               else{
-
+                                                console.log("PAGO INGRESADO",paymentStored);
                                                   let paymentid=paymentStored.map(item=>{return item._id}).toString();
                                                   let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
                                                   let payDetail=[{
@@ -2522,8 +2545,32 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     BankName: BankName,
                                                     NoTransaction: NoTransaction,
                                                   }]
+                                                  let arrayAnticipo=[];
+                                                  if(detalleAnticipo.length>0){
+                                                  
+        
+                                                    detalleAnticipo.map(item =>{
+                                                        arrayAnticipo.push({
+                                                            CreationDate:creacion,
+                                                            Reason:item.Reason,
+                                                            PaymentMethods:item.PaymentMethods,
+                                                            Cancelled:false,
+                                                            Amount:item.Amount,
+                                                            CustomerPayment:paymentid,
+                                                            SaleOrderInvoice:codInvoice,
+                                                            NumberAccount:item.NumberAccount,
+                                                            BankName: item.BankName,
+                                                            NoTransaction: item.NoTransaction,
+                                                        })
+                                                    });
 
-                                                  CustomerPaymentDetails.insertMany(payDetail)
+                                                } 
+                                                let chargeDetail;
+                                                if(arrayAnticipo.length>0){
+                                                    chargeDetail= payDetail.concat(arrayAnticipo);
+                                                }
+                                                else{ chargeDetail=payDetail }
+                                                  CustomerPaymentDetails.insertMany(chargeDetail)
                                                     .then(async function (detailStored) {
 
                                                           if(!detailStored){
@@ -2531,6 +2578,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                               console.log(err);
                                                           }
                                                           else{
+                                                              console.log("PAGOS INSERTADOs", detailStored);
                                                               let paymentDetailId=detailStored.map(item=>{return item._id});
 
                                                               if(paymentDetailId){
@@ -2549,8 +2597,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                                   sumMontos.map(item =>{
                                                                       sumaMontos=item.sumAmount;
                                                                   })
-                                                                  //actualizando deuda con cliente
-                                                                //   let nuevaCuenta=parseFloat(deuda)-parseFloat((totalfactura));
+                                                                //   //actualizando deuda con cliente
+                                                                //   let nuevaCuenta=parseFloat(deudaAct)-parseFloat((totalfactura));
                                                                 //  await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
                                                                 //       if(err){
 
@@ -2573,14 +2621,105 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                                       })
                                   }else{
-                                    let nuevaCuenta=parseFloat(deudaAct)+parseFloat(Total);
-                                    customer.findByIdAndUpdate({_id:Customer},{
-                                         AccountsReceivable:nuevaCuenta.toFixed(2),
-                                     }).then(function(update){
-                                         if(!update){
+                                      console.log("CONDICION DE PAGO CREDITO");
+                                    let arrayAnticipo=[];
+                                    let anticipos=[];
+                                    if(detalleAnticipo.length>0){
+                                                  
+                                        anticipo.map(item => {
+                                            anticipos.push({
+                                                SaleOrderInvoice:invoiceId,
+                                                DatePayment:item.DatePayment,
+                                                User:User,
+                                                codpayment:codigo,
+                                                Saldo:item.Saldo,
+                                                Customer:Customer
+                                            })
+                                        })
+                                
+                                         
+                                        await CustomerPayment.insertMany(anticipos)
+                                        .then(function (paymentStored) {
+                                            if(paymentStored){
+                                                console.log("PAGO INGRESADO",paymentStored);
+                                                  let paymentid=paymentStored.map(item=>{return item._id}).toString();
+                                                  let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
+                                                 
+                                                  detalleAnticipo.map(item =>{
+                                                    arrayAnticipo.push({
+                                                        CreationDate:creacion,
+                                                        Reason:item.Reason,
+                                                        PaymentMethods:item.PaymentMethods,
+                                                        Cancelled:false,
+                                                        Amount:item.Amount,
+                                                        CustomerPayment:paymentid,
+                                                        SaleOrderInvoice:codInvoice,
+                                                        NumberAccount:item.NumberAccount,
+                                                        BankName: item.BankName,
+                                                        NoTransaction: item.NoTransaction,
+                                                    })
+                                                });
+                                                  CustomerPaymentDetails.insertMany(arrayAnticipo)
+                                                  .then(async function (detailStored) {
+
+                                                        if(!detailStored){
+                                                            // res.status(500).send({message: err});
+                                                            console.log(err);
+                                                        }
+                                                        else{
+                                                            console.log("PAGOS INSERTADOs", detailStored);
+                                                            let paymentDetailId=detailStored.map(item=>{return item._id});
+                                                            let amount=detailStored.map(item=>{return item.Amount});
+                                                            if(paymentDetailId){
+                                                                let sumMontos=await CustomerPaymentDetails.aggregate([
+                                                                    {$match :{CustomerPayment: paymentid}},
+
+                                                                    {
+                                                                        $group:{
+                                                                            _id:null,
+                                                                        "sumAmount":{$sum: '$Amount'}
+                                                                    }
+                                                                    },
+
+                                                                ]);
+                                                                let sumaMontos=0.0;
+                                                                sumMontos.map(item =>{
+                                                                    sumaMontos=item.sumAmount;
+                                                                })
+                                                                //actualizando deuda con cliente
+                                                                let totalPagar=parseFloat(totalfactura)-parseFloat(amount);
+                                                                let nuevaCuenta=(parseFloat(deudaAct)+ parseFloat(totalPagar));
+                                                               await customer.findByIdAndUpdate({_id:Customer},{AccountsReceivable:nuevaCuenta.toFixed(2)},(err,updateDeuda)=>{
+                                                                    if(err){
+
+                                                                        console.log(err);
+                                                                    }else{}
+                                                                });
+
+
+
+
+
+                                                            }
+
+                                                        }
+
+                                                });
+
+                                            
+                                            
+                                                }
+                                        });
+                                    } 
+
+                                    // let nuevaCuenta=parseFloat(deudaAct)+parseFloat(Total);
+                                    // customer.findByIdAndUpdate({_id:Customer},{
+                                    //      AccountsReceivable:nuevaCuenta.toFixed(2),
+                                    //  }).then(function(update){
+                                    //      if(!update){
      
-                                         }
-                                         else{}}).catch(err =>{console.log(err)});
+                                    //      }
+                                    //      else{}}).catch(err =>{console.log(err)});
                                   }
 
                             }else{
@@ -2676,6 +2815,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
             }else {
                 var detalles=[];
+                let detalleAnticipo=[];
                  let cont=0;
 
 
@@ -2685,11 +2825,37 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                     let idfactura=item.SaleOrderInvoice;
                    let id= item._id;
                     console.log("ID+++++++++++++++++++++++++++++",id);
-                     let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura}).then(async function(data){
+                     let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura, inAdvanced:false}).then(async function(data){
                          return data;
-
-
                      });
+
+                     let dataInAdvance= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura, inAdvanced:true}).then(async function(data){
+                        return data;
+                    });
+                     
+                     let anticiposdetails=await  CustomerAdvanceDetails.find({SaleOrder: SaleOrderId})
+                        .then(result =>{return result});
+                    
+                     if(dataInAdvance.length>0){
+                        dataInAdvance.map( item =>{
+                            detalleAnticipo.push(
+                                {
+                                    SaleInvoiceDetail:item._id,
+                                    ProductOutput:id,
+                                    Quantity:item.Quantity,
+                                    Inventory:item.Inventory,
+                                    ProductName:item.ProductName,
+                                    Price:item.Price,
+                                    Measure:item.Measure,
+                                    CodProduct:item.CodProduct,
+                                    Product:item.Product,
+                                    SaleOrderInvoice:item.SaleOrderInvoice
+     
+                                }
+                            );
+     
+                        });
+                     }
                      data.map( item =>{
                        detalles.push(
                            {
@@ -2707,13 +2873,20 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                            }
                        );
 
-                   })
+                   });
+                //    let productosout;
+                //    if(detalleAnticipo.length>0){
+                //     productosout=detalles.concat(detalleAnticipo);
+                //    }else{ productosout=detalles;}
+                console.log("LOS PRODUCOTS NO ANTICIPO", detalles);
+                console.log("LOS PRODUCOTS SI ANTICIPO", detalleAnticipo);
                    if(parseInt(long)<=parseInt(cont)){
                        console.log("gola ");
                    }
 
                   cont+=1;
                   if(parseInt(long)===parseInt(cont)){
+                      //SACANDO PRODUCTOS QUE NO ESTAN EN BODEGA DE ANTICPO
                     productOutputDetail.insertMany(detalles) .then(async function (outputStored) {
                         console.log("INSERTANDO DETALLES");
                         console.log(outputStored);
@@ -2919,7 +3092,147 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                         })
                             }
-                    })
+                    });
+                      //SACANDO PRODUCTOS QUE SI ESTAN EN ANTICIPO
+                    productOutputDetail.insertMany(detalleAnticipo) .then(async function (outputStored) {
+                        console.log("INSERTANDO DETALLES");
+                        console.log(outputStored);
+                            if(outputStored){
+                                outputStored.map(async item=>{
+                                    let SaleInvoiceId=item.SaleOrderInvoice;
+                                    let salidaId=item.ProductOutput;
+                                       //obteniendo stock de producto  (bodega principal)
+
+                        let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        console.log('EN STOCK:',infoInventary);
+                        let bodegaAnticipo=await bodega.findOne({Name:'Anticipo', Company:companyId},['_id'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                        let productinAnticipo=await inventory.findOne({Product:infoInventary.Product, Bodega:bodegaAnticipo._id},['Stock','Product'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                        //obteniendo id del movimiento de tipo reserva
+                        let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                        //cambios de cantidad ingresada
+                        let proIngresados=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Entregados')
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        let quantityInvoice=await saleOrderInvoiceDetails.findOne({_id:item.SaleInvoiceDetail},'Quantity')
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+                        let cantidad=0.0;
+                        let ingresos=0.0;
+                        let productRestante=0.0;
+                        let ingresoUpdate=0.0;
+
+                        console.log("PRODUCTOS EN ANTICIPO",proIngresados);
+                        console.log("PRODUCTOS de factura",quantityInvoice);
+                        ingresos=parseFloat(proIngresados.Entregados) + parseFloat(item.Quantity);
+                        console.log("a entregar",ingresos);
+                              //cambiando estados e ingresos de  detalle factur
+                              if(proIngresados!==null){
+                                if(parseFloat(ingresos)===parseFloat(quantityInvoice.Quantity)){
+                                    console.log('COMPLETADO INGRESO');
+                                   await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                        Entregados:ingresos,
+                                        State:true
+                                    })
+                                    .catch(err => {console.log(err);})
+
+                                }
+                                 else{
+                                console.log('NO COMPLETADO INGRESO');
+
+                                await saleOrderInvoiceDetails.updateMany({_id:item.SaleInvoiceDetail},{
+                                    Entregados:ingresos,
+                                    State:false
+                                }).catch(err => {console.log(err);})
+
+                               }
+                               actualizado=true;
+                            }
+
+                         if(parseFloat(productinAnticipo.Stock)>=parseFloat(item.Quantity)){
+                            console.log("SACANDO PRODUCTO DE LA BODEGA DE ANTICIPO");
+                          
+                                console.log(productinAnticipo);
+
+                                //actualizando el stock de reserva
+                                inventory.findByIdAndUpdate({_id:productinAnticipo._id},{
+                                    Stock:parseFloat(productinAnticipo.Stock - item.Quantity),
+                                }).then(async function(update){
+                                    if(!update){
+                                        res.status(500).send({message: "No se actualizo inventario"});
+                                    }else{
+
+
+                                                    let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
+                                                        return c
+                                                      });
+
+                                                      let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
+                                                       console.log(count); return (count)
+                                                      });
+                                                      console.log('PURCHASE INVOICE',SaleInvoiceId);
+                                                      console.log('completados',completados);
+                                                      console.log('todos',registrados);
+                                                      //validando si todos los productos estan ingresados
+                                                      if(parseInt(completados)===parseInt(registrados)){
+                                                        console.log("cambiando");
+                                                        saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
+                                                            Entregada:true,
+                                                        })
+                                                        .catch(err => {console.log(err);});
+
+                                                    }
+
+                                                    //transaccion
+                                                    const inventorytraceability= new inventoryTraceability();
+                                                    inventorytraceability.Quantity=item.Quantity;
+                                                    inventorytraceability.Product=item.Product;
+                                                    inventorytraceability.WarehouseDestination=null; //destino
+                                                    inventorytraceability.MovementType=movementId._id;
+                                                    inventorytraceability.MovDate=creacion;
+                                                    inventorytraceability.WarehouseOrigin=productinAnticipo._id; //origen
+                                                    inventorytraceability.User=User;
+                                                    inventorytraceability.Company=companyId;
+                                                    inventorytraceability.DocumentId=salidaId;
+                                                    inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
+                                                    inventorytraceability.save((err, traceabilityStored)=>{
+                                                        if(err){
+
+                                                            res.status(500).send({message: "No se actualizo inventario"});
+                                                        }else {
+                                                            if(!traceabilityStored){
+                                                                // // res.status(500).send({message: "Error al crear el nuevo usuario."});
+                                                                // console.log(traceabilityStored);
+                                                            }
+                                                            else{
+                                                                console.log(traceabilityStored);
+                                                            }
+                                                        }
+                                                    });
+
+
+
+                                    }
+
+                                })
+                                .catch(err => {console.log(err);});
+
+                        }
+                        else{
+
+                            res.status(500).send({ message: "Verificar Inventario" });
+
+                        }
+
+                        })
+                            }
+                    });
                     }
                 })
             }

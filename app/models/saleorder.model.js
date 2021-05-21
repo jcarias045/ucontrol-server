@@ -26,6 +26,7 @@ const SaleOrderSchema = Schema({
     ref: "CustomerQuote",
     // autopopulate: true,
   },
+  AdvancePayment:Boolean
 })
 
 module.exports = mongoose.model('SaleOrder', SaleOrderSchema)
