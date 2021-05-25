@@ -14,6 +14,9 @@ const BankAccountSchema = Schema({
         ref: "Company"
     },
     Active: Boolean,
+    InitialBalance: Number,
+    Type:String
+    
 })
 
 module.exports = moongose.model('BankAccount',BankAccountSchema )

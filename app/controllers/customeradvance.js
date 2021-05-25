@@ -78,13 +78,14 @@ async function addCustomerAdvance(req, res){
     payment.DatePayment=creacion;
     payment.User=User;
     payment.Codigo=codigo;
+    payment.Customer=Customer;
     payment.Saldo=parseFloat(totalFactura).toFixed(2)-parseFloat(Monto).toFixed(2);
     if(existePago!==null){
         console.log("PAGOOO PREVIO");
-        if(parseFloat(totalFactura).toFixed(2)<parseFloat(Monto).toFixed(2)){
+        if(parseFloat(totalFactura)<parseFloat(Monto)){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
-            if(parseFloat(saldoActual).toFixed(2)< parseFloat(Monto).toFixed(2)){
+            if(parseFloat(saldoActual)< parseFloat(Monto)){
                 res.status(500).send({message:"Monto Superior a saldo pendiente"});
             }else{
 
@@ -352,7 +353,7 @@ async function addCustomerAdvance(req, res){
                             
                                         let bodegaAnticipo=await bodega.findOne({Name:'Anticipo', Company:Company},['_id'])
                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-    
+     
                                        
                                         let advanceProduct=[];
                                         productos.map(item =>{
@@ -599,8 +600,8 @@ async function updatePaymentInvoice(req, res){
                     .then(resultado =>{return resultado});
                     let nuevaCuentaxPagar=await customer.findOne({_id:Customer},'AccountsReceivable')
                     .then(resultado =>{return resultado}).catch(err =>{return err});
-                    console.log('nuevo saldo',nuevoSaldo);
-                    console.log('nuevo cuenta',nuevaCuentaxPagar.AccountsReceivable);
+                    // console.log('nuevo saldo',nuevoSaldo);
+                    // console.log('nuevo cuenta',nuevaCuentaxPagar.AccountsReceivable);
                     if(parseFloat(nuevoSaldo.Saldo)>= parseFloat(cambios.Amount) )
                     {
                         console.log("PERMITEE PAGOOO");
@@ -899,12 +900,12 @@ async function cancelledPaymentInvoice(req, res){
 }
 
 
-async function getAllPayments(req, res){
+async function getAllAdvancePayments(req, res){
     const {id}=req.params;
-    CustomerAdvance.find({User:id}).populate({path: 'User', model: 'User'})
-    .populate({path: 'saleOrder', model: 'saleOrder', populate: {path: 'SaleOrder', model: 'SaleOrder'}})
-    .sort({codpayment:-1})
-    .populate({path: 'Customer', model: 'Customer'})
+    CustomerAdvance.find({User:id})
+    .populate({path: 'SaleOrder', model: 'SaleOrder'}) .populate({path: 'Customer', model: 'Customer'})
+    .sort({Codigo:-1})
+  
     .then(pagos => {
         if(!pagos){
             res.status(404).send({message:"No hay "});
@@ -939,7 +940,7 @@ module.exports={
     getPaymentDetails,
     updatePaymentInvoice,
     cancelledPaymentInvoice,
-    getAllPayments,
+    getAllAdvancePayments,
     getExportExcelInfo,
     getAdvanceDetailsNocancelled
 }

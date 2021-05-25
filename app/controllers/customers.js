@@ -132,7 +132,7 @@ async function desactivateCustomer(req, res){
 async function updateCustomer(req,res){
     let customerData = req.body;
     const params = req.params;
-    console.log(req.body);
+    console.log("loq ue se obyirnr", req.body);
     Customer.findByIdAndUpdate({_id: params.id}, customerData, (err, customerUpdate)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});

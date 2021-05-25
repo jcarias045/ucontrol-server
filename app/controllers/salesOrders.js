@@ -1628,6 +1628,38 @@ function getSaleOrdersbyCustomers(req, res){
     }
 }
 
+async function getOpenSaleOrders(req, res){
+    const { id,company } = req.params;
+
+
+
+    saleOrder.find({User:id,State:'Abierta'}).populate({path: 'Customer', model: 'Customer', match:{Company: company}})
+    .then(orders => {
+        if(!orders){
+            res.status(404).send({message:"No hay "});
+        }else{
+
+            res.status(200).send({orders})
+        }
+    });
+
+
+}
+
+function getSaleOrderHeader(req, res){
+    let invoiceId = req.params.id;
+    let userId = req.params.user;
+    let companyId = req.params.company;
+    saleOrder.find({_id:invoiceId}).populate({path: 'User', model: 'User',match:{_id:userId}})
+    .populate({path: 'Customer', model: 'Customer',match:{Company:companyId}})
+    .then(details => {
+        if(!details){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({details})
+        }
+    });
+}
 
 module.exports = {
     getSaleOrders,
@@ -1642,5 +1674,7 @@ module.exports = {
     anulaSaleOrder,
     changeSaleOrderState,
     getAllSaleOrderDetails,
-    getSaleOrdersbyCustomers
+    getSaleOrdersbyCustomers,
+    getOpenSaleOrders,
+    getSaleOrderHeader
 }

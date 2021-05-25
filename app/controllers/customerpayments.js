@@ -279,6 +279,7 @@ function getPaymentDetails(req, res){
     });
 
 }
+
 function getExportExcelInfo(req, res){
     CustomerPaymentDetails.find()
     .populate({path: 'CustomerPayment', model: 'CustomerPayment',match:{SaleOrderInvoice:id}})

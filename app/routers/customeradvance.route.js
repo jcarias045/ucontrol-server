@@ -11,7 +11,7 @@ router.get('/get-advancesaleinvoicedetails/:id', advance.getPaymentDetails);
 router.get('/get-advanceexportdetails', advance.getExportExcelInfo);
 router.put('/update-advancesaleinvoicedetail/:id', advance.updatePaymentInvoice);
 router.put('/cancelled-advancesaleinvoicedetail/:id', advance.cancelledPaymentInvoice);
-router.get('/get-advancecustomers/:id', advance.getAllPayments);
+router.get('/get-advancecustomers/:id', advance.getAllAdvancePayments);
 router.get('/get-advancesdetailsnocancelled/:id', advance.getAdvanceDetailsNocancelled);
 
 
