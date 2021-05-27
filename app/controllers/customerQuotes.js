@@ -371,6 +371,7 @@ async function ImprimirCotizacionPDF(req,res) {
         generateHeader(doc,cotizacion);
         generateCustomerInformation(doc, cotizacion);
         generateInvoiceTable(doc, cotizacion, detalles);
+        generateComent(doc,cotizacion)
         generateFooter(doc, cotizacion);
         const stream = doc.pipe(blobStream())
         doc.end();        
@@ -391,7 +392,7 @@ async function ImprimirCotizacionPDF(req,res) {
       
     async  function generateHeader(doc,cotizacion) {
         doc
-          .image(path.resolve(img), 50, 45, { width: 50 })
+          .image(path.resolve(img), 50, 25, { width: 85 })
           .fillColor("#444444")
           .fontSize(20)
           //.text(cotizacion.User.Company.Name, 110, 57)
@@ -522,6 +523,19 @@ async function ImprimirCotizacionPDF(req,res) {
         doc.font("Helvetica");
       }
       
+      function generateComent(doc, invoice) {
+        doc
+          .fontSize(10)
+          .text(
+           invoice.Description,
+            50,
+            580,
+            { align: "center", width: 500 }
+          );
+          generateHr(doc, 565);
+          generateHr(doc, 665);
+      }
+
       function generateFooter(doc, invoice) {
         doc
           .fontSize(10)

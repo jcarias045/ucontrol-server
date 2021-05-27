@@ -4279,20 +4279,70 @@ async function ImprimirPdf (req,res){
     )})
     .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
     .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
+<<<<<<< HEAD
+    
+    if(facturas.Customer.TypeofTaxpayer === "ConsumidorFinal"){
+            const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
+            var i = 0
+            let total = 0
+            const doc = new PDFDocument()
+            const filePath = 'Factura-'+facturas.InvoiceNumber+'.pdf';
+            doc.pipe(fs.createWriteStream('Factura-'+facturas.CodInvoice+'.pdf'));
+            doc.pipe(res);
+            doc
+            .font('Times-Roman',6)
+            .text(facturas.InvoiceDate,335,130)
+            .text(facturas.Customer.Name +' '+ facturas.Customer.LastName, 160,145)
+            .text(facturas.Customer.Country+', '+facturas.Customer.City,160,160,)
+            .text(facturas.Customer.Nit, 170, 175)
+            .text(facturas.Customer.PaymentCondition, 170, 190)
+            doc.y = 220;
+            resultado.forEach(function(valor, indice, resultado){
+                 let yPos = doc.y + 10 
+                doc.text(valor.Quantity,160, yPos )
+                .text(valor.ProductName,180,yPos  )
+                .text(valor.Price.toFixed(2), 335,yPos)
+                .text(valor.SubTotal.toFixed(2), 370, yPos )
+                total = valor.SubTotal + total;
+                doc.moveDown()
+            })
+            console.log(total);
+            doc.text(total.toFixed(2),370,440)
+            .text(total.toFixed(2),370,520)
+            .moveDown();
+            const stream = doc.pipe(blobStream())
+            doc.end();
+            fs.readFile('Factura-'+facturas.CodInvoice+'.pdf',(err,data)=>{
+                if(err){
+                    console.log("error:", err);
+                    console.log("entro al error");
+                }
+                else {                    
+                    console.log("entro al else");
+                    console.log(data);
+                    fs.createReadStream('Factura-'+facturas.CodInvoice+'.pdf');
+                    res.sendFile(path.resolve('Factura-'+facturas.CodInvoice+'.pdf'))
+                }
+            });
+            console.log("Termino")
+=======
 
     var i = 0
     let total = 0
     console.log(resultado.length);
+>>>>>>> 0691ddcf779a511f472fe2a2db98820bf5db2816
 
-    const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
+        }else{
+            var i = 0
+            let total = 0
             const doc = new PDFDocument()
-            const filePath = 'CreditoFiscal-'+facturas.CodInvoice+'.pdf';
+            const filePath = 'CreditoFiscal-'+facturas.InvoiceNumber+'.pdf';
             doc.pipe(fs.createWriteStream('CreditoFiscal-'+facturas.CodInvoice+'.pdf'));
             doc.pipe(res);
             doc
             .font('Times-Roman',7)
             .text(facturas.CodInvoice,335,130)
-            .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, 160,145)
+            .text(facturas.Customer.Name +' '+ facturas.Customer.LastName, 160,145)
             .text(facturas.InvoiceDate,335,145)
             .text(facturas.Customer.Address,160,160,)
             .text(facturas.Customer.Sector.Name,260,160)
@@ -4330,7 +4380,7 @@ async function ImprimirPdf (req,res){
                 }
             });
             console.log("Termino")
-                       
+        }                       
 }
 
 module.exports={

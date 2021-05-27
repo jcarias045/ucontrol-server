@@ -38,7 +38,6 @@ function getTaxes(req, res){
     }catch(error) {
         // imprimimos a consola
         console.log(error);
-
         res.status(500).json({
             message: "Error en query!",
             error: error
