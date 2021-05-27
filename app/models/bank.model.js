@@ -9,7 +9,7 @@ const BankSchema = Schema({
   Company: { type: Schema.ObjectId, 
              ref: "Company",
             // autopopulate: true,
-           }
+           },
 })
 
 module.exports = moongose.model('Bank', BankSchema)

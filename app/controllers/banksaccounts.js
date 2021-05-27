@@ -4,14 +4,14 @@ function CreatBankAccounts(req,res){
 
     const bankAccount = new BankAccount();
 
-    const {NumberAccount,Company, Bank, Active,InitialBalance, Type} = req.body
+    const {NumberAccount,Company, Bank, Active} = req.body
 
     bankAccount.NumberAccount = NumberAccount;
     bankAccount.Bank = Bank;
     bankAccount.Company = Company;
     bankAccount.Active = true;
-    bankAccount.InitialBalance=InitialBalance;
-    bankAccount.Type =Type;
+    bankAccount.Saldo=0;
+ 
 
     bankAccount.save((err, bankAccountStored)=>{
         if(err){
@@ -52,7 +52,7 @@ async function updateBankAccount(req, res){
             if(!BankAccountUpdate){
                 res.status(404).sen({message: "No hay"});
             }else{
-                res.status(200).send({message: "Banca Actualizado"})
+                res.status(200).send({banco: BankAccountUpdate})
             }
         }
     })
@@ -84,9 +84,24 @@ async function desactivateBanksAccounts(req, res) {
     
 }
 
+function getBankAccountCompany(req,res){
+
+    BankAccount.find({Company: req.params.id})
+    .populate({path: 'Company', model: 'Company'})
+    .populate({path: 'Bank', model: 'Bank'})
+    .then(bankAccount => {
+        if(!bankAccount){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bankAccount})
+        }
+    });
+}
+
 module.exports = {
     CreatBankAccounts,
     GetBankAccount,
     updateBankAccount,
-    desactivateBanksAccounts 
+    desactivateBanksAccounts,
+    getBankAccountCompany
 }

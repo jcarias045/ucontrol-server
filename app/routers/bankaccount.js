@@ -6,5 +6,7 @@ router.get('/get-banksaccounts/:id/:bankid', banksAccounts.GetBankAccount);
 router.post('/create-bankaccount', banksAccounts.CreatBankAccounts);
 router.put('/update-bankaccount/:id', banksAccounts.updateBankAccount);
 router.put('/desactive-bankaccount/:id',banksAccounts.desactivateBanksAccounts);
+router.get('/get-bankaccountcompany/:id',banksAccounts.getBankAccountCompany);
+
 
 module.exports = router;

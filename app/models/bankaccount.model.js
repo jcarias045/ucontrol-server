@@ -14,8 +14,7 @@ const BankAccountSchema = Schema({
         ref: "Company"
     },
     Active: Boolean,
-    InitialBalance: Number,
-    Type:String
+    Saldo:Number,
     
 })
 
