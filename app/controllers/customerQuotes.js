@@ -86,14 +86,14 @@ async function createCustomerQuote(req,res){
                         CustomerQuote:quoteId,
                         Quantity:parseFloat(item.Quantity) ,
                         Discount:parseFloat(item.Discount),
-                        Price:parseFloat(item.Price),
+                        Price:parseFloat(item.PrecioDescuento),
                         Inventory :item.Inventory,
                         Measure:item.Measures,
                         CodProduct:item.codproducts,
                         SubTotal: parseFloat(item.Quantity * item.Price)-parseFloat(item.Quantity * item.Price)*parseFloat(item.Discount/100),
                         // Priceiva:parseFloat(item.Priceiva)
                         OnRequest:false,
-                        GrossSellPrice:parseFloat(item.GrossSellPrice)
+                        GrossSellPrice:parseFloat(item.Price)
                     })
                  });
                  console.log(detalle);

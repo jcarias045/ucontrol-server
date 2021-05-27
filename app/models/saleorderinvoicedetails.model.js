@@ -31,6 +31,9 @@ const SaleInvoiceDetailSchema = Schema({
     ref: "Product",
     // autopopulate: true,
   },
+  GrossSellPrice:Number,
+  inAdvanced:Boolean,
+
 
  
 })

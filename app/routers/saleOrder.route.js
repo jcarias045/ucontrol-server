@@ -18,6 +18,10 @@ router.put('/delete-saleorderdetail/:id', salesorder.deleteSaleOrderDetail);
 router.put('/anular-saleorder/:id', salesorder.anulaSaleOrder);
 router.put('/changestate-saleorder/:id', salesorder.changeSaleOrderState);
 router.get('/get-saleorderbycustomer/:id/:fecha1/:fecha2', salesorder.getSaleOrdersbyCustomers);
+router.get('/get-opensaleorder/:id/:company', salesorder.getOpenSaleOrders);
+
+router.get('/get-saleorderheader/:id/:user/:company', salesorder.getSaleOrderHeader);
+
 
 
 
