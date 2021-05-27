@@ -15,7 +15,8 @@ async function addCustomerPayment(req, res){
    
     let creacion=now.toISOString().substring(0, 10);
     const {Company,User,SaleOrderInvoiceId,Customer,Monto,Total,Reason,
-        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
+        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,
+    }=req.body;
 
     console.log(req.body);
     let codigoPayment=await CustomerPayment.findOne()
@@ -82,6 +83,7 @@ async function addCustomerPayment(req, res){
                 if(getPaymentId){
                     paymentDetails.CreationDate=creacion;
                     paymentDetails.Reason=Reason;
+                    paymentDetails.Company=Company;
                     paymentDetails.PaymentMethods=PaymentMethodId;
                     paymentDetails.Cancelled=false;
                     paymentDetails.Amount=Monto;
@@ -181,6 +183,7 @@ async function addCustomerPayment(req, res){
                         let paymentid=paymentStored._id;
                         console.log('METODO',PaymentMethodId);
                         paymentDetails.CreationDate=creacion;
+                        paymentDetails.Company=Company;
                         paymentDetails.Reason=Reason;
                         paymentDetails.PaymentMethods=PaymentMethodId;
                         paymentDetails.Cancelled=false;
@@ -267,7 +270,7 @@ function getPaymentDetails(req, res){
     console.log(id);
     CustomerPaymentDetails.find({SaleOrderInvoice:id})
     .populate({path: 'CustomerPayment', model: 'CustomerPayment',match:{SaleOrderInvoice:id}})
-    .populate({path: 'PaymentMethods', model: 'PaymentMethods'})
+    .populate({path: 'PaymentMethods', model: 'PaymentMethods'})    
     .then(details => {
         if(!details){
             res.status(404).send({message:"No hay "});
@@ -279,10 +282,13 @@ function getPaymentDetails(req, res){
     });
 
 }
+
 function getExportExcelInfo(req, res){
-    CustomerPaymentDetails.find()
-    .populate({path: 'CustomerPayment', model: 'CustomerPayment',match:{SaleOrderInvoice:id}})
+    let Company = req.params.id
+    CustomerPaymentDetails.find({Company: Company})
+    .populate({path: 'CustomerPayment', model: 'CustomerPayment'})
     .populate({path: 'PaymentMethods', model: 'PaymentMethods'})
+    .populate({path:'SaleOrderInvoice', model: 'SaleOrderInvoice'})
     .then(details => {
         if(!details){
             res.status(404).send({message:"No hay "});

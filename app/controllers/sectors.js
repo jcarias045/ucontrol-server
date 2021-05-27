@@ -25,23 +25,20 @@ function createSector(req, res){
 }
 
 
-function getSectors(req, res){
-    // Buscamos informacion para llenar el modelo de 
-    try{
-        sector.find()
-        .then(sector => {
-            res.status(200).send({sector});
-          
-        })
-    }catch(error) {
-        // imprimimos a consola
-        console.log(error);
+function getSectors(req, res){ 
+    let id = req.params.id
 
-        res.status(500).json({
-            message: "Error en query!",
-            error: error
-        });
-    }
+    sector.find({_id: id})
+    .then(sector => {
+        if(!sector){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({sector})
+        }         
+    })
+
+        
+    
 }
 
 module.exports={

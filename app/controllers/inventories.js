@@ -7,6 +7,8 @@ function getInventory(req, res){
     .populate({path: 'Product', model: 'Product' ,
     populate:{path: 'Measure', model: 'Measure'},
     populate:{path: 'CatProduct', model: 'CatProduct'},
+    populate:{path: 'Brand', model: 'Brand'},
+    populate:{path: 'Measure', model: 'Measure'}
    })
      .then(inventory => {
          if(!inventory){

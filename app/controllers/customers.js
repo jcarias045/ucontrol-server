@@ -97,6 +97,9 @@ function getCustomers(req, res){
             .populate({path: "User", model: "User"})
             .populate({path: "Company", model: "Company"})
             .populate({path: "Discount", model: "Discount"})
+            .populate({path: "Sector", model: "Sector"})
+            .populate({path: "Sector1", model: "Sector"})
+            .populate({path: "Sector2", model: "Sector"})
         .then(customer => {
             if(!customer){
                 res.status(404).send({message:"No hay "});

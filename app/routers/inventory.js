@@ -15,6 +15,7 @@ router.post('/inventory-create', inventories.createInventory);
 
 
 router.get('/get-inventory/:id', inventories.getInventories);
+router.get('/get-inventoryexcel/:id', inventories.getInventory);
 
 
 router.get('/inventory-product/:id/:supplier', inventories.getNameProduct);

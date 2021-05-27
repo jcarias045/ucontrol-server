@@ -4,6 +4,7 @@ const CustomerPayment = require('../models/customerpayments.model');
 const PaymentMethods = require('../models/paymentMethods.model');
 const SaleOrderInvoice = require('../models/saleorderinvoice.model');
 const User = require('../models/user.model');
+const Company = require('../models/company.model')
 
 const CustomerPaymentDetailSchema = Schema({
     SaleOrderInvoice: { type: Schema.ObjectId, 
@@ -18,7 +19,11 @@ const CustomerPaymentDetailSchema = Schema({
     Reason: String,
     NoTransaction: Number,
     PaymentMethods: { type: Schema.ObjectId, ref:"PaymentMethods"},
-    Cancelled: Boolean
+    Cancelled: Boolean,
+    Company: {
+      type: Schema.ObjectId,
+      ref: "Company"
+    }
 })
 
 module.exports = moongose.model('CustomerPaymentDetail', CustomerPaymentDetailSchema)
