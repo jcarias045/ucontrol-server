@@ -4279,7 +4279,6 @@ async function ImprimirPdf (req,res){
     )})
     .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
     .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
-<<<<<<< HEAD
     
     if(facturas.Customer.TypeofTaxpayer === "ConsumidorFinal"){
             const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
@@ -4325,12 +4324,6 @@ async function ImprimirPdf (req,res){
                 }
             });
             console.log("Termino")
-=======
-
-    var i = 0
-    let total = 0
-    console.log(resultado.length);
->>>>>>> 0691ddcf779a511f472fe2a2db98820bf5db2816
 
         }else{
             var i = 0

@@ -427,8 +427,7 @@ async function ImprimirCotizacionPDF(req,res) {
             formatCurrency(invoice.Total.toFixed(2)),
             150,
             customerInformationTop + 30
-          )
-      
+          )      
           .font("Helvetica-Bold")
           .text(invoice.Customer.Name, 300, customerInformationTop)
           .font("Helvetica")
