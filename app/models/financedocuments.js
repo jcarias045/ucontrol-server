@@ -1,9 +1,8 @@
 const moongose = require('mongoose');
 const Schema = moongose.Schema
-const Company = require('../models/company.model')
+const Company = require('./company.model')
 
-const SourceDocumentSchema = Schema({
-  SourceDocument: String,
+const FinanceDocumentSchema = Schema({
   Name: String, 
   Description: String,
   Company: { type: Schema.ObjectId, 
@@ -12,4 +11,4 @@ const SourceDocumentSchema = Schema({
            }
 })
 
-module.exports = moongose.model('SourceDocument', SouceDocumentSchema)
+module.exports = moongose.model('FinanceDocument', SouceDocumentSchema)

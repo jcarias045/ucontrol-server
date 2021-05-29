@@ -6,6 +6,16 @@ const Company = require('../models/company.model');
 const Supplier = require('../models/supplier.model');
 const { ObjectId } = require('bson');
 
+//registro de movimientos bancarios
+const bankingTransaction= require('../models/bankingtransaction.model');
+const bankAccount= require('../models/bankaccount.model');
+const bankMovement= require('../models/bankmovement.model');
+const movementType= require('../models/concepts.model'); 
+//movimiento caja
+const cashTransaction= require('../models/CashTransaction.model');
+const cashAccount= require('../models/cashaccounts.model');
+const cashMovement= require('../models/cashmovement.model');
+
 async function addPaymentToInvoice(req, res){
     const payment=new PaymentToSupplier();
     const paymentDetails=new PaymnetToSupplierDetails();
@@ -14,9 +24,45 @@ async function addPaymentToInvoice(req, res){
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
     const {Company,User,PurchaseInvoiceId,Supplierid,Monto,Total,Reason,
-        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
+        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,
+        CashAccount,NumberAccountBank,NumberAccountId}=req.body;
 
     console.log(req.body);
+    ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
+    let idMovimiento;
+    let idTipoMovimiento;     
+    let efectivoMovimiento;
+    let tarjetaCreditoMov;
+    let tarjetaTipo;
+    if(PaymentMethodName==="Transferencia"){
+       idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:Company},['_id'])
+       .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+       idTipoMovimiento=await movementType.findOne({Name:'Transferencia a Terceros', Company:Company},['_id'])
+       .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+    }
+    if(PaymentMethodName==="Contado"){
+       efectivoMovimiento=await cashMovement.findOne({Name:'Egreso', Company:Company},['_id'])
+       .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    }
+
+    if(PaymentMethodName==="TarjetaCredito"){
+       efectivoMovimiento=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:Company},['_id'])
+       .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+       tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:Company},['_id'])
+       .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+      
+    }
+
+    let saldoCurrentAccount=await bankAccount.findOne({_id:NumberAccountId},'Saldo').then(result=>{return result.Saldo});
+                                       console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
+
+   ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
+
+
+
     let codigoPayment=await PaymentToSupplier.findOne().sort({codpayment:-1})
     .populate({path: 'User', model: 'User' , match:{Company: Company}}).then(function(doc){
         if(doc){
@@ -52,210 +98,299 @@ async function addPaymentToInvoice(req, res){
     payment.DatePayment=creacion;
     payment.User=User;
     payment.codpayment=codigo;
-    payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto)
-
-    if(existePago!==null){
-        let saldoActual=existePago.Saldo;
-        console.log('enncontro pago');
-        console.log(totalaPagarInvoice.Total);
-        console.log(saldoActual);
-        if(parseFloat(totalaPagarInvoice.Total)>=parseFloat(saldoActual)){
-            console.log("aPLICA PAGO");
-            let paymentId=null;
-            
-            payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto);
-            if(parseFloat(saldoActual).toFixed(2)<parseFloat(Monto).toFixed(2)){
-                res.status(500).send({message:"Monto Superior a Deuda"});
-            }
-            else{
-                let updateSaldo= parseFloat(saldoActual)-parseFloat(Monto);
-                PaymentToSupplier.updateOne({PurchaseInvoice:PurchaseInvoiceId},
-                    {Saldo:updateSaldo.toFixed(2)}).catch(err => {console.log(err);});
+    payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto);
+    if(parseFloat(saldoCurrentAccount) >= parseFloat(Monto)){
+        if(existePago!==null){
+            let saldoActual=existePago.Saldo;
+            console.log('enncontro pago');
+            console.log(totalaPagarInvoice.Total);
+            console.log(saldoActual);
+            if(parseFloat(totalaPagarInvoice.Total)>=parseFloat(saldoActual)){
+                console.log("aPLICA PAGO");
+                let paymentId=null;
                 
-                //para obtener el id del pago realizado
-                let getPaymentId=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'_id')
-                .then(resultado => {return resultado});
-
-                console.log("ID OBTENIDI",getPaymentId);
-                if(getPaymentId){
-                    paymentDetails.CreationDate=creacion;
-                    paymentDetails.Reason=Reason;
-                    paymentDetails.PaymentMethods=PaymentMethodId;
-                    paymentDetails.Cancelled=false;
-                    paymentDetails.Amount=Monto;
-                    paymentDetails.PaymentSupplier=getPaymentId;
-                    paymentDetails.PurchaseInvoice=PurchaseInvoiceId;
-                    if(PaymentMethodName!=='Contado'){
-                        paymentDetails.NumberAccount=NumberAccount;
-                        paymentDetails.BankName= BankName;
-                        paymentDetails.NoTransaction= NoTransaction;
-                    }
-                    if(PaymentMethodName==='Contado'){
-                        paymentDetails.NumberAccount=null;
-                        paymentDetails.BankName= null;
-                        paymentDetails.NoTransaction= null;
-                    }
-                    console.log(paymentDetails);
-                    paymentDetails.save(async (err, detailStored)=>{
-                        if(err){
-                            res.status(500).send({message: err});
-                            console.log(err);
-                        }else {
-                            if(!detailStored){
+                payment.Saldo=parseFloat(totalaPagarInvoice.Total)-parseFloat(Monto);
+                if(parseFloat(saldoActual).toFixed(2)<parseFloat(Monto).toFixed(2)){
+                    res.status(500).send({message:"Monto Superior a Deuda"});
+                }
+                else{
+                    let updateSaldo= parseFloat(saldoActual)-parseFloat(Monto);
+                    PaymentToSupplier.updateOne({PurchaseInvoice:PurchaseInvoiceId},
+                        {Saldo:updateSaldo.toFixed(2)}).catch(err => {console.log(err);});
+                    
+                    //para obtener el id del pago realizado
+                    let getPaymentId=await PaymentToSupplier.findOne({PurchaseInvoice:PurchaseInvoiceId},'_id')
+                    .then(resultado => {return resultado});
+    
+                    console.log("ID OBTENIDI",getPaymentId);
+                    if(getPaymentId){
+                        paymentDetails.CreationDate=creacion;
+                        paymentDetails.Reason=Reason;
+                        paymentDetails.PaymentMethods=PaymentMethodId;
+                        paymentDetails.Cancelled=false;
+                        paymentDetails.Amount=Monto;
+                        paymentDetails.PaymentSupplier=getPaymentId;
+                        paymentDetails.PurchaseInvoice=PurchaseInvoiceId;
+                        if(PaymentMethodName!=='Contado'){
+                            paymentDetails.NumberAccount=PaymentMethodName==="Transferencia"?NumberAccountBank:NumberAccount;
+                            paymentDetails.BankName= BankName;
+                            paymentDetails.NoTransaction= NoTransaction;
+                        }
+                        if(PaymentMethodName==='Contado'){
+                            paymentDetails.NumberAccount=null;
+                            paymentDetails.BankName= null;
+                            paymentDetails.NoTransaction= null;
+                        }
+                        console.log(paymentDetails);
+                        paymentDetails.save(async (err, detailStored)=>{
+                            if(err){
                                 res.status(500).send({message: err});
-                            }
-                            else{
-                                console.log("DETALLLESS!");
-                                console.log(detailStored);
-                                let paymentDetailId=detailStored._id;
-                             
-                                if(paymentDetailId){
-                                    console.log("SUMANDO PAGOS");
-                                    console.log("EL ID DEL PAGO",getPaymentId);
-                                    let sumMontos=await PaymnetToSupplierDetails.aggregate([
-                                        {$match :{PaymentSupplier: getPaymentId._id,Cancelled:false}},
-                                       
-                                        {
-                                            $group:{
-                                               _id:null,
-                                            "sumAmount":{$sum: '$Amount'}
+                                console.log(err);
+                            }else {
+                                if(!detailStored){
+                                    res.status(500).send({message: err});
+                                }
+                                else{
+                                    console.log("DETALLLESS!");
+                                    console.log(detailStored);
+                                    let paymentDetailId=detailStored._id;
+                                 
+                                    if(paymentDetailId){
+                                        console.log("SUMANDO PAGOS");
+                                        console.log("EL ID DEL PAGO",getPaymentId);
+                                        let sumMontos=await PaymnetToSupplierDetails.aggregate([
+                                            {$match :{PaymentSupplier: getPaymentId._id,Cancelled:false}},
+                                           
+                                            {
+                                                $group:{
+                                                   _id:null,
+                                                "sumAmount":{$sum: '$Amount'}
+                                            }
+                                           },
+                                          
+                                    ]);
+                                    let sumaMontos=0.0;
+                                        sumMontos.map(item =>{
+                                            sumaMontos=item.sumAmount;
+                                        })
+                                        console.log('suma',sumMontos);
+                                        if(parseFloat(sumaMontos)===parseFloat(totalaPagarInvoice.Total)){
+                                            console.log('SUMANDO MONTOS');
+                                            PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                                if(err){
+                                                    console.log(err);
+                                                }
+                                            });
                                         }
-                                       },
-                                      
-                                ]);
-                                let sumaMontos=0.0;
-                                    sumMontos.map(item =>{
-                                        sumaMontos=item.sumAmount;
-                                    })
-                                    console.log('suma',sumMontos);
-                                    if(parseFloat(sumaMontos)===parseFloat(totalaPagarInvoice.Total)){
-                                        console.log('SUMANDO MONTOS');
-                                        PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                        //actualizando deuda con proveedor
+                                        let actMonto=parseFloat(deuda)-parseFloat(Monto);
+                                        Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:actMonto.toFixed(2)},(err,updateDeuda)=>{
+                                        if(err){
+                                            
+                                            console.log(err);
+                                        }
+                                        else{
+                                            console.log(updateDeuda);
+                                        }
+                                        });
+    
+                                        //Reegistro de movimiento de banco
+                                        let Type;
+                                        let BankMovement;
+                                        
+                                        if(PaymentMethodName==="Contado"){
+                                           const CashTransaction = new cashTransaction();
+       
+                                           CashTransaction.TransactionDate= creacion;
+                                           CashTransaction.Concept= Reason;  
+                                           CashTransaction.User= User; 
+                                           CashTransaction.Deposit=Monto;
+                                           CashTransaction.Withdrawal= 0;
+                                           CashTransaction.CashMovement= efectivoMovimiento;
+                                           CashTransaction.CashAccount= CashAccount;
+    
+                                           CashTransaction.save(async (err, CashTransactionStored)=>{
+                                               if(err){
+                                                   res.status(500).send({message: err});
+                                               }else{
+                                                   if(!CashTransactionStored){
+                                                       res.status(500).send({message: "Error"});
+                                                   }else{
+                                                       let saldoCurrentAccount=await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
+                                                       cashAccount.findByIdAndUpdate({_id:CashAccount},
+                                                           {Saldo: parseFloat(parseFloat(saldoCurrentAccount) - parseFloat(Monto)).toFixed(2)},
+                                                           (err,updateDeuda)=>{
+                                                           if(err){
+                                                               console.log(err);
+                                                           }
+                                                       });
+                                                   }
+                                               }
+                                           })
+                                        }
+                                   
+                                     
+                                        if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetaCredito" ){
+                                           if(PaymentMethodName==="Transferencia"){
+                                               BankMovement=idMovimiento;
+                                               Type=idTipoMovimiento
+       
+                                       
+                                            }
+                                            if(PaymentMethodName==="TarjetaCredito"){
+                                               BankMovement=tarjetaCreditoMov;
+                                               Type=tarjetaTipo;
+                                           }
+                                           
+                                           let BankingTransaction=new bankingTransaction();
+                                           BankingTransaction.Type= Type
+                                           BankingTransaction.TransactionDate= creacion;
+                                           BankingTransaction.Concept= Reason;
+                                           // BankingTransaction.OperationNumber=OperationNumber;
+                                           BankingTransaction.User= User;
+                                           BankingTransaction.DocumentNumber= NoTransaction;
+                                           BankingTransaction.Deposit= 0;
+                                           BankingTransaction.Withdrawal= Monto;
+                                           BankingTransaction.BankMovement= BankMovement;
+                                           BankingTransaction.Account= NumberAccountId;
+                                         
+                                           BankingTransaction.save(async (err, BankingTransactionStored)=>{
+                                               if(err){
+                                                   // res.status(500).send({message: err});
+                                               }else{
+                                                   if(!BankingTransactionStored){
+                                                       // res.status(500).send({message: "Error"});
+                                                   }else{
+                                                      
+    
+                                                       bankAccount.findByIdAndUpdate({_id:NumberAccountId},
+                                                           {Saldo: parseFloat(parseFloat(saldoCurrentAccount) - parseFloat(Monto)).toFixed(2)},
+                                                           (err,updateDeuda)=>{
+                                                           if(err){
+                                                               console.log(err);
+                                                           }
+                                                       })
+    
+                                                   }
+                                               }
+                                           });
+    
+    
+                                        }
+                                        
+                                    }
+                                    res.status(200).send({pago: detailStored});
+                                }
+                            }
+                        });
+                        
+                    }
+                }
+    
+            }
+        }
+        else{
+            console.log('pago ya registrADO');
+            payment.save((err, paymentStored)=>{
+                if(err){
+                    console.log(err);
+        
+                }else {
+                    if(!paymentStored){
+                        console.log('no se ingreso entrada');
+        
+                    }
+                    else{
+                        let paymentid=paymentStored._id;
+                        console.log('METODO',PaymentMethodId);
+                        paymentDetails.CreationDate=creacion;
+                        paymentDetails.Reason=Reason;
+                        paymentDetails.PaymentMethods=PaymentMethodId;
+                        paymentDetails.Cancelled=false;
+                        paymentDetails.Amount=Monto;
+                        paymentDetails.PaymentSupplier=paymentid;
+                        paymentDetails.PurchaseInvoice=PurchaseInvoiceId;
+                      
+                        console.log(paymentDetails);
+                        if(PaymentMethodName!=='Contado'){
+                            paymentDetails.NumberAccount=NumberAccount;
+                            paymentDetails.BankName= BankName;
+                            paymentDetails.NoTransaction= NoTransaction;
+                        }
+                        if(PaymentMethodName==='Cheque'){
+                            paymentDetails.NumberAccount=NumberAccount;
+                            paymentDetails.BankName= BankName;
+                            paymentDetails.NoTransaction= null;
+                        }
+                        if(PaymentMethodName==='Contado'){
+                            paymentDetails.NumberAccount=null;
+                            paymentDetails.BankName= null;
+                            paymentDetails.NoTransaction= null;
+                        }
+                        paymentDetails.save(async (err, detailStored)=>{
+                            if(err){
+                                // res.status(500).send({message: err});
+                                console.log(err);
+                    
+                            }else {
+                                if(!detailStored){
+                                    // res.status(500).send({message: err});
+                                    console.log(err);
+                                }
+                                else{
+                                    let paymentDetailId=detailStored._id;
+                                    if(paymentDetailId){
+                                        let sumMontos=await PaymnetToSupplierDetails.aggregate([
+                                            {$match :{PaymentSupplier: paymentid}},
+                                           
+                                            {
+                                                $group:{
+                                                   _id:null,
+                                                "sumAmount":{$sum: '$Amount'}
+                                            }
+                                           },
+                                          
+                                        ]);
+                                        let sumaMontos=0.0;
+                                        sumMontos.map(item =>{
+                                            sumaMontos=item.sumAmount;
+                                        })
+                                        //actualizando deuda con proveedor
+                                        Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
                                             if(err){
+                                               
                                                 console.log(err);
                                             }
                                         });
-                                    }
-                                    //actualizando deuda con proveedor
-                                    let actMonto=parseFloat(deuda)-parseFloat(Monto);
-                                    Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:actMonto.toFixed(2)},(err,updateDeuda)=>{
-                                    if(err){
-                                        
-                                        console.log(err);
-                                    }
-                                    else{
-                                        console.log(updateDeuda);
-                                    }
-                                    });
-                                    
-                                }
-                                res.status(200).send({pago: detailStored});
-                            }
-                        }
-                    });
-                    
-                }
-            }
-
-        }
-    }
-    else{
-        console.log('pago ya registrADO');
-        payment.save((err, paymentStored)=>{
-            if(err){
-                console.log(err);
-    
-            }else {
-                if(!paymentStored){
-                    console.log('no se ingreso entrada');
-    
-                }
-                else{
-                    let paymentid=paymentStored._id;
-                    console.log('METODO',PaymentMethodId);
-                    paymentDetails.CreationDate=creacion;
-                    paymentDetails.Reason=Reason;
-                    paymentDetails.PaymentMethods=PaymentMethodId;
-                    paymentDetails.Cancelled=false;
-                    paymentDetails.Amount=Monto;
-                    paymentDetails.PaymentSupplier=paymentid;
-                    paymentDetails.PurchaseInvoice=PurchaseInvoiceId;
-                  
-                    console.log(paymentDetails);
-                    if(PaymentMethodName!=='Contado'){
-                        paymentDetails.NumberAccount=NumberAccount;
-                        paymentDetails.BankName= BankName;
-                        paymentDetails.NoTransaction= NoTransaction;
-                    }
-                    if(PaymentMethodName==='Cheque'){
-                        paymentDetails.NumberAccount=NumberAccount;
-                        paymentDetails.BankName= BankName;
-                        paymentDetails.NoTransaction= null;
-                    }
-                    if(PaymentMethodName==='Contado'){
-                        paymentDetails.NumberAccount=null;
-                        paymentDetails.BankName= null;
-                        paymentDetails.NoTransaction= null;
-                    }
-                    paymentDetails.save(async (err, detailStored)=>{
-                        if(err){
-                            // res.status(500).send({message: err});
-                            console.log(err);
-                
-                        }else {
-                            if(!detailStored){
-                                // res.status(500).send({message: err});
-                                console.log(err);
-                            }
-                            else{
-                                let paymentDetailId=detailStored._id;
-                                if(paymentDetailId){
-                                    let sumMontos=await PaymnetToSupplierDetails.aggregate([
-                                        {$match :{PaymentSupplier: paymentid}},
+                                        console.log("SUMANDOS",sumaMontos," factura",totalaPagarInvoice.Total);
+                                        if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalaPagarInvoice.Total).toFixed(2)){
+                                            console.log('SUMANDO MONTOS');
+                                            PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
+                                                if(err){
+                                                 
+                                                    console.log(err);
+                                                }else{console.log(updateDeuda);}
+                                            });
+                                            
+                                            
+                                        }
                                        
-                                        {
-                                            $group:{
-                                               _id:null,
-                                            "sumAmount":{$sum: '$Amount'}
-                                        }
-                                       },
-                                      
-                                    ]);
-                                    let sumaMontos=0.0;
-                                    sumMontos.map(item =>{
-                                        sumaMontos=item.sumAmount;
-                                    })
-                                    //actualizando deuda con proveedor
-                                    Supplier.findByIdAndUpdate({_id:Supplierid},{DebsToPay:parseFloat(deuda)-parseFloat(Monto)},(err,updateDeuda)=>{
-                                        if(err){
-                                           
-                                            console.log(err);
-                                        }
-                                    });
-                                    console.log("SUMANDOS",sumaMontos," factura",totalaPagarInvoice.Total);
-                                    if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalaPagarInvoice.Total).toFixed(2)){
-                                        console.log('SUMANDO MONTOS');
-                                        PurchaseInvoice.findByIdAndUpdate({_id:PurchaseInvoiceId},{Pagada:true},(err,updateDeuda)=>{
-                                            if(err){
-                                             
-                                                console.log(err);
-                                            }else{console.log(updateDeuda);}
-                                        });
-                                        
-                                        
                                     }
                                    
                                 }
-                               
                             }
-                        }
-                    });
-                    
-                    res.status(200).send({ paymentStored});
+                        });
+                        
+                        res.status(200).send({ paymentStored});
+                    }
                 }
-            }
-        })
+            })
+        }
+
+    }else{
+        res.status(500).send({message:"No Posee Fondos Suficientes"});
     }
+  
 
 }
 

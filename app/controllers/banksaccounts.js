@@ -4,13 +4,14 @@ function CreatBankAccounts(req,res){
 
     const bankAccount = new BankAccount();
 
-    const {NumberAccount,Company, Bank, Active} = req.body
+    const {NumberAccount,Company, Bank, Alias} = req.body
 
     bankAccount.NumberAccount = NumberAccount;
     bankAccount.Bank = Bank;
     bankAccount.Company = Company;
     bankAccount.Active = true;
     bankAccount.Saldo=0;
+    bankAccount.Alias=Alias;
  
 
     bankAccount.save((err, bankAccountStored)=>{

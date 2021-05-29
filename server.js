@@ -67,6 +67,12 @@ let conversionRoutes= require('./app/routers/conversion.route');
 let customerAdvancedRoutes= require('./app/routers/customeradvance.route');
 let cashRegisterRoutes= require('./app/routers/cashregister.route');
 let cashAccountsRoutes= require('./app/routers/cashcounts.route');
+let bankingTransactionRoutes= require('./app/routers/bankingtransaction.route');
+let bankMovementRoutes= require('./app/routers/bankmovement.route');
+let conceptRoutes= require('./app/routers/concept.route');
+let cashMovementRoutes= require('./app/routers/cashmovement.route');
+let cashTransactionRoutes= require('./app/routers/cashtransaction.route');
+// let bankMovementRoutes= require('./app/routers/cashmovement.route');
 
 const app=express();
 //funcion cors
@@ -161,6 +167,11 @@ app.use('/api',conversionRoutes);
 app.use('/api',customerAdvancedRoutes);
 app.use('/api',cashAccountsRoutes);
 app.use('/api',cashRegisterRoutes);
+app.use('/api',bankingTransactionRoutes);
+app.use('/api',bankMovementRoutes);
+app.use('/api',conceptRoutes);
+app.use('/api',cashMovementRoutes);
+app.use('/api',cashTransactionRoutes);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));
