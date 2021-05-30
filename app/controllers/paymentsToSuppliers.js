@@ -12,7 +12,7 @@ const bankAccount= require('../models/bankaccount.model');
 const bankMovement= require('../models/bankmovement.model');
 const movementType= require('../models/concepts.model'); 
 //movimiento caja
-const cashTransaction= require('../models/CashTransaction.model');
+const cashTransaction= require('../models/cashtransaction.model');
 const cashAccount= require('../models/cashaccounts.model');
 const cashMovement= require('../models/cashmovement.model');
 

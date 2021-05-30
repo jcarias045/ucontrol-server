@@ -1,4 +1,4 @@
-const cashTransaction= require('../models/CashTransaction.model');
+const cashTransaction= require('../models/cashtransaction.model');
 const cashAccount= require('../models/cashaccounts.model');
 const bankTranfers= require('../models/logbanktransfer.model');
 
