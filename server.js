@@ -200,8 +200,8 @@ const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-0
 //HOLAAAAAAAA
 const PORT = process.env.PORT || 3050 ;
 // const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
-// mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
- mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+//  mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 // mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 // mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 
