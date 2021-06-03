@@ -664,34 +664,44 @@ async function createNewSupplierInvoice(req, res){
                                             let movementId=await MovementTypes.findOne({Name:'ingreso'},['_id'])
                                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                             const inventorytraceability= new inventoryTraceability();
+                                            let transInventario=[];
                                             entries.map(async (item) =>{
-                                                inventorytraceability.Quantity=item.Quantity;
-                                                inventorytraceability.Product=item.Product;
-                                                inventorytraceability.WarehouseDestination=item.Inventory; //destino
-                                                inventorytraceability.MovementType=movementId._id;
-                                                inventorytraceability.MovDate=creacion;
-                                                 inventorytraceability.WarehouseOrigin=null; //origen
-                                                inventorytraceability.User=User;
-                                                inventorytraceability.Company=companyId;
-                                                inventorytraceability.DocumentId=productEntryID;
-                                                inventorytraceability.ProductDestiny=null;
-                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
-                                                inventorytraceability.save((err, traceabilityStored)=>{
-                                                    if(err){
-                                                          console.log(err);
-                                                    }else {
-                                                        if(!traceabilityStored){
-                                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                            console.log(traceabilityStored);
-                                                        }
-                                                        else{
-                                                            //   res.status(200).send({orden: traceabilityStored});
-                                                        }
-                                                    }
-                                            });
+                                                transInventario.push({
+                                                  Quantity:item.Quantity,
+                                                  Product:item.Product,
+                                                  WarehouseDestination:item.Inventory, //destino
+                                                  MovementType:movementId._id,
+                                                  MovDate:creacion,
+                                                  WarehouseOrigin:null, //origen
+                                                  User:User,
+                                                  Company:companyId,
+                                                  DocumentId:productEntryID,
+                                                  ProductDestiny:null,
+                                                  Cost:parseFloat(item.Quantity)*parseFloat(item.Price),
+                                                })
+                                                // inventorytraceability.Quantity=item.Quantity;
+                                                // inventorytraceability.Product=item.Product;
+                                                // inventorytraceability.WarehouseDestination=item.Inventory; //destino
+                                                // inventorytraceability.MovementType=movementId._id;
+                                                // inventorytraceability.MovDate=creacion;
+                                                // inventorytraceability.WarehouseOrigin=null; //origen
+                                                // inventorytraceability.User=User;
+                                                // inventorytraceability.Company=companyId;
+                                                // inventorytraceability.DocumentId=productEntryID;
+                                                // inventorytraceability.ProductDestiny=null;
+                                                // inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
+                                       
 
                                             })
-                                           
+                                            inventoryTraceability.insertMany(transInventario).then(async function (entries) {
+                                                if(!entries){
+                                                      console.log("NO INSERTO TRANSACCION DE INVENTARIO");
+                                                }else {
+                                                    
+                                                        console.log(entries);
+                                                    
+                                                }
+                                             });
                                             
                                         })
                                         .catch(function (err) {

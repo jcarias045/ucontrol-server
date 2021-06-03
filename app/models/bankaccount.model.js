@@ -15,7 +15,8 @@ const BankAccountSchema = Schema({
     },
     Active: Boolean,
     Saldo:Number,
-    Alias:String
+    Alias:String,
+    Type:String
     
 })
 

@@ -4,7 +4,7 @@ function CreatBankAccounts(req,res){
 
     const bankAccount = new BankAccount();
 
-    const {NumberAccount,Company, Bank, Alias} = req.body
+    const {NumberAccount,Company, Bank, Alias, Type} = req.body
 
     bankAccount.NumberAccount = NumberAccount;
     bankAccount.Bank = Bank;
@@ -12,6 +12,7 @@ function CreatBankAccounts(req,res){
     bankAccount.Active = true;
     bankAccount.Saldo=0;
     bankAccount.Alias=Alias;
+    bankAccount.Type=Type;
  
 
     bankAccount.save((err, bankAccountStored)=>{
@@ -99,10 +100,90 @@ function getBankAccountCompany(req,res){
     });
 }
 
+function getBankCurrentAccountsCompany(req,res){  //para obtener las cuentas de tipo corriente, usadas para el registro de las chequeras
+    const {id}= req.params;
+    // BankAccount.find({Company: req.params.id, Type:"Corriente"})
+    // .populate({path: 'Company', model: 'Company'})
+    // .populate({path: 'Bank', model: 'Bank'})
+    BankAccount.aggregate([
+        {$match:{ $expr:
+            { $and:
+               [
+                 { Company: id},
+                 { $eq: [ "$Type",  "Corriente" ] },
+               
+                
+               ]
+            }
+         }},
+        
+            {
+                
+                $lookup: {
+                    from: "checkbooks",
+                    let: { cuentaId: "$_id" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { $and:
+                                   [
+                                     { $eq: [ "$BankAccount",  "$$cuentaId" ] },
+                                     
+                                    //  { $eq: [ "$Pagada",  true ] },
+                                   ]
+                                }
+                             }
+                        },
+                       
+                       
+                     ],
+                    as:"cheques",
+                    
+                },
+             
+                
+            },
+            {
+                $lookup: {
+                    from: "banks",
+                    let: { bankid: "$Bank" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { $and:
+                                   [
+                                     { $eq: [ "$_id",  "$$bankid" ] },
+                                     
+                                    //  { $eq: [ "$Pagada",  true ] },
+                                   ]
+                                }
+                             }
+                        },
+                       
+                       
+                     ],
+                    as:"Bank",
+                    
+                },
+            }
+            //   {
+            //      $unwind:  "$invoice"
+            //   },
+              
+        ])
+    .then(bankAccount => {
+        if(!bankAccount){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send(bankAccount)
+        }
+    });
+}
 module.exports = {
     CreatBankAccounts,
     GetBankAccount,
     updateBankAccount,
     desactivateBanksAccounts,
-    getBankAccountCompany
+    getBankAccountCompany,
+    getBankCurrentAccountsCompany
 }

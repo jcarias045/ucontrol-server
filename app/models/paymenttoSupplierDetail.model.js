@@ -2,7 +2,9 @@ const moongose = require('mongoose');
 const Schema = moongose.Schema
 const PaymentSupplier = require('../models/paymentstoSuppliers.model')
 const PaymentMethods = require('../models/paymentMethods.model')
-const User = require('../models/user.model')
+const User = require('../models/user.model');
+const BankAccount = require('../models/bankaccount.model')
+const CashAccount = require('../models/cashaccounts.model')
 
 const PaymentSupplierDetailSchema = Schema({
     PurchaseInvoice: { type: Schema.ObjectId, 
@@ -17,7 +19,9 @@ const PaymentSupplierDetailSchema = Schema({
     Reason: String,
     NoTransaction: Number,
     PaymentMethods: { type: Schema.ObjectId, ref:"PaymentMethods"},
-    Cancelled: Boolean
+    Cancelled: Boolean,
+    BankAccount: { type: Schema.ObjectId, ref:"BankAccount"},
+    CashAccount: { type: Schema.ObjectId, ref:"CashAccounts"}
 })
 
 module.exports = moongose.model('PaymentSupplierDetail', PaymentSupplierDetailSchema)

@@ -72,7 +72,8 @@ let bankMovementRoutes= require('./app/routers/bankmovement.route');
 let conceptRoutes= require('./app/routers/concept.route');
 let cashMovementRoutes= require('./app/routers/cashmovement.route');
 let cashTransactionRoutes= require('./app/routers/cashtransaction.route');
-// let bankMovementRoutes= require('./app/routers/cashmovement.route');
+let checkbookRoutes= require('./app/routers/checkbook.route');
+let writeCheckRoutes= require('./app/routers/writecheck.route');
 
 const app=express();
 //funcion cors
@@ -172,6 +173,8 @@ app.use('/api',bankMovementRoutes);
 app.use('/api',conceptRoutes);
 app.use('/api',cashMovementRoutes);
 app.use('/api',cashTransactionRoutes);
+app.use('/api',checkbookRoutes);
+app.use('/api',writeCheckRoutes);
 
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));
@@ -192,13 +195,13 @@ if(process.env.NODE_ENV === 'production'){
 //   console.log("App listening at http://%s:%s", host, port);
 // })
 //conexion
-// const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
+const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
 // const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
 //HOLAAAAAAAA
 const PORT = process.env.PORT || 3050 ;
 // const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
-mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-//  mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+// mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+ mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 // mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 // mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 

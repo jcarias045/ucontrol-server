@@ -22,7 +22,7 @@ async function addCustomerAdvance(req, res){
    
     let creacion=now.toISOString().substring(0, 10);
     const {Company,User,saleOrderId,Customer,Monto,Total,Reason,productos,ProductId,Quantity,
-        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName}=req.body;
+        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,NumberAccountId,CashAccount}=req.body;
 
     console.log(req.body);
     let codigoPayment=await CustomerAdvance.findOne()
@@ -106,15 +106,21 @@ async function addCustomerAdvance(req, res){
                     paymentDetails.SaleOrder=saleOrderId;
                     paymentDetails.Product=ProductId;
                     paymentDetails.Quantity=Quantity;
+                    paymentDetails.Type= PaymentMethodName;
+                    paymentDetails.User=User
                     if(PaymentMethodName!=='Contado'){
                         paymentDetails.NumberAccount=NumberAccount;
                         paymentDetails.BankName= BankName;
                         paymentDetails.NoTransaction= NoTransaction;
+                        paymentDetails.BankAccount= NumberAccountId;
+                        paymentDetails.CashAccount=null;
                     }
                     if(PaymentMethodName==='Contado'){
                         paymentDetails.NumberAccount=null;
                         paymentDetails.BankName= null;
                         paymentDetails.NoTransaction= null;
+                        paymentDetails.CashAccount=CashAccount;
+                        paymentDetails.BankAccount= null;
                     }
                     console.log(paymentDetails);
                     paymentDetails.save(async (err, detailStored)=>{
@@ -323,16 +329,21 @@ async function addCustomerAdvance(req, res){
                         paymentDetails.SaleOrder=saleOrderId;
                         paymentDetails.Product=ProductId;
                         paymentDetails.Quantity=Quantity;
-                        console.log(paymentDetails);
+                        paymentDetails.Type= PaymentMethodName;
+                        paymentDetails.User=User
                         if(PaymentMethodName!=='Contado'){
-                            paymentDetails.NumberAccount=PaymentMethodName==="TargetaCredito"?null:NumberAccount;
+                            paymentDetails.NumberAccount=NumberAccount;
                             paymentDetails.BankName= BankName;
                             paymentDetails.NoTransaction= NoTransaction;
+                            paymentDetails.BankAccount= NumberAccountId;
+                            paymentDetails.CashAccount=null;
                         }
                         if(PaymentMethodName==='Contado'){
                             paymentDetails.NumberAccount=null;
                             paymentDetails.BankName= null;
                             paymentDetails.NoTransaction= null;
+                            paymentDetails.CashAccount=CashAccount;
+                            paymentDetails.BankAccount= null;
                         }
                         paymentDetails.save(async (err, detailStored)=>{
                             if(err){
