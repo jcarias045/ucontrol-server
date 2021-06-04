@@ -2230,36 +2230,45 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
     let codigo=0;
     let codigoSalidas=0;
+ ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
+ let idMovimiento;
+ let idTipoMovimiento;     
+ let efectivoMovimiento;
+ let tarjetaCreditoMov;
+ let tarjetaTipo;
+ let chequeMov;
+ let chequeTipo;
+ if(PaymentMethodName==="Transferencia"){
+    idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-      ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
-      let idMovimiento;
-      let idTipoMovimiento;     
-      let efectivoMovimiento;
-      let tarjetaCreditoMov;
-      let tarjetaTipo;
-      if(PaymentMethodName==="Transferencia"){
-      idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
-      .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-      idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
-      .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+ }
+ if(PaymentMethodName==="Contado"){
+    efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+ }
 
-      }
-      if(PaymentMethodName==="Contado"){
-      efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
-      .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-      }
+ if(PaymentMethodName==="TarjetadeCredito"){
+    tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-      if(PaymentMethodName==="TarjetadeCredito"){
-      tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
-      .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+   
+ }
+ if(PaymentMethodName==="Cheque"){
+    chequeMov=await bankMovement.findOne({Name:'Abono', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-      tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
-      .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-      
-      }
+    chequeTipo=await movementType.findOne({Name:'Cheque', Company:companyId},['_id'])
+    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-      ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
+ }
+
+///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
 
     let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
@@ -2415,6 +2424,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     let chargeDetail;
     let cajad=[];
     let banco=[];
+    let payDetail=[];
     if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
 
         SaleOrderInvoice.InvoiceNumber=correlativeNumber;
@@ -2581,24 +2591,26 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                 console.log("PAGO INGRESADO",paymentStored);
                                                   let paymentid=paymentStored.map(item=>{return item._id}).toString();
                                                   let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
-                                                  let payDetail=[{
-                                                    CreationDate:creacion,
-                                                    Reason:Reason,
-                                                    PaymentMethods:PaymentMethodId,
-                                                    Cancelled:false,
-                                                    Amount:parseFloat(parseFloat(totalfactura).toFixed(2)), //verificar si se realiza por salto de factura
-                                                    // (totalfactura).toFixed(2),
-                                                    CustomerPayment:paymentid,
-                                                    SaleOrderInvoice:codInvoice,
-                                                    NumberAccount:PaymentMethodName==="Transferencia"?NumberAccountBank:NumberAccount,
-                                                    BankName: BankName,
-                                                    NoTransaction: PaymentMethodName==="Transferencia" 
-                                                    ||PaymentMethodName==="TarjetadeCredito" ?NoTransaction:null,
-                                                    CashAccount:PaymentMethodName==="Contado" ?CashAccount:null,
-                                                    BankAccount: PaymentMethodName==="Transferencia" 
-                                                    ||PaymentMethodName==="TarjetadeCredito" ?NumberAccountId:null,
-                                                    Type:PaymentMethodName
-                                                  }]
+                                                   payDetail.push({
+                                                          CreationDate:creacion,
+                                                            Reason:Reason,
+                                                            PaymentMethods:PaymentMethodId,
+                                                            Cancelled:false,
+                                                            Amount:parseFloat(parseFloat(totalfactura).toFixed(2)), //verificar si se realiza por salto de factura
+                                                            // (totalfactura).toFixed(2),
+                                                            CustomerPayment:paymentid,
+                                                            SaleOrderInvoice:codInvoice,
+                                                            NumberAccount:PaymentMethodName==="Transferencia"?NumberAccountBank:NumberAccount,
+                                                            BankName: BankName,
+                                                            NoTransaction: PaymentMethodName==="Transferencia" 
+                                                            ||PaymentMethodName==="TarjetadeCredito" ?NoTransaction:null,
+                                                            CashAccount:PaymentMethodName==="Contado" ?CashAccount:null,
+                                                            BankAccount: PaymentMethodName==="Transferencia" 
+                                                            ||PaymentMethodName==="TarjetadeCredito" ?NumberAccountId:null,
+                                                            Type:PaymentMethodName
+                                                   })
+                                                 
+                                               
                                                   let arrayAnticipo=[];
                                                   if(detalleAnticipo.length>0){
                                                   
@@ -2666,132 +2678,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                                 //   })
 
 
-                                                                            //Reegistro de movimiento de banco APARTIR DEL DETALLE DE PAGO INGRESADOOO!!
-                                                                            
-                                                                         
-                                                                            payDetail.map(async item=>{
-                                                                                let Type;
-                                                                                let BankMovement;
-                                                                                 ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
-                                                                                let idMovimiento;
-                                                                                let idTipoMovimiento;     
-                                                                                let efectivoMovimiento;
-                                                                                let tarjetaCreditoMov;
-                                                                                let tarjetaTipo;
-                                                                                if(item.Type==="Transferencia"){
-                                                                                idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
-                                                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            
-                                                                                idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
-                                                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            
-                                                                                }
-                                                                                if(item.Type==="Contado"){
-                                                                                efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
-                                                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                                                }
-                            
-                                                                                if(item.Type==="TarjetadeCredito"){
-                                                                                tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
-                                                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            
-                                                                                tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
-                                                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                                                
-                                                                                }
-                            
-                                                                                ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
-                                                                                //ACA SE INGRESAN LOS DATOS DE LA TRANSACCION
-                                                                                if(item.Type==="Contado"){
-                                                                                  
-                                                                                    const CashTransaction = new cashTransaction();
-    
-                                                                                    CashTransaction.TransactionDate= creacion;
-                                                                                    CashTransaction.Concept= Reason;  
-                                                                                    CashTransaction.User= User; 
-                                                                                    CashTransaction.Deposit=Monto;
-                                                                                    CashTransaction.Withdrawal= 0;
-                                                                                    CashTransaction.CashMovement= efectivoMovimiento;
-                                                                                    CashTransaction.CashAccount= CashAccount;
-                                            
-                                                                                    CashTransaction.save(async (err, CashTransactionStored)=>{
-                                                                                        if(err){
-                                                                                            res.status(500).send({message: err});
-                                                                                        }else{
-                                                                                            if(!CashTransactionStored){
-                                                                                                res.status(500).send({message: "Error"});
-                                                                                            }else{
-                                                                                                let saldoCurrentAccount=await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
-                                                                                                  cashAccount.findByIdAndUpdate({_id:CashAccount},
-                                                                                                    {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
-                                                                                                    (err,updateDeuda)=>{
-                                                                                                    if(err){
-                                                                                                        console.log(err);
-                                                                                                    }
-                                                                                                });
-                                                                                            }
-                                                                                        }
-                                                                                    })
-                                                                                 }
-                                                                            
-                                                                              
-                                                                                 if(item.Type==="Transferencia" || item.Type==="TarjetadeCredito" ){
-                                                                                    console.log("ENTRO A MOVMIENTOS uuu");
-                                                                                   
-                                                
-                                                                                    if(item.Type==="Transferencia"){
-                                                                                        BankMovement=idMovimiento;
-                                                                                        Type=idTipoMovimiento
-                                                
-                                                                                
-                                                                                     }
-                                                                                     if(item.Type==="TarjetadeCredito"){
-                                                                                         console.log("PAGO TARJERA DE CREDITO");
-                                                                                        BankMovement=tarjetaCreditoMov;
-                                                                                        Type=tarjetaTipo;
-                                                                                    }
-                                            
-                                                                                    let BankingTransaction=new bankingTransaction();
-                                                                                    BankingTransaction.Type= Type
-                                                                                    BankingTransaction.TransactionDate= creacion;
-                                                                                    BankingTransaction.Concept= item.Reason;
-                                                                                    // BankingTransaction.OperationNumber=OperationNumber;
-                                                                                    BankingTransaction.User= User;
-                                                                                    BankingTransaction.DocumentNumber= item.NoTransaction;
-                                                                                    BankingTransaction.Deposit=Monto;
-                                                                                    BankingTransaction.Withdrawal= 0;
-                                                                                    BankingTransaction.BankMovement= BankMovement;
-                                                                                    BankingTransaction.Account= item.BankAccount;
-                                                                                   
-                                                                                BankingTransaction.save(async (err, BankingTransactionStored)=>{
-                                                                                if(err){
-                                                                                            // res.status(500).send({message: err});
-                                                                                        }else{
-                                                                                            if(!BankingTransactionStored){
-                                                                                                // res.status(500).send({message: "Error"});
-                                                                                            }else{
-                                                                                                let saldoCurrentAccount=await bankAccount.findOne({_id: item.BankAccount},'Saldo').then(result=>{return result.Saldo});
-                                                                                                let sum= parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(item.Amount)).toFixed(2);
-                                                                                                console.log("lo sumado", sum);
-                                                                                                bankAccount.findByIdAndUpdate({_id: item.BankAccount},
-                                                                                                    {Saldo: parseFloat(sum)},
-                                                                                                    (err,updateDeuda)=>{
-                                                                                                    if(err){
-                                                                                                        console.log(err);
-                                                                                                    }
-                                                                                                });
 
-                                                                                            }
-                                                                                        }
-                                                                                    });
-                                            
-                                                                                 }
-                            
-                                                                              })
-
-                                                                  
-
-
+                                                                
                                                               }
 
                                                           }
@@ -3431,6 +3319,104 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                 })
             }
         });
+    }
+
+    if(payDetail.length > 0){
+            //Reegistro de movimiento de banco
+            let Type;
+            let BankMovement;
+            
+            if(PaymentMethodName==="Contado"){
+               const CashTransaction = new cashTransaction();
+
+               CashTransaction.TransactionDate= creacion;
+               CashTransaction.Concept= Reason;  
+               CashTransaction.User= User; 
+               CashTransaction.Deposit=Monto;
+               CashTransaction.Withdrawal= 0;
+               CashTransaction.CashMovement= efectivoMovimiento;
+               CashTransaction.CashAccount= CashAccount;
+
+               CashTransaction.save(async (err, CashTransactionStored)=>{
+                   if(err){
+                       res.status(500).send({message: err});
+                   }else{
+                       if(!CashTransactionStored){
+                           res.status(500).send({message: "Error"});
+                       }else{
+                           let saldoCurrentAccount=await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
+                           cashAccount.findByIdAndUpdate({_id:CashAccount},
+                               {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
+                               (err,updateDeuda)=>{
+                               if(err){
+                                   console.log(err);
+                               }
+                           });
+                       }
+                   }
+               })
+            }
+       
+         
+            if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque" ){
+                console.log("ENTRO A MOVMIENTOS");
+                let doc;
+                   if(PaymentMethodName==="Transferencia"){
+                       BankMovement=idMovimiento;
+                       Type=idTipoMovimiento;
+                       doc=NoTransaction;
+
+                        
+               
+                    }
+                    if(PaymentMethodName==="TarjetadeCredito"){
+                       BankMovement=tarjetaCreditoMov;
+                       Type=tarjetaTipo;
+                       doc=NoTransaction;
+
+                   }
+                   if(PaymentMethodName==="Cheque"){
+                       console.log("PAGON CON CHEQUE");
+                       BankMovement=chequeMov;
+                       Type=chequeTipo;
+                       doc=NumberAccount;
+                   }
+               let BankingTransaction=new bankingTransaction();
+               BankingTransaction.Type= Type
+               BankingTransaction.TransactionDate= creacion;
+               BankingTransaction.Concept= Reason;
+               // BankingTransaction.OperationNumber=OperationNumber;
+               BankingTransaction.User= User;
+               BankingTransaction.DocumentNumber= NoTransaction;
+               BankingTransaction.Deposit= Monto;
+               BankingTransaction.Withdrawal= 0;
+               BankingTransaction.BankMovement= BankMovement;
+               BankingTransaction.Account= NumberAccountId;
+
+               BankingTransaction.save(async (err, BankingTransactionStored)=>{
+                   if(err){
+                       // res.status(500).send({message: err});
+                   }else{
+                       if(!BankingTransactionStored){
+                           // res.status(500).send({message: "Error"});
+                       }else{
+                           let saldoCurrentAccount=await bankAccount.findOne({_id:NumberAccountId},'Saldo').then(result=>{return result.Saldo});
+                           console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
+
+                           bankAccount.findByIdAndUpdate({_id:NumberAccountId},
+                               {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
+                               (err,updateDeuda)=>{
+                               if(err){
+                                   console.log(err);
+                               }
+                           })
+
+                       }
+                   }
+               });
+
+
+            }
     }
   
     

@@ -36,6 +36,8 @@ const SupplierSchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Sector"
   },
+  Contributor:String,
+  Exempt:Boolean,
 })
 
 module.exports =mongoose.model('Supplier', SupplierSchema)

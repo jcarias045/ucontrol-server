@@ -120,8 +120,8 @@ async function addCustomerAdvance(req, res){
         }
     });
     console.log(existePago);
-    let totalFactura=  totalaPagarInvoice.Total;
-    let saldoActual=existePago!==null?parseFloat(existePago.Saldo).toFixed(2):0;
+    let totalFactura= parseFloat( parseFloat(totalaPagarInvoice.Total).toFixed(2));
+    let saldoActual=existePago!==null?parseFloat(parseFloat(existePago.Saldo).toFixed(2)):0;
     let deuda=deudaCliente;
     console.log(parseFloat(totalaPagarInvoice.Total).toFixed(2));
     console.log('existe ya',existePago);
@@ -133,13 +133,15 @@ async function addCustomerAdvance(req, res){
     payment.User=User;
     payment.Codigo=codigo;
     payment.Customer=Customer;
+    let amount=parseFloat(parseFloat(Monto).toFixed(2))
     payment.Saldo=parseFloat(totalFactura).toFixed(2)-parseFloat(Monto).toFixed(2);
     if(existePago!==null){
         console.log("PAGOOO PREVIO");
-        if(parseFloat(totalFactura)<parseFloat(Monto)){
+        
+        if(parseFloat(totalFactura)<parseFloat(amount)){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
-            if(parseFloat(saldoActual)< parseFloat(Monto)){
+            if(parseFloat(saldoActual)<parseFloat(amount)){
                 res.status(500).send({message:"Monto Superior a saldo pendiente"});
             }else{
 
@@ -236,7 +238,7 @@ async function addCustomerAdvance(req, res){
                                               if(inventarioReserva.Stock >= item.Quantity){
                                                 inventory.findByIdAndUpdate({_id:inventarioReserva._id},{
                                                     Stock:parseFloat((inventarioReserva.Stock - parseFloat(item.Quantity)) ),
-                                                }).then(result=> console.log(result))
+                                                }).then(result=> console.log("se saco de reserva",result))
                                                 .catch(err => {console.log(err);});
 
                                                 inventory.findByIdAndUpdate({_id:inventarioAnticipo._id},{
@@ -302,7 +304,7 @@ async function addCustomerAdvance(req, res){
 
                                                 inventory.findByIdAndUpdate({_id:inventarioAnticipo._id},{
                                                     Stock:parseFloat((inventarioAnticipo.Stock + parseFloat(item.Quantity)) ),
-                                                }).then(result=> console.log(result))
+                                                }).then(result=> console.log("se cambios anticipo",result))
                                                 .catch(err => {console.log(err);});
                                                
                                                 saleOrderDetails.findByIdAndUpdate({_id:item._id},{
@@ -452,8 +454,8 @@ async function addCustomerAdvance(req, res){
         console.log("NUEVO PAGO DESDE CERO");
     console.log("Saldo de factura",parseFloat(totalFactura));
     console.log("Saldo de factura", parseFloat(Monto));
-    let totalFact=parseFloat(totalFactura);
-    let montoAnticipo=parseFloat(totalFactura);
+    let totalFact=parseFloat(parseFloat(totalFactura).toFixed(2));
+    let montoAnticipo=parseFloat(parseFloat(totalFactura).toFixed(2));
     let paymentid=null;
         if(parseFloat(totalFact) < parseFloat(montoAnticipo)){
             res.status(500).send({message:"Monto Superior a Deudass"});

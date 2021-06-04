@@ -8,7 +8,7 @@ function createSupplier(req, res){
 
     const {Name, Web, Email, Phone, Address, DebsToPay, Active,
     codsupplier, PaymentTime, Company, deliveryDays, SupplierType,
-    Nit, Ncr, Sector, Sector1, Sector2} = req.body
+    Nit, Ncr, Sector, Sector1, Sector2,Contributor, Exempt} = req.body
 
     Supplier.Name= Name
     Supplier.Web= Web;
@@ -27,6 +27,8 @@ function createSupplier(req, res){
     Supplier.Sector = Sector; 
     Supplier.Sector1 = Sector1; 
     Supplier.Sector2 = Sector2; 
+    Supplier.Exempt=Exempt;
+    Supplier.Contributor=Contributor;
 
     console.log(Supplier);
     let codsup = Supplier.codsupplier;
@@ -81,7 +83,7 @@ function getSuppliers(req, res){
             if(!supplierUpdate){
                 res.status(404).send({message: "No hay"});
             }else{
-                res.status(200).send({message: "Trabajo Actualizado"})
+                res.status(200).send({proveedor: supplierUpdate})
             }
         }
     })

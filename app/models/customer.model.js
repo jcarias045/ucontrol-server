@@ -51,7 +51,9 @@ const CustomerSchema = Schema({
     ref: "Sector"
   },
   Address: String,
-  Classification:String
+  Classification:String,
+  Contributor:String,
+  Exempt:Boolean,
 })
 
 module.exports = moongose.model('Customer', CustomerSchema)
