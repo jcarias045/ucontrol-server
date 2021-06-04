@@ -22,6 +22,7 @@ async function createWriteCheck(req, res){
     docwriteCheck.Amount=Amount;
     docwriteCheck.CheckNumber=CheckNumber;
     docwriteCheck.Comment=Comment;
+    docwriteCheck.Active=true;
 
         docwriteCheck.save((err, docwriteCheckStored)=>{
         if(err){
@@ -77,27 +78,18 @@ function getWriteCheck(req, res){
 
 
 
-function desactivateDocumentwriteCheck(req,res){
+function desactivateWriteCheck(req,res){
     
     const params = req.params;
-    const log=new writeCheckLog();
-    let now= new Date();
-    let creacion=now.toISOString().substring(0, 10);
-    writeCheck.findByIdAndUpdate({_id:params.id},{State:false},(err,writeCheckUpdate)=>{
+    
+    writeCheck.findByIdAndUpdate({_id:params.id},{Active:false},(err,writeCheckUpdate)=>{
         if(err){
             res.status(500).send({message: err});
         }else{
             if(!writeCheckUpdate){
                 res.status(404).send({message: "No se actualizo registro"});
             }else{
-                log.User=params.user;
-                log.DocumentType=req.body.DocumentType;
-                log.DocumentwriteCheck=req.body._id;
-                log.DateUpdate=creacion;
-                log.Action="Desactivación de correlativo";
-                log.save((err, docwriteCheckStored)=>{
-                    
-                })
+                
                 res.status(200).send({correlativo: writeCheckUpdate})
             }
         }
@@ -203,6 +195,6 @@ module.exports={
     getWriteCheck,
     createWriteCheck,
     checkCashed,
-    desactivateDocumentwriteCheck,
-    updateWriteCheck
+    updateWriteCheck,
+    desactivateWriteCheck
 }

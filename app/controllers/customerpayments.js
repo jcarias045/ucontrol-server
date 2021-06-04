@@ -13,10 +13,15 @@ const cashTransaction= require('../models/cashtransaction.model');
 const cashAccount= require('../models/cashaccounts.model');
 const cashMovement= require('../models/cashmovement.model');
 
+//PARA EMITIR CHEQUES
+const writeCheck= require('../models/writecheck.model');
+const checkbook= require('../models/checkbook.model');
+
 
 async function addCustomerPayment(req, res){
     const payment=new CustomerPayment();
     const paymentDetails=new CustomerPaymentDetails();
+    const docwriteCheck = new writeCheck();
 
     let codigo=0;
    
@@ -24,8 +29,10 @@ async function addCustomerPayment(req, res){
     let fecha=now.getTime();
    
     let creacion=now.toISOString().substring(0, 10);
+    console.log(req.body);
     const {Company,User,SaleOrderInvoiceId,Customer,Monto,Total,Reason,NumberAccountBank,
-        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,CashAccount,NumberAccountId}=req.body;
+        PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,CashAccount,NumberAccountId,
+        ChequeraId,BankId,Cliente,NoCheque,NoChequeAct,idFactura}=req.body;
     
        
      ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
@@ -34,6 +41,8 @@ async function addCustomerPayment(req, res){
      let efectivoMovimiento;
      let tarjetaCreditoMov;
      let tarjetaTipo;
+     let chequeMov;
+     let chequeTipo;
      if(PaymentMethodName==="Transferencia"){
         idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:Company},['_id'])
         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -54,6 +63,14 @@ async function addCustomerPayment(req, res){
         tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:Company},['_id'])
         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
        
+     }
+     if(PaymentMethodName==="Cheque"){
+        chequeMov=await bankMovement.findOne({Name:'Abono', Company:Company},['_id'])
+        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
+        chequeTipo=await movementType.findOne({Name:'Cheque', Company:Company},['_id'])
+        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+
      }
 
     ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
@@ -91,7 +108,7 @@ async function addCustomerPayment(req, res){
     });
     console.log(existePago);
     let totalFactura=  totalaPagarInvoice.Total;
-    let saldoActual=existePago!==null?parseFloat(existePago.Saldo).toFixed(2):0;
+    let saldoActual=existePago!==null?parseFloat(parseFloat(existePago.Saldo).toFixed(2)):0;
     let deuda=deudaCliente;
     console.log(totalaPagarInvoice.Total);
     console.log('existe ya',existePago);
@@ -106,10 +123,13 @@ async function addCustomerPayment(req, res){
     payment.Saldo=parseFloat(totalFactura).toFixed(2)-parseFloat(Monto).toFixed(2);
     if(existePago!==null){
         console.log("PAGOOO PREVIO");
-        if(parseFloat(totalaPagarInvoice.Total).toFixed(2)<= parseFloat(Monto).toFixed(2)){
+        let total=parseFloat(parseFloat(totalaPagarInvoice.Total).toFixed(2));
+        let amount=parseFloat(parseFloat(Monto).toFixed(2));
+        if(parseFloat(total)<= parseFloat(amount)){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
-            if(parseFloat(saldoActual).toFixed(2)< parseFloat(Monto).toFixed(2)){
+                 
+            if(saldoActual<amount){
                 res.status(500).send({message:"Monto Superior a saldo pendiente"});
             }else{
 
@@ -178,7 +198,9 @@ async function addCustomerPayment(req, res){
                                     })
                                     console.log('suma',sumaMontos);
                                     console.log('ttoal de facrur',totalFactura);
-                                    if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalFactura).toFixed(2)){
+                                    let totalF=parseFloat(parseFloat(totalFactura).toFixed(2))
+                                    let sumados=parseFloat(parseFloat(sumaMontos).toFixed(2))
+                                    if(parseFloat(sumados)===parseFloat(totalF)){
                                         console.log('FACTURA CANCELADA');
 
                                         saleOrderInvoice.findByIdAndUpdate({_id:SaleOrderInvoiceId},{Pagada:true},(err,updateDeuda)=>{
@@ -235,20 +257,29 @@ async function addCustomerPayment(req, res){
                                      }
                                 
                                   
-                                     if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" ){
+                                     if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque" ){
                                          console.log("ENTRO A MOVMIENTOS");
-                                        if(PaymentMethodName==="Transferencia"){
-                                            BankMovement=idMovimiento;
-                                            Type=idTipoMovimiento
-    
-                                    
-                                         }
-                                         if(PaymentMethodName==="TarjetadeCredito"){
-                                             console.log("PAGO TARJERA DE CREDITO");
-                                            BankMovement=tarjetaCreditoMov;
-                                            Type=tarjetaTipo;
-                                        }
+                                         let doc;
+                                            if(PaymentMethodName==="Transferencia"){
+                                                BankMovement=idMovimiento;
+                                                Type=idTipoMovimiento;
+                                                doc=NoTransaction;
 
+                                                 
+                                        
+                                             }
+                                             if(PaymentMethodName==="TarjetadeCredito"){
+                                                BankMovement=tarjetaCreditoMov;
+                                                Type=tarjetaTipo;
+                                                doc=NoTransaction;
+
+                                            }
+                                            if(PaymentMethodName==="Cheque"){
+                                                console.log("PAGON CON CHEQUE");
+                                                BankMovement=chequeMov;
+                                                Type=chequeTipo;
+                                                doc=NumberAccount;
+                                            }
                                         let BankingTransaction=new bankingTransaction();
                                         BankingTransaction.Type= Type
                                         BankingTransaction.TransactionDate= creacion;
@@ -285,6 +316,41 @@ async function addCustomerPayment(req, res){
 
 
                                      }
+
+                                    //    //en caso de cheque 
+                                    //    if(PaymentMethodName==="Cheque"){
+                                    //     docwriteCheck.Checkbook= ChequeraId;
+                                    //     docwriteCheck.Bank= BankId;
+                                    //     docwriteCheck.User= User;
+                                    //     docwriteCheck.State="Creado";
+                                    //     docwriteCheck.CreationDate=creacion;
+                                    //     docwriteCheck.Receiver=Cliente;
+                                    //     docwriteCheck.Amount=Monto;
+                                    //     docwriteCheck.CheckNumber=NoCheque;
+                                    //     docwriteCheck.Comment="Factura: "+idFactura +" "+Reason;
+                                    //     docwriteCheck.Active=true;
+                                    //     docwriteCheck.save((err, docwriteCheckStored)=>{
+                                    //         if(err){
+                                    //             console.log(err);
+                                    //             res.status(500).send({message: "Error en el servidor"});
+                                    //         }else{
+                                    //             if(!docwriteCheckStored){
+                                    //                 res.status(500).send({message: "Error"});
+                                    //             }else{
+                                    //                 let salto=parseInt(NoChequeAct)+1;
+                                    //                 checkbook.findByIdAndUpdate({_id:ChequeraId},{CurrentNumber:salto},(err,CheckbookUpdate)=>{
+                                    //                     if(err){
+                                    //                         console.log(err);
+                                    //                     }else{
+                                                           
+                                    //                     }
+                                    //                 })
+                                                   
+                                    //             }
+                                    //         }
+                                    //     });
+                                       
+                                    // }
                                    
                                 }
                                 res.status(200).send({pago: detailStored});
@@ -299,8 +365,9 @@ async function addCustomerPayment(req, res){
     else{
         console.log("NUEVO PAGO DESDE CERO");
     console.log("Saldo de factura",totalFactura);
-
-        if(parseFloat(totalFactura).toFixed(2) < parseFloat(Monto).toFixed(2)){
+    let total=parseFloat(parseFloat(totalFactura).toFixed(2));
+    let amount=parseFloat(parseFloat(Monto).toFixed(2));
+        if(total< amount){
             res.status(500).send({message:"Monto Superior a Deuda"});
         }else{
             payment.save((err, paymentStored)=>{
@@ -378,7 +445,9 @@ async function addCustomerPayment(req, res){
                                         });
                                         console.log("monto sumados", sumaMontos);
                                         console.log("total factura", totalFactura);
-                                        if(parseFloat(sumaMontos).toFixed(2)===parseFloat(totalFactura).toFixed(2)){
+                                        let totalF=parseFloat(parseFloat(totalFactura).toFixed(2))
+                                        let sumados=parseFloat(parseFloat(sumaMontos).toFixed(2))
+                                        if(parseFloat(sumados)===parseFloat(totalF)){
                                             console.log('SUMANDO MONTOS');
                                             saleOrderInvoice.findByIdAndUpdate({_id:SaleOrderInvoiceId},{Pagada:true},(err,updateDeuda)=>{
                                                 if(err){
@@ -428,17 +497,28 @@ async function addCustomerPayment(req, res){
                                          }
                                     
                                       
-                                         if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" ){
+                                         if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque" ){
                                              console.log("ENTRO A REGISTRO DE MOVIMIENTO");
+                                             let doc;
                                             if(PaymentMethodName==="Transferencia"){
                                                 BankMovement=idMovimiento;
-                                                Type=idTipoMovimiento
-        
+                                                Type=idTipoMovimiento;
+                                                doc=NoTransaction;
+
+                                                 
                                         
                                              }
                                              if(PaymentMethodName==="TarjetadeCredito"){
                                                 BankMovement=tarjetaCreditoMov;
                                                 Type=tarjetaTipo;
+                                                doc=NoTransaction;
+
+                                            }
+                                            if(PaymentMethodName==="Cheque"){
+                                                console.log("PAGON CON CHEQUE");
+                                                BankMovement=chequeMov;
+                                                Type=chequeTipo;
+                                                doc=NumberAccount;
                                             }
     
                                             let BankingTransaction=new bankingTransaction();
@@ -447,7 +527,7 @@ async function addCustomerPayment(req, res){
                                             BankingTransaction.Concept= Reason;
                                             // BankingTransaction.OperationNumber=OperationNumber;
                                             BankingTransaction.User= User;
-                                            BankingTransaction.DocumentNumber= NoTransaction;
+                                            BankingTransaction.DocumentNumber= doc;
                                             BankingTransaction.Deposit= Monto;
                                             BankingTransaction.Withdrawal= 0;
                                             BankingTransaction.BankMovement= BankMovement;
@@ -631,7 +711,9 @@ async function updatePaymentInvoice(req, res){
                                         sumaMontos=item.sumAmount;
                                     })
                                  console.log('suma',sumaMontos);
-                                 if(parseFloat(sumaMontos)===parseFloat(Total)){
+                                 let totalF=parseFloat(parseFloat(Total).toFixed(2))
+                                 let sumados=parseFloat(parseFloat(sumaMontos).toFixed(2))
+                                 if(parseFloat(totalF)===parseFloat(sumados)){
                                     console.log('SUMANDO MONTOS');
                                     saleOrderInvoice.findByIdAndUpdate({_id:_id},{Pagada:true},(err,updateDeuda)=>{
                                         if(err){
@@ -855,7 +937,7 @@ async function cancelledPaymentInvoice(req, res){
                         let BankingTransaction=new bankingTransaction();
                         BankingTransaction.Type= Type
                         BankingTransaction.TransactionDate= creacion;
-                        BankingTransaction.Concept= "Anulación Pago Proveedor";
+                        BankingTransaction.Concept= "Anulación Pago Cliente";
                         // BankingTransaction.OperationNumber=OperationNumber;
                         BankingTransaction.User= User;
                         BankingTransaction.DocumentNumber= NumberAccount;
@@ -907,7 +989,7 @@ async function getAllPayments(req, res){
         if(!pagos){
             res.status(404).send({message:"No hay "});
         }else{
-            console.log(pagos);
+           
             res.status(200).send({pagos})
         }
     });

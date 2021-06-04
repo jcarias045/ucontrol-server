@@ -16,16 +16,23 @@ const cashTransaction= require('../models/cashtransaction.model');
 const cashAccount= require('../models/cashaccounts.model');
 const cashMovement= require('../models/cashmovement.model');
 
+//PARA EMITIR CHEQUES
+const writeCheck= require('../models/writecheck.model');
+const checkbook= require('../models/checkbook.model');
+
+
+
 async function addPaymentToInvoice(req, res){
     const payment=new PaymentToSupplier();
     const paymentDetails=new PaymnetToSupplierDetails();
+    const docwriteCheck = new writeCheck();
 
     let codigo=0;
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
     const {Company,User,PurchaseInvoiceId,Supplierid,Monto,Total,Reason,
         PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,
-        CashAccount,NumberAccountBank,NumberAccountId}=req.body;
+        CashAccount,NumberAccountBank,NumberAccountId,ChequeraId,BankId,Proveedor,NoCheque,NoChequeAct,idFactura}=req.body;
 
     console.log(req.body);
     ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
@@ -35,7 +42,7 @@ async function addPaymentToInvoice(req, res){
     let tarjetaCreditoMov;
     let tarjetaTipo;
     let saldoCurrentAccount;
-    if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito"){
+    if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque"){
         saldoCurrentAccount  =await bankAccount.findOne({_id:NumberAccountId},'Saldo').then(result=>{return result.Saldo});
         console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
     }
@@ -74,7 +81,7 @@ async function addPaymentToInvoice(req, res){
 
 
    ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
-
+ 
 
 
     let codigoPayment=await PaymentToSupplier.findOne().sort({codpayment:-1})
@@ -296,6 +303,41 @@ async function addPaymentToInvoice(req, res){
                                            });
     
     
+                                        }
+
+                                        //en caso de cheque 
+                                        if(PaymentMethodName==="Cheque"){
+                                            docwriteCheck.Checkbook= ChequeraId;
+                                            docwriteCheck.Bank= BankId;
+                                            docwriteCheck.User= User;
+                                            docwriteCheck.State="Creado";
+                                            docwriteCheck.CreationDate=creacion;
+                                            docwriteCheck.Receiver=Proveedor;
+                                            docwriteCheck.Amount=Monto;
+                                            docwriteCheck.CheckNumber=NoCheque;
+                                            docwriteCheck.Comment="Factura:"+ idFactura +" "+ Reason;
+                                            docwriteCheck.Active=true;
+                                            docwriteCheck.save((err, docwriteCheckStored)=>{
+                                                if(err){
+                                                    console.log(err);
+                                                    res.status(500).send({message: "Error en el servidor"});
+                                                }else{
+                                                    if(!docwriteCheckStored){
+                                                        res.status(500).send({message: "Error"});
+                                                    }else{
+                                                        let salto=parseInt(NoChequeAct)+1;
+                                                        checkbook.findByIdAndUpdate({_id:ChequeraId},{CurrentNumber:salto},(err,CheckbookUpdate)=>{
+                                                            if(err){
+                                                                console.log(err);
+                                                            }else{
+                                                               
+                                                            }
+                                                        })
+                                                       
+                                                    }
+                                                }
+                                            });
+                                           
                                         }
                                         
                                     }

@@ -5,7 +5,7 @@ let router = express.Router();
 const checkbook = require('../controllers/checkbooks');
 
 
-router.get('/get-checkbook/:company', checkbook.getCheckbook);
+router.get('/get-checkbook/:company/:bank', checkbook.getCheckbook);
 router.get('/get-checkbookinfo/:id', checkbook.getCheckbookInfo);
 router.post('/create-checkbook', checkbook.createCheckbook);
 router.put('/join-checkbook/:id/:user', checkbook.joinDocumentCheckbook);

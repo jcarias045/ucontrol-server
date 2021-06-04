@@ -10,6 +10,20 @@ const MovementTypes = require("../models/movementtype.model");
 const saleOrderDetails = require("../models/saleorderdetail.model");
 const productAdvance= require("../models/advanceproductdetail.model");
 
+//registro de movimientos bancarios
+const bankingTransaction= require('../models/bankingtransaction.model');
+const bankAccount= require('../models/bankaccount.model');
+const bankMovement= require('../models/bankmovement.model');
+const movementType= require('../models/concepts.model'); 
+//movimiento caja
+const cashTransaction= require('../models/cashtransaction.model');
+const cashAccount= require('../models/cashaccounts.model');
+const cashMovement= require('../models/cashmovement.model');
+
+//PARA EMITIR CHEQUES
+const writeCheck= require('../models/writecheck.model');
+const checkbook= require('../models/checkbook.model');
+
 
 async function addCustomerAdvance(req, res){
     const payment=new CustomerAdvance();
@@ -19,10 +33,50 @@ async function addCustomerAdvance(req, res){
    
     let now= new Date();
     let fecha=now.getTime();
-   
     let creacion=now.toISOString().substring(0, 10);
     const {Company,User,saleOrderId,Customer,Monto,Total,Reason,productos,ProductId,Quantity,
         PaymentMethodId,NumberAccount, BankName,NoTransaction,PaymentMethodName,NumberAccountId,CashAccount}=req.body;
+         ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
+         let idMovimiento;
+         let idTipoMovimiento;     
+         let efectivoMovimiento;
+         let tarjetaCreditoMov;
+         let tarjetaTipo;
+         let chequeMov;
+         let chequeTipo;
+         if(PaymentMethodName==="Transferencia"){
+            idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    
+            idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    
+         }
+         if(PaymentMethodName==="Contado"){
+            efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+         }
+    
+         if(PaymentMethodName==="TarjetadeCredito"){
+            tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    
+            tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+           
+         }
+         if(PaymentMethodName==="Cheque"){
+            chequeMov=await bankMovement.findOne({Name:'Abono', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    
+            chequeTipo=await movementType.findOne({Name:'Cheque', Company:Company},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+    
+         }
+    
+        ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
+   
+    
 
     console.log(req.body);
     let codigoPayment=await CustomerAdvance.findOne()
@@ -286,6 +340,103 @@ async function addCustomerAdvance(req, res){
                                         });
 
                                     }
+
+                                    
+                                    //Reegistro de movimiento de banco (BANKINGTRANSACTION)
+                                    let Type;
+                                    let BankMovement;
+                                    
+                                    if(PaymentMethodName==="Contado"){
+                                       const CashTransaction = new cashTransaction();
+   
+                                       CashTransaction.TransactionDate= creacion;
+                                       CashTransaction.Concept= Reason;  
+                                       CashTransaction.User= User; 
+                                       CashTransaction.Deposit=Monto;
+                                       CashTransaction.Withdrawal= 0;
+                                       CashTransaction.CashMovement= efectivoMovimiento;
+                                       CashTransaction.CashAccount= CashAccount;
+
+                                       CashTransaction.save(async (err, CashTransactionStored)=>{
+                                           if(err){
+                                               res.status(500).send({message: err});
+                                           }else{
+                                               if(!CashTransactionStored){
+                                                   res.status(500).send({message: "Error"});
+                                               }else{
+                                                   let saldoCurrentAccount=await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
+                                                   cashAccount.findByIdAndUpdate({_id:CashAccount},
+                                                       {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
+                                                       (err,updateDeuda)=>{
+                                                       if(err){
+                                                           console.log(err);
+                                                       }
+                                                   });
+                                               }
+                                           }
+                                       })
+                                    }
+                               
+                                 
+                                    if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque" ){
+                                        console.log("ENTRO A MOVMIENTOS");
+                                        let doc;
+                                           if(PaymentMethodName==="Transferencia"){
+                                               BankMovement=idMovimiento;
+                                               Type=idTipoMovimiento;
+                                               doc=NoTransaction;
+
+                                                
+                                       
+                                            }
+                                            if(PaymentMethodName==="TarjetadeCredito"){
+                                               BankMovement=tarjetaCreditoMov;
+                                               Type=tarjetaTipo;
+                                               doc=NoTransaction;
+
+                                           }
+                                           if(PaymentMethodName==="Cheque"){
+                                               console.log("PAGON CON CHEQUE");
+                                               BankMovement=chequeMov;
+                                               Type=chequeTipo;
+                                               doc=NumberAccount;
+                                           }
+                                       let BankingTransaction=new bankingTransaction();
+                                       BankingTransaction.Type= Type
+                                       BankingTransaction.TransactionDate= creacion;
+                                       BankingTransaction.Concept= Reason;
+                                       // BankingTransaction.OperationNumber=OperationNumber;
+                                       BankingTransaction.User= User;
+                                       BankingTransaction.DocumentNumber= NoTransaction;
+                                       BankingTransaction.Deposit= Monto;
+                                       BankingTransaction.Withdrawal= 0;
+                                       BankingTransaction.BankMovement= BankMovement;
+                                       BankingTransaction.Account= NumberAccountId;
+
+                                       BankingTransaction.save(async (err, BankingTransactionStored)=>{
+                                           if(err){
+                                               // res.status(500).send({message: err});
+                                           }else{
+                                               if(!BankingTransactionStored){
+                                                   // res.status(500).send({message: "Error"});
+                                               }else{
+                                                   let saldoCurrentAccount=await bankAccount.findOne({_id:NumberAccountId},'Saldo').then(result=>{return result.Saldo});
+                                                   console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
+
+                                                   bankAccount.findByIdAndUpdate({_id:NumberAccountId},
+                                                       {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
+                                                       (err,updateDeuda)=>{
+                                                       if(err){
+                                                           console.log(err);
+                                                       }
+                                                   })
+
+                                               }
+                                           }
+                                       });
+
+
+                                    }
                                     
                                 }
                                 res.status(200).send({pago: detailStored});
@@ -508,6 +659,102 @@ async function addCustomerAdvance(req, res){
                                             });
     
                                         }
+
+                                                //Reegistro de movimiento de banco (BANKINGTRANSACTION)
+                                    let Type;
+                                    let BankMovement;
+                                    
+                                    if(PaymentMethodName==="Contado"){
+                                       const CashTransaction = new cashTransaction();
+   
+                                       CashTransaction.TransactionDate= creacion;
+                                       CashTransaction.Concept= Reason;  
+                                       CashTransaction.User= User; 
+                                       CashTransaction.Deposit=Monto;
+                                       CashTransaction.Withdrawal= 0;
+                                       CashTransaction.CashMovement= efectivoMovimiento;
+                                       CashTransaction.CashAccount= CashAccount;
+
+                                       CashTransaction.save(async (err, CashTransactionStored)=>{
+                                           if(err){
+                                               res.status(500).send({message: err});
+                                           }else{
+                                               if(!CashTransactionStored){
+                                                   res.status(500).send({message: "Error"});
+                                               }else{
+                                                   let saldoCurrentAccount=await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
+                                                   cashAccount.findByIdAndUpdate({_id:CashAccount},
+                                                       {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
+                                                       (err,updateDeuda)=>{
+                                                       if(err){
+                                                           console.log(err);
+                                                       }
+                                                   });
+                                               }
+                                           }
+                                       })
+                                    }
+                               
+                                 
+                                    if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque" ){
+                                        console.log("ENTRO A MOVMIENTOS");
+                                        let doc;
+                                           if(PaymentMethodName==="Transferencia"){
+                                               BankMovement=idMovimiento;
+                                               Type=idTipoMovimiento;
+                                               doc=NoTransaction;
+
+                                                
+                                       
+                                            }
+                                            if(PaymentMethodName==="TarjetadeCredito"){
+                                               BankMovement=tarjetaCreditoMov;
+                                               Type=tarjetaTipo;
+                                               doc=NoTransaction;
+
+                                           }
+                                           if(PaymentMethodName==="Cheque"){
+                                               console.log("PAGON CON CHEQUE");
+                                               BankMovement=chequeMov;
+                                               Type=chequeTipo;
+                                               doc=NumberAccount;
+                                           }
+                                       let BankingTransaction=new bankingTransaction();
+                                       BankingTransaction.Type= Type
+                                       BankingTransaction.TransactionDate= creacion;
+                                       BankingTransaction.Concept= Reason;
+                                       // BankingTransaction.OperationNumber=OperationNumber;
+                                       BankingTransaction.User= User;
+                                       BankingTransaction.DocumentNumber= NoTransaction;
+                                       BankingTransaction.Deposit= Monto;
+                                       BankingTransaction.Withdrawal= 0;
+                                       BankingTransaction.BankMovement= BankMovement;
+                                       BankingTransaction.Account= NumberAccountId;
+
+                                       BankingTransaction.save(async (err, BankingTransactionStored)=>{
+                                           if(err){
+                                               // res.status(500).send({message: err});
+                                           }else{
+                                               if(!BankingTransactionStored){
+                                                   // res.status(500).send({message: "Error"});
+                                               }else{
+                                                   let saldoCurrentAccount=await bankAccount.findOne({_id:NumberAccountId},'Saldo').then(result=>{return result.Saldo});
+                                                   console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
+
+                                                   bankAccount.findByIdAndUpdate({_id:NumberAccountId},
+                                                       {Saldo: parseFloat(parseFloat(saldoCurrentAccount) + parseFloat(Monto)).toFixed(2)},
+                                                       (err,updateDeuda)=>{
+                                                       if(err){
+                                                           console.log(err);
+                                                       }
+                                                   })
+
+                                               }
+                                           }
+                                       });
+
+
+                                    }
                                         
                                     }
                                    

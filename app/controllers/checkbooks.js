@@ -42,10 +42,11 @@ async function createCheckbook(req, res){
 
 function getCheckbook(req, res){
     // Buscamos informacion para llenar el modelo de 
-    let doc=req.params.doc;
-    let companyId=req.params.company;
+   
+    const {company,bank}=req.params
     try{
-        Checkbook.find({Company:companyId}).populate({path: 'DocumentType', model:'DocumentType'})
+        checkbook.find()
+        .populate({path: 'BankAccount', model:'BankAccount', match:{Bank:bank}})
         .then(docCheckbook => {
             res.status(200).send({docCheckbook});
           
@@ -122,7 +123,7 @@ function getCheckbookInfo(req, res){
     let doc=req.params.doc;
     let id=req.params.id;
     try{
-        checkbook.find({_id:id})
+        checkbook.find({_id:id}).populate({path: 'BankAccount', model:'BankAccount'})
         .then(docCheckbook => {
             res.status(200).send({docCheckbook});
           

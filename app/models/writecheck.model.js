@@ -16,7 +16,8 @@ const WriteCheckSchema = Schema({
     Amount:Number,
     State:String,
     CheckNumber:String,
-    Comment:String
+    Comment:String,
+    Active:Boolean,
     
 })
 
