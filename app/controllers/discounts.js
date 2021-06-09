@@ -10,6 +10,7 @@ function createDiscount(req, res) {
     discount.Name = Name;
     discount.DiscountNumber = DiscountNumber;
     discount.Company = Company;
+    console.log("descuento creado", discount);
     discount.save((err, discountStored)=>{
         if(err){
             res.status(500).send({message: err});
@@ -26,7 +27,10 @@ function createDiscount(req, res) {
 
 function getDiscounts(req,res){
     const {id} = req.params;
-    Discount.find({Company: id}).populate({path: 'Company', model: 'Company'})
+    console.log("id de la comp",id);
+    var ObjectID = require('mongodb').ObjectID
+
+    Discount.find({Company: ObjectID(id)}).populate({path: 'Company', model: 'Company'})
     .then(discount=>{
         if(!discount){
             res.status(404).send({message:"No hay"});

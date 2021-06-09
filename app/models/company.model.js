@@ -6,6 +6,7 @@ const CompanySchema = Schema({
   Logo: String,
   Web: String,
   ShortName: String,
+  Address:String,
   Active: Boolean,
   AccessToCustomers: Boolean,
   AccessToSuppliers: Boolean,

@@ -124,7 +124,7 @@ app.use('/api', ProductRoutes );
 //app.use('/api',systemOpRoutes);
 app.use('/api',orderRoutes)
 app.use('/api', sellOrderRoutes);
-app.use('/api', authCustomerRoutes);
+// app.use('/api', authCustomerRoutes);
 app.use('/api',taxesRoutes);
 app.use('/api',measureRoutes);
 app.use('/api',suppliersInvoicesRoutes);
@@ -195,8 +195,8 @@ if(process.env.NODE_ENV === 'production'){
 //   console.log("App listening at http://%s:%s", host, port);
 // })
 //conexion
-const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
-// const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
+// const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
+const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
 //HOLAAAAAAAA
 const PORT = process.env.PORT || 3050 ;
 // const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'

@@ -117,8 +117,10 @@ function signIn(req, res) {
     const Email = params.Email;
     const Password = params.Password;
     console.log(req.body);
-    User.findOne( { Email }, function (err, userStored) {
-            if (err) {
+    User.findOne( { Email })
+    .populate({path: 'Company', model: 'Company'})
+    .exec(function (err, userStored) {
+         if (err) {
                 res.status(500).send({ message: "Error del servidor." });
                 console.log(userStored);
             } else {
@@ -146,7 +148,9 @@ function signIn(req, res) {
                     });
                 }
             }
-        });
+    })
+           
+       
   }
 
 module.exports ={

@@ -24,13 +24,17 @@ function resfreshAccessToken(req,res){
   } else {
     const { id } = jwt.decodedToken(refreshToken);
     console.log("FUNCTION REFRESH", id);
-    User.findOne({ _id: id }, (err, userStored) => {
+    User.findOne( {_id:id} )
+    .populate({path: 'Company', model: 'Company'})
+    .exec(function (err, userStored) {
       if (err) {
         res.status(500).send({ message: "Error del servidor." });
+        console.log(err);
       } else {
         if (!userStored) {
           res.status(404).send({ message: "Usuario no encontrado." });
         } else {
+          console.log("genero",jwt.createAccessToken(userStored));
           res.status(200).send({
             accessToken: jwt.createAccessToken(userStored),
             refreshToken: refreshToken

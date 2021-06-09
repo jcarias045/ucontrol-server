@@ -339,16 +339,17 @@ function getQuotesbyCustomers(req, res){
 
 async function ImprimirCotizacionPDF(req,res) {
 
-        const {id} = req.params.id;
-        let img = "app/uploads/avatar/LogoSolucionesDiversas.jpeg";
-
+        const {id,logo} = req.params;
+    
+       
+        console.log("aqwui imprimo cotizacion");
         let cotizacion = await CustomerQuote.findOne({_id: req.params.id})
-        .populate({path: 'Customer', model: 'Customer'
-        ,populate:{path: 'Sector', model: 'Sector'}})
+        .populate({path: 'Customer', model: 'Customer',populate:{path: 'Sector', model: 'Sector'}})
         .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
         .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
-        console.log(cotizacion);
         console.log("terminaCotizacion");
+        console.log(cotizacion);
+       
 
         console.log(cotizacion._id);
         let detalles = await  QuoteDetails.find({CustomerQuote:cotizacion._id})
@@ -365,10 +366,12 @@ async function ImprimirCotizacionPDF(req,res) {
     
     async function createInvoice(cotizacion, QuotesName, detalles) {
         let doc = new PDFDocument({ size: "A4", margin: 50 });
+        let img = "./app/uploads/avatar/"+logo;
+        console.log(img);
         doc.pipe(fs.createWriteStream('Cotizacion-'+cotizacion.CodCustomerQuote+'.pdf'));
         doc.pipe(res)
         console.log("funcion de crear");
-        generateHeader(doc,cotizacion);
+        generateHeader(doc,cotizacion,img);
         generateCustomerInformation(doc, cotizacion);
         generateInvoiceTable(doc, cotizacion, detalles);
         generateComent(doc,cotizacion)
@@ -389,8 +392,9 @@ async function ImprimirCotizacionPDF(req,res) {
         });
         console.log("Termino")
       }
-      
-    async  function generateHeader(doc,cotizacion) {
+    
+    async  function generateHeader(doc,cotizacion,img) {
+       
         doc
           .image(path.resolve(img), 50, 25, { width: 85 })
           .fillColor("#444444")
@@ -398,8 +402,8 @@ async function ImprimirCotizacionPDF(req,res) {
           //.text(cotizacion.User.Company.Name, 110, 57)
           .fontSize(10)
           .text(cotizacion.User.Company.Name, 200, 50, { align: "right" })
-          .text("Centro Comercial Novocentro,local 23b", 200, 65, { align: "right" })
-          .text("Santa Tecla, El Salvaodr", 200, 80, { align: "right" })
+          .text(cotizacion.User.Company.Address, 200, 65, { align: "right" })
+        //   .text("Santa Tecla, El Salvaodr", 200, 80, { align: "right" })
           .text(cotizacion.User.Company.Web, 200, 95, { align: "right" })
           .moveDown();
       }
@@ -526,10 +530,11 @@ async function ImprimirCotizacionPDF(req,res) {
         doc
           .fontSize(10)
           .text(
+              "Comentario: "+
            invoice.Description,
             50,
             580,
-            { align: "center", width: 500 }
+            { align: "left", width: 500 }
           );
           generateHr(doc, 565);
           generateHr(doc, 665);

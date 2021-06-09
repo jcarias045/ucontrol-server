@@ -2,7 +2,7 @@ const { custom } = require("joi");
 const jwt =require("jwt-simple");
 const moment=require("moment");
 
-const SECRET_KEY="GsfsdKdsfsdKfwqQdfLfsdfPfdfxffsPaPxKs";
+const SECRET_KEY="gR7cH9SvfjdJLe4c186Ghs48hheb3902nh5DsA";
 
 exports.createAccessToken=function(user){
     //parametros para obtener la informacion del usuario
@@ -18,12 +18,17 @@ exports.createAccessToken=function(user){
        LastLogin: user.LastLogin,
        Active: user.Active,
        Image: user.Image,
-       Company: user.Company,
+       Company: user.Company._id,
        UserName: user.UserName,
        Rol: user.Rol,
        Profile: user.Profile,
-       createToken: moment().unix(),
-       exp: moment().add(4,"hours").unix()
+       CompanyName:user.Company.Name, 
+       Logo:user.Company.Logo, 
+       createToken: moment().unix(), 
+       exp: moment()
+    //    .add(3, "hours")
+       .add(60, 'seconds')
+       .unix()
    };
    return jwt.encode(payload, SECRET_KEY);
 };
@@ -31,21 +36,11 @@ exports.createAccessToken=function(user){
 exports.createRefreshToken=function(user){
     const payload={
        id: user._id,
-       Email:user.Email,
-       Name: user.Name,
-       LastName: user.LastName,
-       Gender: user.Gender,
-       BirthDate: user.BirthDate,
-       Country: user.Country,
-       Address: user.Address,
-       LastLogin: user.LastLogin,
-       Active: user.Active,
-       Image: user.Image,
-       Company: user.Company,
-       UserName: user.UserName,
-       Rol: user.Rol,
-       Profile: user.Profile,
-       exp: moment().add(30,"days").unix()
+      
+       exp: moment()
+    //    .add(30,"days")
+    .add(120, 'seconds')
+       .unix()
     };
     return jwt.encode(payload,SECRET_KEY);
 };

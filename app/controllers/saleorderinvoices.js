@@ -2312,12 +2312,26 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
     //OBTENCION DE CORRELATIVOS
     //OBTENIENDO TIPO DE CLIENTE
     let customerType=await customer.findOne({_id:Customer}).then(function(doc){
-
             if(doc){
                     if(doc.TypeofTaxpayer!==null){
                 return(doc.TypeofTaxpayer)
             }
         }
+    });
+    let excento=await customer.findOne({_id:Customer}).then(function(doc){
+        if(doc){
+                if(doc.Exempt!==null){
+            return(doc.Exempt)
+        }
+        }
+    });
+
+    let contribuyente=await customer.findOne({_id:Customer}).then(function(doc){
+        if(doc){
+                if(doc.Contributor!==null){
+            return(doc.Contributor)
+        }
+    }
     });
      console.log("type",customerType);
      var tipo=customerType.toString();
@@ -2483,11 +2497,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                     let quoteId=SaleOrderStored.CustomerQuote;
                    // cambio de estado a orden de venta
 
-                    // saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
-                    //     if(err){
-                    //         res.status(500).send({ message: "Error del servidor." });
-                    //     }
-                    //     if(update){}});
+                    saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
+                        if(err){
+                            res.status(500).send({ message: "Error del servidor." });
+                        }
+                        if(update){}});
                         //OBTENIENDO INFORMACIÓN DE ANTICIPO 
                         let anticipo=await  CustomerAdvance.find({SaleOrder: SaleOrderId})
                         .then(result =>{return result});
@@ -2530,14 +2544,36 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                             }
                             else{deOrden[null]}
                         }
-
-
-                    if(customerType.toString()==="CreditoFiscal"){
-                         impuestosList.map(item=>{
-                        sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                       })
-                    }else{sumimpuestos=0}
-
+                     //para hacer el calculo de impuestos por factura
+                        var impuestosSinRetencion = impuestosList.filter(function (item) {   //obteniendo todos los impuestos menos la retencion
+                            return item.Name != "Retencion";
+                          });
+                          console.log("dtos del cliente", excento, contribuyente, customerType);
+                        if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()==="Grande"){
+                            console.log("GRAN CONTRIBUYENTE SIN RENTECION", totalfactura);
+                            if(parseFloat(Total)>100){
+                                impuestosList.map(item=>{
+                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                                })
+                            }else{
+                                impuestosSinRetencion.map(item=>{
+                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                                    })
+                            }
+                        
+                        }
+                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="true" && contribuyente.toString()==="Grande")
+                        {sumimpuestos=0}
+                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="true")
+                        {sumimpuestos=0}
+                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
+                        {impuestosSinRetencion.map(item=>{
+                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                        })}
+                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
+                        {impuestosSinRetencion.map(item=>{
+                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                            })}
                        totalfactura=totalfactura+sumimpuestos;
 
                        saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Total:totalfactura},async (err,update)=>{
@@ -3808,6 +3844,21 @@ async function createSaleOrderInvoice2(req, res){
             }
         }
     });
+    let excento=await customer.findOne({_id:Customer}).then(function(doc){
+        if(doc){
+                if(doc.Exempt!==null){
+            return(doc.Exempt)
+        }
+        }
+    });
+
+    let contribuyente=await customer.findOne({_id:Customer}).then(function(doc){
+        if(doc){
+                if(doc.Contributor!==null){
+            return(doc.Contributor)
+        }
+    }
+    });
      console.log("type",customerType);
      var tipo=customerType.toString();
      console.log(tipo);
@@ -3958,6 +4009,8 @@ async function createSaleOrderInvoice2(req, res){
                     //         res.status(500).send({ message: "Error del servidor." });
                     //     }
                     //     if(update){}});
+                    //OBTENIENDO INFORMACIÓN DE ANTICIPO 
+                   
                     if(invoiceId){
 
 
@@ -3993,11 +4046,36 @@ async function createSaleOrderInvoice2(req, res){
                         }
 
 
-                    if(customerType.toString()==="CreditoFiscal"){
-                         impuestosList.map(item=>{
-                        sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                       })
-                    }else{sumimpuestos=0}
+                      //para hacer el calculo de impuestos por factura
+                      var impuestosSinRetencion = impuestosList.filter(function (item) {   //obteniendo todos los impuestos menos la retencion
+                        return item.Name != "Retencion";
+                      });
+                            console.log("dtos del cliente", excento, contribuyente, customerType);
+                        if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()==="Grande"){
+                            console.log("GRAN CONTRIBUYENTE SIN exento", totalfactura);
+                            if(parseFloat(Total)>100){
+                                impuestosList.map(item=>{
+                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                                })
+                            }else{
+                                impuestosSinRetencion.map(item=>{
+                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                                    })
+                            }
+                        console.log("IMPUESTOS A SUMAR",sumimpuestos);
+                        }
+                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="true" && contribuyente.toString()==="Grande")
+                        {sumimpuestos=0}
+                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="true")
+                        {sumimpuestos=0}
+                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
+                        {impuestosSinRetencion.map(item=>{
+                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                        })}
+                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
+                        {impuestosSinRetencion.map(item=>{
+                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                            })}
 
                        totalfactura=totalfactura+sumimpuestos;
 
