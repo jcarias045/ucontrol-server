@@ -21,7 +21,7 @@ exports.createAccessToken=function(user){
        Company: user.Company._id,
        UserName: user.UserName,
        Rol: user.Rol,
-       Profile: user.Profile,
+       Profile: user.Profile.Name,
        CompanyName:user.Company.Name, 
        Logo:user.Company.Logo, 
        createToken: moment().unix(), 

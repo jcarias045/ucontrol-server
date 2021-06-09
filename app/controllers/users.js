@@ -119,6 +119,7 @@ function signIn(req, res) {
     console.log(req.body);
     User.findOne( { Email })
     .populate({path: 'Company', model: 'Company'})
+    .populate({path: 'Profile', model: 'Profile'})
     .exec(function (err, userStored) {
          if (err) {
                 res.status(500).send({ message: "Error del servidor." });
