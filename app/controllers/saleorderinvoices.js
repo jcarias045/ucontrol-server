@@ -4700,8 +4700,7 @@ async function getSalesThisMonth(req,res){
     let f1=now;
     var ObjectID = require('mongodb').ObjectID;
     var date = new Date(fecha);
-    /* Javascript recalculará la fecha si el mes es menor de 0 (enero) 
-      o mayor de 11 (diciembre) */
+   
     date.setMonth(date.getMonth() - 1);
     /* Obtenemos la fecha en formato YYYY-mm */
     let f2= date;
@@ -4745,8 +4744,7 @@ async function getSalesLastMonth(req,res){
     let now= new Date();
     let fecha=now.getTime();
     var date = new Date(fecha);
-    /* Javascript recalculará la fecha si el mes es menor de 0 (enero) 
-      o mayor de 11 (diciembre) */
+    
     date.setMonth(date.getMonth() - 1);
     /* Obtenemos la fecha en formato YYYY-mm */
     let mesanterior= date;
