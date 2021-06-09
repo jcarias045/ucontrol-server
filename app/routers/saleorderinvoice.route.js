@@ -28,6 +28,9 @@ router.get('/get-saleforuser/:id/:company/:fecha1/:fecha2', saleinvoice.getSales
 router.get('/get-saleforproduct/:id/:company/:fecha1/:fecha2', saleinvoice.getSalesForProducts);
 
 
+//para el titulo de la pagina para mostrar total de lo facturado
+router.get('/get-facturadoestemes/:id', saleinvoice.getSalesThisMonth);
+router.get('/get-facturadomespasado/:id', saleinvoice.getSalesLastMonth);
 
 
 

@@ -37,7 +37,7 @@ function createCompany (req, res){
     RequieredIncome, RequieredOutput,CompanyRecords,AverageCost,
     WorksOpenQuote, DaysQuotationValidity, DaysOrderValidity,
     AvailableReservation, OrderWithWallet, InvoiceLines, Nit, Ncr, ActividadPrimaria,
-    ActividadSecundaria, ActividadTerciaria, Imprenta, Address} = req.body;
+    ActividadSecundaria, ActividadTerciaria, Imprenta, Address,AccountingLevels} = req.body;
 
     company.Name  =  Name;
     company.Logo = Logo;
@@ -63,6 +63,7 @@ function createCompany (req, res){
     company.ActividadTerciaria= ActividadTerciaria;
     company.Imprenta= Imprenta;
     company.Address= Address;
+    company.AccountingLevels=AccountingLevels;
     console.log(company);
     
     company.save((err, companyStored)=>{

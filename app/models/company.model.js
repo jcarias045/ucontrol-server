@@ -35,11 +35,9 @@ const CompanySchema = Schema({
     type: Schema.Types.ObjectId,
     ref: "Sector",
   },
-  },
-  // { 
-  //       freezeTableName: true,
-  //       timestamps: false,
-  // 	  }
+  AccountingLevels:Number
+  }
+
       )
 
 module.exports = mongoose.model('Company', CompanySchema)

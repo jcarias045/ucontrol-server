@@ -4073,9 +4073,8 @@ async function createSaleOrderInvoice2(req, res){
                             sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
                         })}
                         else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
-                        {impuestosSinRetencion.map(item=>{
-                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                            })}
+                        {sumimpuestos=0}
+                       
 
                        totalfactura=totalfactura+sumimpuestos;
 
@@ -4487,7 +4486,7 @@ async function createSaleOrderInvoice2(req, res){
                                actualizado=true;
                             }
 
-                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
+                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
                                 //descontando cantidad que se reservara
                                 inventory.findByIdAndUpdate({_id:item.Inventory},{
                                     Stock:parseFloat(infoInventary.Stock - item.Quantity),
@@ -4546,7 +4545,7 @@ async function createSaleOrderInvoice2(req, res){
                                         console.log('id del moviminto de reserva', movementId);
                                         //registro de movimiento
 
-                                        res.status(200).send({orden: detalles});
+                                      
                                     }
                                 })
                                 .catch(err => {console.log(err);});
@@ -4555,76 +4554,7 @@ async function createSaleOrderInvoice2(req, res){
                                 console.log(infoInventary.Product);
 
                         }
-                        else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
-                            console.log("EMPRESA HABILITADA PARA RESERVAS");
-                            console.log('BODEGA RESERVA');
-                                console.log(productreserved);
-
-                                //actualizando el stock de reserva
-                                inventory.findByIdAndUpdate({_id:productreserved._id},{
-                                    Stock:parseFloat(productreserved.Stock - item.Quantity),
-                                }).then(async function(update){
-                                    if(!update){
-                                        res.status(500).send({message: "No se actualizo inventario"});
-                                    }else{
-
-
-                                                    let completados=await  saleOrderInvoiceDetails.countDocuments({State: true, SaleOrderInvoice:SaleInvoiceId} ).then(c => {
-                                                        return c
-                                                      });
-
-                                                      let registrados=await saleOrderInvoiceDetails.countDocuments({SaleOrderInvoice:SaleInvoiceId }, function (err, count) {
-                                                       console.log(count); return (count)
-                                                      });
-                                                      console.log('PURCHASE INVOICE',SaleInvoiceId);
-                                                      console.log('completados',completados);
-                                                      console.log('todos',registrados);
-                                                      //validando si todos los productos estan ingresados
-                                                      if(parseInt(completados)===parseInt(registrados)){
-                                                        console.log("cambiando");
-                                                        saleOrderInvoice.findByIdAndUpdate({_id:SaleInvoiceId},{
-                                                            Entregada:true,
-                                                        })
-                                                        .catch(err => {console.log(err);});
-
-                                                    }
-
-                                                    //transaccion
-                                                    const inventorytraceability= new inventoryTraceability();
-                                                    inventorytraceability.Quantity=item.Quantity;
-                                                    inventorytraceability.Product=item.Product;
-                                                    inventorytraceability.WarehouseDestination=null; //destino
-                                                    inventorytraceability.MovementType=movementId._id;
-                                                    inventorytraceability.MovDate=creacion;
-                                                    inventorytraceability.WarehouseOrigin=productreserved._id; //origen
-                                                    inventorytraceability.User=User;
-                                                    inventorytraceability.Company=companyId;
-                                                    inventorytraceability.DocumentId=salidaId;
-                                                    inventorytraceability.ProductDestiny=null;
-                                                    inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
-                                                    inventorytraceability.save((err, traceabilityStored)=>{
-                                                        if(err){
-
-                                                            res.status(500).send({message: "No se actualizo inventario"});
-                                                        }else {
-                                                            if(!traceabilityStored){
-                                                                // // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                                // console.log(traceabilityStored);
-                                                            }
-                                                            else{
-                                                                console.log(traceabilityStored);
-                                                            }
-                                                        }
-                                                    });
-
-
-
-                                    }
-
-                                })
-                                .catch(err => {console.log(err);});
-
-                        }
+                       
                         else{
 
                             res.status(500).send({ message: "Verificar Inventario" });
@@ -4760,6 +4690,99 @@ async function ImprimirPdf (req,res){
         }                       
 }
 
+
+async function getSalesThisMonth(req,res){
+    const id=req.params.id;
+    const supplierId=req.params.customer;
+    let now= new Date();
+    let fecha=now.getTime();
+
+    let f1=now;
+    var ObjectID = require('mongodb').ObjectID;
+    var date = new Date(fecha);
+    /* Javascript recalculará la fecha si el mes es menor de 0 (enero) 
+      o mayor de 11 (diciembre) */
+    date.setMonth(date.getMonth() - 1);
+    /* Obtenemos la fecha en formato YYYY-mm */
+    let f2= date;
+    console.log("ahora",f1);
+    console.log("mes",f2);
+    var date = new Date(), y = date.getFullYear(), m = date.getMonth();
+    console.log("y",y);
+    var firstDay = new Date(y, m, 1);
+    console.log("inicial",firstDay);
+    saleOrderInvoice.aggregate([
+        { $match:
+
+            { $expr:
+                { $and:
+                   [
+                    { $eq: [ "$User",  ObjectID(id) ] },
+                     { $lte: [ "$InvoiceDate", f1 ] },  // $lte menor o igual
+                     { $gte: [ "$InvoiceDate", firstDay] },   //$gte mayor o igual
+                   ]
+                }
+             }
+        },
+        {
+            $group:{
+               _id:null,
+            "sumAmount":{$sum: '$Total'}
+        }
+       }
+    ])
+    .then(result => {
+
+        res.status(200).send(result);
+
+    }).catch(err => {console.log(err)})
+}
+async function getSalesLastMonth(req,res){
+    const id=req.params.id;
+    const supplierId=req.params.customer;
+    var ObjectID = require('mongodb').ObjectID;
+
+    let now= new Date();
+    let fecha=now.getTime();
+    var date = new Date(fecha);
+    /* Javascript recalculará la fecha si el mes es menor de 0 (enero) 
+      o mayor de 11 (diciembre) */
+    date.setMonth(date.getMonth() - 1);
+    /* Obtenemos la fecha en formato YYYY-mm */
+    let mesanterior= date;
+  
+    console.log("mes",mesanterior);
+    var date = new Date(), y = date.getFullYear(), m = date.getMonth()-1;
+    var firstDay = new Date(y, m, 1);
+    var lastDay = new Date(y, m + 1, 0);
+    console.log("inicial",firstDay);
+    console.log("inicial",lastDay);
+    saleOrderInvoice.aggregate([
+        { $match:
+
+            { $expr:
+                { $and:
+                   [
+                    { $eq: [ "$User",  ObjectID(id) ] },
+                     { $lte: [ "$InvoiceDate", lastDay ] },  // $lte menor o igual
+                     { $gte: [ "$InvoiceDate", firstDay] },   //$gte mayor o igual
+                   ]
+                }
+             }
+        },
+        {
+            $group:{
+               _id:null,
+            "sumAmount":{$sum: '$Total'}
+        }
+       }
+    ])
+    .then(result => {
+
+        res.status(200).send(result);
+
+    }).catch(err => {console.log(err)})
+}
 module.exports={
 
     getSaleOrderInvoices,
@@ -4783,8 +4806,8 @@ module.exports={
     getSalesForProducts,
     getExportInfoFacturas,
     getDetallesVentaContribuyente,
-    getExportInfoFacturas,
-    getDetallesVentaContribuyente,
     createSaleOrderInvoice2,
-    ImprimirPdf
+    ImprimirPdf,
+    getSalesThisMonth,
+    getSalesLastMonth
 }

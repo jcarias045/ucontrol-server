@@ -26,8 +26,8 @@ exports.createAccessToken=function(user){
        Logo:user.Company.Logo, 
        createToken: moment().unix(), 
        exp: moment()
-    //    .add(3, "hours")
-       .add(60, 'seconds')
+       .add(1, "hours")
+    //    .add(60, 'seconds')
        .unix()
    };
    return jwt.encode(payload, SECRET_KEY);
@@ -38,8 +38,8 @@ exports.createRefreshToken=function(user){
        id: user._id,
       
        exp: moment()
-    //    .add(30,"days")
-    .add(120, 'seconds')
+       .add(30,"days")
+    // .add(120, 'seconds')
        .unix()
     };
     return jwt.encode(payload,SECRET_KEY);

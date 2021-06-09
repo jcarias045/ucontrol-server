@@ -12,7 +12,7 @@ const SaleOrderInvoiceSchema = Schema({
     ref: "SaleOrder",
     // autopopulate: true,
   },
-  InvoiceDate:String,
+  InvoiceDate:Date,
   CreationDate: Date,
   Total:Number,
   CommentsofSale:String,
