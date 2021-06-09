@@ -38,17 +38,18 @@ function createSupplier(req, res){
         console.log(proveedor);
         console.log(Supplier);
         if(!proveedor){
-        Supplier.save((err, SupplierStored)=>{
-        if(err){
-            res.status(500).send({message: err});
-        }else{
-            if(!SupplierStored){
-                res.status(500).send({message: "Error"});
-            }else{
-                res.status(200).send({Supplier: SupplierStored})
-            }
-        }
-    });
+             //registrando proveedor
+                Supplier.save((err, SupplierStored)=>{
+                if(err){
+                    res.status(500).send({message: err});
+                }else{
+                    if(!SupplierStored){
+                        res.status(500).send({message: "Error"});
+                    }else{
+                        res.status(200).send({Supplier: SupplierStored})
+                    }
+                }
+            });
     }else{
         console.log("Ya Existe");
         res.status(500).send({message: "Error Proovedor ya existe"});

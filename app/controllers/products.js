@@ -64,40 +64,90 @@ async function createProduct(req, res){
         Product.AverageCost= 0;
         Product.Classification= Classification;
         Product.isRecipe= isRecipe;
+        
+      let existProduct= await product.findOne({Company: Company, codproducts:codproducts})
+        .then(result => {
+            return result
+        });
+        console.log("Ingreso producto");
+        console.log(existProduct);
 
-
-                console.log(Product);
-                Product.save(async (err, ProductStored)=>{
-                    if(err){
-                        res.status(500).send({message: err});
+        if(existProduct===null){
+            console.log("si ingreso");
+            Product.save(async (err, ProductStored)=>{
+                if(err){
+                    res.status(500).send({message: err});
+                }else{
+                    if(!ProductStored){
+                        res.status(500).send({message: "Error"});
                     }else{
-                        if(!ProductStored){
-                            res.status(500).send({message: "Error"});
-                        }else{
-                            let productId=ProductStored._id;
-                            let nombreProduct=ProductStored.Name;
-                            //obteniendo id de la bodega pricipal de la empresa
-                            let bodegaPrincipal=await bodega.findOne({Name:'Principal', Company:Company},['_id'])
-                           .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            //obteniendo id de la bodega de reserva de la empresa
-                            let bodegaReserva=await bodega.findOne({Name:'Reserva', Company:Company},['_id'])
-                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            
-                             //obteniendo id de la bodega de REPROCESO de la empresa (CONVERSION DE PRODUCTO)
-                             let bodegaReproceso=await bodega.findOne({Name:'Reproceso', Company:Company},['_id'])
-                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                             
-                            //obteniendo id de la bodega de ANTICIPO de la empresa (CONVERSION DE PRODUCTO)
-                            let bodegaAnticipo=await bodega.findOne({Name:'Anticipo', Company:Company},['_id'])
-                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            
-                            Inventory.Product=productId;
-                            Inventory.Stock=0;
-                            Inventory.Description="Inventario principal producto: "+ nombreProduct;
-                            Inventory.Bodega=bodegaPrincipal._id;
-                            Inventory.Company=Company;
+                        let productId=ProductStored._id;
+                        let nombreProduct=ProductStored.Name;
+                        //obteniendo id de la bodega pricipal de la empresa
+                        let bodegaPrincipal=await bodega.findOne({Name:'Principal', Company:Company},['_id'])
+                       .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        //obteniendo id de la bodega de reserva de la empresa
+                        let bodegaReserva=await bodega.findOne({Name:'Reserva', Company:Company},['_id'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         
-                            Inventory.save(async (err, inventoryStored)=>{
+                         //obteniendo id de la bodega de REPROCESO de la empresa (CONVERSION DE PRODUCTO)
+                         let bodegaReproceso=await bodega.findOne({Name:'Reproceso', Company:Company},['_id'])
+                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                         
+                        //obteniendo id de la bodega de ANTICIPO de la empresa (CONVERSION DE PRODUCTO)
+                        let bodegaAnticipo=await bodega.findOne({Name:'Anticipo', Company:Company},['_id'])
+                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+                        
+                        Inventory.Product=productId;
+                        Inventory.Stock=0;
+                        Inventory.Description="Inventario principal producto: "+ nombreProduct;
+                        Inventory.Bodega=bodegaPrincipal._id;
+                        Inventory.Company=Company;
+                    
+                        Inventory.save(async (err, inventoryStored)=>{
+                            if(err){
+                                res.status(500).send({message: err});
+                            }else{
+                                if(!inventoryStored){
+                                    res.status(500).send({message: "Error"});
+                                }else{}
+                            }
+                        });
+                        InventoryReProceso.Product=productId;
+                        InventoryReProceso.Stock=0;
+                        InventoryReProceso.Description="Inventario anticipo producto: "+ nombreProduct;
+                        InventoryReProceso.Bodega=bodegaAnticipo._id;
+                        InventoryReProceso.Company=Company;
+                        InventoryReProceso.save(async (err, inventoryStored)=>{
+                            if(err){
+                                res.status(500).send({message: err});
+                            }else{
+                                if(!inventoryStored){
+                                    res.status(500).send({message: "Error"});
+                                }else{}
+                            }
+                        });
+                        Anticipo.Product=productId;
+                        Anticipo.Stock=0;
+                        Anticipo.Description="Inventario reproceso producto: "+ nombreProduct;
+                        Anticipo.Bodega=bodegaReproceso._id;
+                        Anticipo.Company=Company;
+                        Anticipo.save(async (err, inventoryStored)=>{
+                            if(err){
+                                res.status(500).send({message: err});
+                            }else{
+                                if(!inventoryStored){
+                                    res.status(500).send({message: "Error"});
+                                }else{}
+                            }
+                        });
+                        if(companyParams.AvailableReservation){
+                            InventoryReserva.Product=productId;
+                            InventoryReserva.Stock=0;
+                            InventoryReserva.Description="Inventario de reserva producto: "+ nombreProduct;
+                            InventoryReserva.Bodega=bodegaReserva._id;
+                            InventoryReserva.Company=Company;
+                            InventoryReserva.save(async (err, inventoryStored)=>{
                                 if(err){
                                     res.status(500).send({message: err});
                                 }else{
@@ -106,78 +156,43 @@ async function createProduct(req, res){
                                     }else{}
                                 }
                             });
-                            InventoryReProceso.Product=productId;
-                            InventoryReProceso.Stock=0;
-                            InventoryReProceso.Description="Inventario anticipo producto: "+ nombreProduct;
-                            InventoryReProceso.Bodega=bodegaAnticipo._id;
-                            InventoryReProceso.Company=Company;
-                            InventoryReProceso.save(async (err, inventoryStored)=>{
-                                if(err){
-                                    res.status(500).send({message: err});
-                                }else{
-                                    if(!inventoryStored){
-                                        res.status(500).send({message: "Error"});
-                                    }else{}
-                                }
-                            });
-                            Anticipo.Product=productId;
-                            Anticipo.Stock=0;
-                            Anticipo.Description="Inventario reproceso producto: "+ nombreProduct;
-                            Anticipo.Bodega=bodegaReproceso._id;
-                            Anticipo.Company=Company;
-                            Anticipo.save(async (err, inventoryStored)=>{
-                                if(err){
-                                    res.status(500).send({message: err});
-                                }else{
-                                    if(!inventoryStored){
-                                        res.status(500).send({message: "Error"});
-                                    }else{}
-                                }
-                            });
-                            if(companyParams.AvailableReservation){
-                                InventoryReserva.Product=productId;
-                                InventoryReserva.Stock=0;
-                                InventoryReserva.Description="Inventario de reserva producto: "+ nombreProduct;
-                                InventoryReserva.Bodega=bodegaReserva._id;
-                                InventoryReserva.Company=Company;
-                                InventoryReserva.save(async (err, inventoryStored)=>{
-                                    if(err){
-                                        res.status(500).send({message: err});
-                                    }else{
-                                        if(!inventoryStored){
-                                            res.status(500).send({message: "Error"});
-                                        }else{}
-                                    }
+                        }
+                        if(isRecipe){
+                            receta.map(async item => {
+                                detalle.push({
+                                    Product:productId,
+                                    RecipeProduct:item.ProductId,
+                                    Quantity:parseFloat(item.Quantity) ,
+                                    Measure:item.Measures,
+                                    Codigo: item.codproducts,
+                                    Name:item.Name
+                                })
+                             });
+                             if(detalle.length>0){
+                                recipe.insertMany(detalle)
+                                .then(function () {
+                                    
+                                    console.log("receta creada");
+                                    
+                                })
+                                .catch(function (err) {
+                                    console.log(err);
                                 });
                             }
-                            if(isRecipe){
-                                receta.map(async item => {
-                                    detalle.push({
-                                        Product:productId,
-                                        RecipeProduct:item.ProductId,
-                                        Quantity:parseFloat(item.Quantity) ,
-                                        Measure:item.Measures,
-                                        Codigo: item.codproducts,
-                                        Name:item.Name
-                                    })
-                                 });
-                                 if(detalle.length>0){
-                                    recipe.insertMany(detalle)
-                                    .then(function () {
-                                        
-                                        console.log("receta creada");
-                                        
-                                    })
-                                    .catch(function (err) {
-                                        console.log(err);
-                                    });
-                                }
 
-                            }
-                            res.status(200).send({Product: ProductStored})
                         }
+                        res.status(200).send({Product: ProductStored})
                     }
-                });       
+                }
+            });  
+
+        }else{
+            console.log("no entra");
+            res.status(500).send({message: "El producto ya fue registrado"});
+        }
+
+               
+                    
 }
 
 
