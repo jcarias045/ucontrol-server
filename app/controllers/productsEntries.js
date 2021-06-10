@@ -12,93 +12,118 @@ const inventoryTraceability = require("../models/inventorytraceability.model");
 const MovementTypes = require("../models/movementtype.model");
 
 function getEntries(req, res){
-   const { id } = req.params;
+   const { id , company,profile} = req.params;
    var ObjectID = require('mongodb').ObjectID;
-//    productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
+   console.log(company);
+   if(profile==="Admin"){
     productEntry.aggregate([
-        {  $match: {User:ObjectID(id)}},
+        {  $match: {Company:ObjectID(company)}},
         {
             $lookup: {
                 from:"entrydetails",
-                localField:"_id",
-                foreignField:"ProductEntry",
-                // let:{idiv:"Inventory" },
-                // pipeline:[
-                //     // { "$match": { "$expr": { "$eq": ["$_id", "$$idiv"] }}},,
-                //     {
-                //         $lookup: {
-                //             from:"inventories",
-                //             as:"children"
-                //         }
-                //     }
-                // ],
+                let: { entryId: "$_id" },
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { 
+                                $eq: [ "$ProductEntry",  "$$entryId" ] ,
+                                
+                            
+                            }
+                        }
+                    },
+                
+                
+                ],
                 as:"detalles",
                 
             }
         }, 
-       
+        // {
+        //     $lookup: {
+        //         from:"suppliers",
+        //         let: { supplierId: "$SupplierId" },
+        //         pipeline: [
+        //             { $match:
+        //                 { $expr:
+        //                     { 
+                             
+        //                         $eq: [ "$_id",  "$$supplierId" ] ,
+                                
+                            
+        //                     }
+        //                 }
+        //             },
+        //             {  $match: {Company:company}},
+                
+        //         ],
+        //         as:"supplier",
+                
+        //     }  
+        // },
+        // {
+        //     $unwind: { path: "$supplier", preserveNullAndEmptyArrays: false }
+        //   },
 
     ]).sort({CodEntry:-1})
-    // productEntry.aggregate([
-    //     { $lookup: {
-    //       from: "entrydetails",
-    //       let: { "companyId": "$PurchaseInvoiceDetail" },
-    //       pipeline: [
-           
-    //         { $lookup: {
-    //           from: "purchaseinvoicedetails",
-    //         //   let: { "industry_id": "$_id" },
-    //         // localField:"_id",
-    //         // foreignField:"Product",
-    //           pipeline: [
-    //             { $match: { $expr: { $eq: [ "$_id", "$$companyId" ] } } },
-    //             { 
-    //                 $lookup: {
-    //                     from: "purchaseinvoices",
-    //                     let: { "idsup":"$Supplier"},
-    //                     pipeline: [
-    //                     { $match: { $expr: { $eq: [ "$_id", "$$idsup" ] } } },
 
-    //                         {
-    //                             $lookup: {
-    //                                 from: "suppliers",
-    //                                 localField:"_id",
-    //                                 foreignField:"Supplier",
-    //                                 // pipeline: [
-    //                                 //     {
-    //                                 //         from: "suppliertypes",
-    //                                 //           localField:"_id",
-    //                                 //          foreignField:"SupplierType",
-    //                                 //          as: "tipo"
-    //                                 //     }
-    //                                 // ],
-    //                                 as:"supplier"
-    //                             }
-    //                         }
-    //                     ],
-    //                     as:"purchase"
-    //                 }
-    //             }
-    //           ],
-    //           as: "purchasedetail"
-    //         }},
-           
-    //       ],
-    //       as: "entryDetail"
-    //     }},
-      
-    //   ])
-    // .exec(function(err, entries) {
-    //     if(!entries){
-    //         res.status(404).send({message:"No hay d"});
-    //     }else{
-            
-    //         res.status(200).send({entries})
-    //     }
-    // });
     .then(entries =>{
         res.status(200).send({entries})
     })
+   }else{
+       productEntry.aggregate([
+        {  $match: {User:ObjectID(id)}},
+        {
+            $lookup: {
+                from:"entrydetails",
+                let: { entryId: "$_id" },
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { 
+                                $eq: [ "$ProductEntry",  "$$entryId" ] ,
+                                
+                            
+                            }
+                        }
+                    },
+                
+                
+                ],
+                as:"detalles",
+                
+            }
+        }, 
+        // {
+        //     $lookup: {
+        //         from:"suppliers",
+        //         let: { supplierId: "$SupplierId" },
+        //         pipeline: [
+        //             { $match:
+        //                 { $expr:
+        //                     { 
+        //                         $eq: [ "$Company",  company ] ,
+        //                         $eq: [ "$_id",  "$$supplierId" ] ,
+                                
+                            
+        //                     }
+        //                 }
+        //             },
+                
+                
+        //         ],
+        //         as:"customer",
+                
+        //     }
+        // },
+    ]).sort({CodEntry:-1})
+
+    .then(entries =>{
+        res.status(200).send({entries})
+    })
+
+   }
+    
 }
 
 async function createProductEntry(req, res){
@@ -152,6 +177,7 @@ async function createProductEntry(req, res){
     entryData.Company=Company;
     entryData.PurchaseInvoice=PurchaseInvoiceId;
     entryData.Supplier=SupplierName;
+    entryData.SupplierId=SupplierId;
     entryData.InvoiceNumber=InvoiceNumber;
     entryData.save(async (err, entryStored)=>{
         if(err){

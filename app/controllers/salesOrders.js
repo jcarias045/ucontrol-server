@@ -12,18 +12,31 @@ const customerInvoice = require("../models/saleorderinvoice.model");
 
 
 async function getSaleOrders(req, res){
-    const { id,company } = req.params;
-    console.log("LISTADO ORDENES");
-    saleOrder.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company},
-     populate:{path:'Discount', model: 'Discount'}}).sort({CodSaleOrder:-1})
-    .then(order => {
-        if(!order){
-            res.status(404).send({message:"No hay "});
-        }else{
+    const { id,company,profile} = req.params;
+    if(profile==="Admin"){
+        saleOrder.find().populate({path: 'Customer', model: 'Customer', match:{Company: company},
+        populate:{path:'Discount', model: 'Discount'}}).sort({CodSaleOrder:-1})
+        .then(order => {
+            if(!order){
+                res.status(404).send({message:"No hay "});
+            }else{
 
-            res.status(200).send({order})
-        }
-    });
+                res.status(200).send({order})
+            }
+        }); 
+    }else{
+        saleOrder.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company},
+        populate:{path:'Discount', model: 'Discount'}}).sort({CodSaleOrder:-1})
+        .then(order => {
+            if(!order){
+                res.status(404).send({message:"No hay "});
+            }else{
+
+                res.status(200).send({order})
+            }
+        }); 
+    }
+    
 }
 
 async function getSelesOrderClosed(req, res){

@@ -15,17 +15,31 @@ const MovementTypes = require("../models/movementtype.model");
 const inventory = require('../models/inventory.model')
 
 function getSuppliersInvoices(req, res){
-    const { id,company } = req.params;
-   purchaseInvoice.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
-    populate: {path: 'SupplierType', model: 'SupplierType'}}).sort({CodInvoice:-1})
-    .then(invoices => {
-        if(!invoices){
-            res.status(404).send({message:"No hay "});
-        }else{
-            
-            res.status(200).send({invoices})
-        }
-    });
+    const { id,company, profile} = req.params;
+    if(profile==="Admin"){
+        purchaseInvoice.find().populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
+        populate: {path: 'SupplierType', model: 'SupplierType'}}).sort({CodInvoice:-1})
+        .then(invoices => {
+            if(!invoices){
+                res.status(404).send({message:"No hay "});
+            }else{
+                
+                res.status(200).send({invoices})
+            }
+        });
+    }else{
+        purchaseInvoice.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
+        populate: {path: 'SupplierType', model: 'SupplierType'}}).sort({CodInvoice:-1})
+        .then(invoices => {
+            if(!invoices){
+                res.status(404).send({message:"No hay "});
+            }else{
+                
+                res.status(200).send({invoices})
+            }
+        });
+    }
+   
 }
 
 async function createSupplierInvoice(req, res){

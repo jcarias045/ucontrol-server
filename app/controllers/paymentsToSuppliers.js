@@ -903,17 +903,32 @@ async function cancelledPaymentInvoice(req, res){
 }
 
 async function getAllPayments(req, res){
-    const {id}=req.params;
-    PaymentToSupplier.find({User:id}).populate({path: 'User', model: 'User'})
-    .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice', populate:{path: 'Supplier',model:'Supplier'}})
-    .then(pagos => {
-        if(!pagos){
-            res.status(404).send({message:"No hay "});
-        }else{
-            console.log(pagos);
-            res.status(200).send({pagos})
-        }
-    });
+    const {id,company,profile}=req.params;
+    if(profile==="Admin"){
+        PaymentToSupplier.find().populate({path: 'User', model: 'User', match:{Company: company}})
+        .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice', populate:{path: 'Supplier',model:'Supplier'}})
+        .then(pagos => {
+            if(!pagos){
+                res.status(404).send({message:"No hay "});
+            }else{
+                console.log(pagos);
+                res.status(200).send({pagos})
+            }
+        });
+    }
+    else{
+        PaymentToSupplier.find({User:id}).populate({path: 'User', model: 'User'})
+            .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice', populate:{path: 'Supplier',model:'Supplier'}})
+            .then(pagos => {
+                if(!pagos){
+                    res.status(404).send({message:"No hay "});
+                }else{
+                    console.log(pagos);
+                    res.status(200).send({pagos})
+                }
+            });
+    }
+    
 }
 
 function exportPaymentSupplier(req, res){

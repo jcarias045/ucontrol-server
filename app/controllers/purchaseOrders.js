@@ -12,8 +12,18 @@ const Brand = require('../models/brand.model');
 const Supplier = require ('../models/supplier.model')
 
 function getPurchaseOrders(req, res){
-    const { id,company } = req.params;
-   
+    const { id,company,profile } = req.params;
+   if(profile==="Admin"){
+    PurchaseOrder.find().populate({path: 'Supplier', model: 'Supplier', match:{Company: company}}).sort({CodPurchase:-1})
+    .then(order => {
+        if(!order){
+            res.status(404).send({message:"No hay "});
+        }else{
+            
+            res.status(200).send({order})
+        }
+    });
+   }else{
     PurchaseOrder.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}}).sort({CodPurchase:-1})
     .then(order => {
         if(!order){
@@ -23,6 +33,8 @@ function getPurchaseOrders(req, res){
             res.status(200).send({order})
         }
     });
+   }
+    
 }
 
 async function createPurchaseOrder(req,res){

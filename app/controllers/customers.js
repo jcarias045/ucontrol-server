@@ -88,20 +88,25 @@ function createCustomer(req, res) {
 
     
     
-function getCustomers(req, res){
-    console.log(req.params.id);
-    console.log(req.params.userid);
-    const {id} = req.params.id;
+async function getCustomers(req, res){
 
-    const {userid} = req.params.userid;
-
-        Customer.find({Company: req.params.id , User: req.params.userid})
-            .populate({path: "User", model: "User"})
-            .populate({path: "Company", model: "Company"})
-            .populate({path: "Discount", model: "Discount"})
-            .populate({path: "Sector", model: "Sector"})
-            .populate({path: "Sector1", model: "Sector"})
-            .populate({path: "Sector2", model: "Sector"})
+    const {userid,id,profile} = req.params;
+    let companyParams=await company.findById(id) //esta variable la mando a llamar luego que se ingreso factura
+    .then(params => {
+        if(!params){
+            res.status(404).send({message:"No hay "});
+        }else{
+            return(params)
+        }
+    });
+    if(companyParams.CompanyRecords){
+        Customer.find({Company: id })
+        .populate({path: "User", model: "User"})
+        .populate({path: "Company", model: "Company"})
+        .populate({path: "Discount", model: "Discount"})
+        .populate({path: "Sector", model: "Sector"})
+        .populate({path: "Sector1", model: "Sector"})
+        .populate({path: "Sector2", model: "Sector"})
         .then(customer => {
             if(!customer){
                 res.status(404).send({message:"No hay "});
@@ -109,6 +114,44 @@ function getCustomers(req, res){
                 res.status(200).send({customer})
             }
         });
+    }else{
+        if(profile==="Admin"){
+           
+            Customer.find({Company: id })
+            .populate({path: "User", model: "User"})
+            .populate({path: "Company", model: "Company"})
+            .populate({path: "Discount", model: "Discount"})
+            .populate({path: "Sector", model: "Sector"})
+            .populate({path: "Sector1", model: "Sector"})
+            .populate({path: "Sector2", model: "Sector"})
+            .then(customer => {
+                if(!customer){
+                    res.status(404).send({message:"No hay "});
+                }else{
+                    res.status(200).send({customer})
+                }
+            });
+        }else{
+           
+            Customer.find({ User: userid})
+                .populate({path: "User", model: "User", match:{_id:userid}})
+                .populate({path: "Company", model: "Company"})
+                .populate({path: "Discount", model: "Discount"})
+                .populate({path: "Sector", model: "Sector"})
+                .populate({path: "Sector1", model: "Sector"})
+                .populate({path: "Sector2", model: "Sector"})
+            .then(customer => {
+                if(!customer){
+                    res.status(404).send({message:"No hay "});
+                }else{
+                    res.status(200).send({customer})
+                }
+            });
+        }
+
+    }
+    
+        
 }
 
 async function desactivateCustomer(req, res){

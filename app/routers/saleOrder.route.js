@@ -6,7 +6,7 @@ const salesorder = require('../controllers/salesOrders');
 
 
 router.get('/get-closedcustomerquotes/:id/:company', salesorder.getSelesOrderClosed);
-router.get('/get-saleorders/:id/:company', salesorder.getSaleOrders);
+router.get('/get-saleorders/:id/:company/:profile', salesorder.getSaleOrders);
 router.get('/get-customerquotesdetails/:id', salesorder.getCustomerQuoteDetails);
 router.get('/get-customerquotesinfo/:id', salesorder.getCustomerQuoteInfo);
 router.post('/create-saleorderwithquote', salesorder.createSaleOrderWithQuote);

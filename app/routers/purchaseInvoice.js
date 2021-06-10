@@ -5,7 +5,7 @@ let router = express.Router();
 const purchaseInvoice = require('../controllers/purchaseInvoice');
 
 
-router.get('/get-suppliersinvoices/:id/:company', purchaseInvoice.getSuppliersInvoices);
+router.get('/get-suppliersinvoices/:id/:company/:profile', purchaseInvoice.getSuppliersInvoices);
 router.post('/create-invoicesupplier/:id/:company', purchaseInvoice.createSupplierInvoice);
 router.post('/createnew-invoicesupplier/:id/:company', purchaseInvoice.createNewSupplierInvoice);
 router.get('/get-invoicesupplier-details/:id', purchaseInvoice.getInvoiceDetails);

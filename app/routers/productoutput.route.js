@@ -7,7 +7,7 @@ const multipart =require('connect-multiparty');
 const output = require('../controllers/productOutput');
 
 
-router.get('/get-output/:id', output.getProductOutput);
+router.get('/get-output/:id/:company/:profile', output.getProductOutput);
 router.post('/add-output', output.createProductOutput);
 router.get('/get-outputdetails/:id', output.viewProductOutputDetails);
 router.put('/anular-output/:id/:company', output.anularOutput);

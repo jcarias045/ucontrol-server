@@ -5,7 +5,7 @@ let router = express.Router();
 const saleinvoice = require('../controllers/saleorderinvoices');
 
 
-router.get('/get-saleorderinvoices/:id/:company', saleinvoice.getSaleOrderInvoices);
+router.get('/get-saleorderinvoices/:id/:company/:profile', saleinvoice.getSaleOrderInvoices);
 router.get('/get-saleorderinvoicesvncr/:id', saleinvoice.getDetallesVentaContribuyente);
 router.get('/get-saleorderclosed/:id/:company', saleinvoice.getSaleOrdersClosed);
 router.get('/get-saleorderinfo/:id', saleinvoice.getSaleOrderInfo);
@@ -21,7 +21,7 @@ router.get('/get-saleinvoicesnopagadas/:id/:company', saleinvoice.getSaleInvoice
 router.get('/get-saleinvoiceheader/:id/:user/:company', saleinvoice.getSaleInvoiceHeader);
 router.get('/get-saleinvoicenoingresados/:id', saleinvoice.getSaleInvoicePendientesIngreso);
 router.get('/get-saleorderinvoicepdf/:id', saleinvoice.ImprimirPdf);
-router.get('/get-charges/:id/:user', saleinvoice.getChargestoCustomers);
+router.get('/get-charges/:id/:user/:profile', saleinvoice.getChargestoCustomers);
 router.get('/get-saleorderinvoicebycustomer/:id/:fecha1/:fecha2', saleinvoice.getSaleOrderInvoicebyCustomers);
 router.post('/pruebascorrelativos', saleinvoice.funcionPruebaCorrelativos);
 router.get('/get-saleforuser/:id/:company/:fecha1/:fecha2', saleinvoice.getSalesForUsers);

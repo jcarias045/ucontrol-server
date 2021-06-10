@@ -87,8 +87,9 @@ async function desactivateBanksAccounts(req, res) {
 }
 
 function getBankAccountCompany(req,res){
-
-    BankAccount.find({Company: req.params.id})
+    const {id} = req.params;
+    
+    BankAccount.find({Company: id})
     .populate({path: 'Company', model: 'Company'})
     .populate({path: 'Bank', model: 'Bank'})
     .then(bankAccount => {

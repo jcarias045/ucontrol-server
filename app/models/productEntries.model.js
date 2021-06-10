@@ -3,7 +3,7 @@ const Schema =  mongoose.Schema;
 const User = require('./user.model');
 const Company = require('./company.model');
 const Product = require('./product.model');
-
+const Supplier = require('./supplier.model');
 const ProductEntrySchema = Schema({
   EntryDate:String,
   User: {type: Schema.ObjectId, 
@@ -19,6 +19,10 @@ const ProductEntrySchema = Schema({
   },
   PurchaseInvoice:String,
   Supplier:String,
+  SupplierId:{type: Schema.ObjectId, 
+    ref: "Supplier",
+    // autopopulate: true,
+  },
   InvoiceNumber:String, 
  
  

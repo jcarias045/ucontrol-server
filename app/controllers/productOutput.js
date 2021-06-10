@@ -9,48 +9,119 @@ const saleOrderInvoiceDetails = require("../models/saleorderinvoicedetails.model
 
 function getProductOutput(req, res){
 
-    const { id } = req.params;
+    const { id, company, profile } = req.params;
     var ObjectID = require('mongodb').ObjectID;
  //    productEntry.find({User:id}).populate({path: 'Company', model: 'Company'}).populate('members')
-       productOutput.aggregate([
-        {  $match: {User:ObjectID(id)}},
-         {
-             $lookup: {
-                 from:"productoutputdetails",
-                 let: { customerId: "$_id" },
-                 pipeline: [
-                    { $match:
-                        { $expr:
-                            { 
-                                 $eq: [ "$ProductOutput",  "$$customerId" ] ,
+ console.log("ENTRO A ADMIN",profile);
+    if(profile==="Admin"){
+        console.log("ENTRO A ADMIN");
+        productOutput.aggregate([
+            {  $match: {Company:ObjectID(company)}},
+            {
+                $lookup: {
+                    from:"productoutputdetails",
+                    let: { customerId: "$_id" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { 
+                                    $eq: [ "$ProductOutput",  "$$customerId" ] ,
+                                    
                                 
-                               
+                                }
                             }
-                         }
-                    },
-                   
-                   
-                 ],
-                 as:"detalles",
-                 
-             }
-         }, 
-         {
-            $lookup: {
-                from:"customers",
-                localField:"Customer",
-                foreignField:"_id",
-  
-                as:"customer",
-                
-            }
-        },
+                        },
+                    
+                    
+                    ],
+                    as:"detalles",
+                    
+                }
+            }, 
+            {
+                $lookup: {
+                    from:"customers",
+                    let: { customerId: "$Customer" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { 
+                                   
+                                    $eq: [ "$_id",  "$$customerId" ] ,
+                                    
+                                
+                                }
+                            }
+                        },
+                    
+                    
+                    ],
+                    as:"customer",
+                    
+                }
+            },
+            
+    
+        ]).sort({CodOutput:-1})
+        .then(output =>{
+            res.status(200).send({output})
+        })
+
+    }else{
+        productOutput.aggregate([
+            {  $match: {User:ObjectID(id)}},
+            {
+                $lookup: {
+                    from:"productoutputdetails",
+                    let: { customerId: "$_id" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { 
+                                    $eq: [ "$ProductOutput",  "$$customerId" ] ,
+                                    
+                                
+                                }
+                            }
+                        },
+                    
+                    
+                    ],
+                    as:"detalles",
+                    
+                }
+            }, 
+            {
+                $lookup: {
+                    from:"customers",
+                    let: { customerId: "$Customer" },
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { 
+                                   
+                                    $eq: [ "$_id",  "$$customerId" ] ,
+                                    
+                                
+                                }
+                            }
+                        },
+                    
+                    
+                    ],
+                    as:"customer",
+                    
+                }
+            },
+            
+    
+        ]).sort({CodOutput:-1})
+        .then(output =>{
+            res.status(200).send({output})
+        })
+
+    }
         
- 
-     ]).sort({CodOutput:-1})
-     .then(output =>{
-         res.status(200).send({output})
-     })
  }
 
 async function createProductOutput(req, res) {

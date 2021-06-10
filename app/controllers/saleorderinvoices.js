@@ -41,8 +41,9 @@ const cashMovement= require('../models/cashmovement.model');
 
 
 function getSaleOrderInvoices(req, res){
-   const { id,company } = req.params;
-   saleOrderInvoice.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company}}).sort({CodInvoice:-1})
+   const { id,company,profile } = req.params;
+   if(profile==="Admin"){
+     saleOrderInvoice.find().populate({path: 'Customer', model: 'Customer', match:{Company: company}}).sort({CodInvoice:-1})
     .then(invoices => {
         if(!invoices){
             res.status(404).send({message:"No hay "});
@@ -50,7 +51,19 @@ function getSaleOrderInvoices(req, res){
 
             res.status(200).send({invoices})
         }
-    });
+    });  
+   }else{
+    saleOrderInvoice.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company}}).sort({CodInvoice:-1})
+    .then(invoices => {
+        if(!invoices){
+            res.status(404).send({message:"No hay "});
+        }else{
+
+            res.status(200).send({invoices})
+        }
+    });  
+   }
+   
 }
 
 function getDetallesVentaContribuyente(req, res){
@@ -1914,21 +1927,107 @@ function getSaleInvoicePendientesIngreso(req, res){
 
 
 function getChargestoCustomers(req, res){
-    const { id ,user} = req.params;
-
+    const { id ,user,profile} = req.params;
+    var ObjectID = require('mongodb').ObjectID
   console.log("ID COMPA{IA",user);
-    customer.aggregate([
+  if(profile==="Admin"){
+
+         customer.aggregate([
         {  $match:
             { $expr:
-
-
                     { $and:
                         [
                             { $ne: [ "$AccountsReceivable",  0 ] },
                             { User:user }
                         ]
                         }
+            }
+        },
+        {
 
+            $lookup: {
+                from: "companies" ,
+                let: {companyId: "$Company"},
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                            [
+                                { $eq: [ "$_id",  "$$companyId" ] },
+                                { _id:id }
+                            ]
+                            }
+                        }
+                    },
+
+                ],
+                as: "company"
+            }
+        },
+        {
+
+            $lookup: {
+                from: "saleorderinvoices" ,
+                let: {customerId: "$_id"},
+                pipeline: [
+                    { $match:
+                        { $expr:
+                            { $and:
+                            [
+                                { $eq: [ "$Customer",  "$$customerId" ] },
+                                { $eq: [ "$Pagada",  false ] },
+                                { $ne: [ "$State",  "Anulada" ] },
+                            ]
+                            }
+                        }
+                    },
+                    {$lookup: {
+                        from: "customerpayments" ,
+                        let: {invoiceId: "$_id"},
+                        pipeline: [
+                            { $match:
+                                { $expr:
+
+                                            { $eq: [ "$SaleOrderInvoice",  "$$invoiceId" ] }
+
+                                    }
+                            },
+
+                        ],
+                        as: "pagos"
+                    }
+                }
+
+                ],
+                as: "invoices",
+
+            }
+        },
+
+
+    ])
+     .then(result => {
+         if(!result){
+             res.status(404).send({message:"No hay "});
+         }else{
+           
+            console.log(result);
+            var invoice = result.filter(function (item) {
+                return (item.Company).toString()===id;
+              });
+             res.status(200).send({invoice})
+         }
+     });
+  }else{
+     customer.aggregate([
+        {  $match:
+            { $expr:
+                    { $and:
+                        [
+                            { $ne: [ "$AccountsReceivable",  0 ] },
+                            { Company: ObjectID(id)}
+                        ]
+                        }
             }
         },
         {
@@ -2006,6 +2105,8 @@ function getChargestoCustomers(req, res){
              res.status(200).send({invoice})
          }
      });
+  }
+ 
 }
 
 
