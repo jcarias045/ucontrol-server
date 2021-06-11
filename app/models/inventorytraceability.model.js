@@ -9,7 +9,7 @@ const MovementType = require('./movementtype.model');
 const InventoryTraceabilitySchema = Schema({
   Quantity:Number, 
   WarehouseDestination : {type: Schema.ObjectId, 
-    ref: "Bodega",
+    ref: "Inventory",
     // autopopulate: true,
   },
   WarehouseOrigin: {type: Schema.ObjectId, 
@@ -34,6 +34,8 @@ Company: { type: Schema.ObjectId,
   ref: "Company",},
     
   DocumentId:String,
+  DocumentNumber:String,
+  DocType:String,
   ProductDestiny:{type: Schema.ObjectId, 
     ref: "Product",
     // autopopulate: true,

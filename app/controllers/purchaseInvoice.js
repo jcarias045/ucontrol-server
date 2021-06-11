@@ -166,7 +166,7 @@ async function createSupplierInvoice(req, res){
             }
             else{
                 invoiceId=invoiceStored._id;
-
+                let invoiceN=invoiceStored.InvoiceNumber;
                 //actualizar deuda 
                 supplier.findByIdAndUpdate({_id:Supplier},updateDeuda,(err,updateDeuda)=>{
                     if(err){
@@ -330,6 +330,8 @@ async function createSupplierInvoice(req, res){
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=productEntryID;
                                                 inventorytraceability.ProductDestiny=null;
+                                                inventorytraceability.DocumentNumber=invoiceN;
+                                                inventorytraceability.DocType="Factura Compra";
                                                 inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
@@ -565,7 +567,7 @@ async function createNewSupplierInvoice(req, res){
             }
             else{
                 let invoiceId=invoiceStored._id;
-               
+                let invoiceN=invoiceStored.InvoiceNumber;
                  console.log(invoiceStored);
                 if(invoiceDetalle.length>0){
                     invoiceDetalle.map(async item => {
@@ -692,6 +694,8 @@ async function createNewSupplierInvoice(req, res){
                                                   DocumentId:productEntryID,
                                                   ProductDestiny:null,
                                                   Cost:parseFloat(item.Quantity)*parseFloat(item.Price),
+                                                  DocumentNumber:invoiceN, 
+                                                  DocType:"Factura Compra" ,
                                                 })
                                                 // inventorytraceability.Quantity=item.Quantity;
                                                 // inventorytraceability.Product=item.Product;

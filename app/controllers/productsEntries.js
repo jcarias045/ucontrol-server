@@ -190,6 +190,7 @@ async function createProductEntry(req, res){
             }
             else{
                 let entryid=entryStored._id;
+                let codigo=entryStored.CodEntry;
                 let actualizado=false;
                 if(detalles.length>0){
                     console.log('registro detalle');
@@ -297,9 +298,11 @@ async function createProductEntry(req, res){
                                 inventorytraceability.MovDate=creacion;
                                 inventorytraceability.WarehouseOrigin=null; //origen
                                 inventorytraceability.User=User;
-                                inventorytraceability.Company=companyId;
+                                inventorytraceability.Company=Company;
                                 inventorytraceability.DocumentId=entryid;
                                 inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.DocumentNumber=codigo;
+                                inventorytraceability.DocType="Registro Entrada";
                                 inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
@@ -377,7 +380,7 @@ async function createProductEntryWithoutInvoice(req, res){
     let creacion = moment().format('DD/MM/YYYY');
 
     let inventaryUpdate={};
-
+    console.log("EL BODY", req.body);
     const {Company,User,PurchaseInvoiceId,Comments,EntryDate,SupplierId,SupplierName} = req.body;
       //para generar el correctivo del ingreso en caso de que sea requerido
       let codEntry=await productEntry.findOne({Company:Company}).sort({CodEntry:-1})
@@ -431,7 +434,9 @@ async function createProductEntryWithoutInvoice(req, res){
 
             }
             else{
+                console.log("lo que gyardo", entryStored);
                 let entryid=entryStored._id;
+                let codigo=entryStored.CodEntry;
                 let actualizado=false;
                 if(detalles.length>0){
                     console.log('registro detalle');
@@ -492,9 +497,11 @@ async function createProductEntryWithoutInvoice(req, res){
                                 inventorytraceability.MovDate=creacion;
                                 inventorytraceability.WarehouseOrigin=null; //origen
                                 inventorytraceability.User=User;
-                                inventorytraceability.Company=companyId;
+                                inventorytraceability.Company=Company;
                                 inventorytraceability.DocumentId=entryid;
                                 inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.DocumentNumber=codigo;
+                                inventorytraceability.DocType="Registro Entrada";
                                 inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
@@ -592,6 +599,7 @@ async function anularProductEntry(req, res){
             }
             else{
                 let invoiceId=entryUpdate.PurchaseInvoice;
+                let codigo=entryUpdate.CodEntry;
                 console.log(entryUpdate);
                 let entryDetail=await productEntryDetails.find({ProductEntry:entryId})
                 .then(function(doc){
@@ -681,6 +689,8 @@ async function anularProductEntry(req, res){
                     inventorytraceability.Company=inStock.Company;
                     inventorytraceability.DocumentId=entryId;
                     inventorytraceability.ProductDestiny=null;
+                    inventorytraceability.DocumentNumber=codigo;
+                    inventorytraceability.DocType="Registro Entrada(Anulada)";
                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                     inventorytraceability.save((err, traceabilityStored)=>{
                         if(err){

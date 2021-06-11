@@ -20,5 +20,6 @@ router.get('/get-inventoryexcel/:id', inventories.getInventory);
 
 router.get('/inventory-product/:id/:supplier', inventories.getNameProduct);
 router.get('/get-productInventary/:id', inventories.getProductInfoxInventary);
+router.get('/get-kardex/:id', inventories.getKardex);
 
 module.exports = router;

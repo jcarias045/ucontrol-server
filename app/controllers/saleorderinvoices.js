@@ -2515,23 +2515,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         }
      //++++++++++++++  FIN  +++++++++++++++++++
 
-    SaleOrderInvoice.CodInvoice=codigo;
-    SaleOrderInvoice.Customer=Customer;
-    SaleOrderInvoice.Total=Total;
-    SaleOrderInvoice.Active=true;
-    SaleOrderInvoice.User=User,
-    SaleOrderInvoice.CreationDate= creacion;
-    SaleOrderInvoice.State='Creada';
-    SaleOrderInvoice.InvoiceComments=InvoiceComments;
-    SaleOrderInvoice.CommentsofSale=CommentsSaleOrder;
-    SaleOrderInvoice.CustomerName=CustomerName;
-    SaleOrderInvoice.SaleOrder=SaleOrderId;
-    SaleOrderInvoice.InvoiceDate=InvoiceDate;
-    SaleOrderInvoice.Pagada=false;
-    SaleOrderInvoice.Entregada=!companyParams.RequieredOutput?true:false;
-    // SaleOrderInvoice.InvoiceNumber=InvoiceNumber;
 
     let  invoiceId=null;
+    let invoiceN=null;
     let totalfactura=0.0;
     let sumimpuestos=0.0;
     let arreglo=[];
@@ -2584,6 +2570,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                 band=true;
                     arregloFacturas.push(SaleOrderStored);
                     invoiceId=SaleOrderStored.map(item=>{return item._id}).toString();
+                    invoiceN=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
                    let invoiceNumber=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
 
                    let correlativoId=correlativos.map(item => item._id);
@@ -2990,7 +2977,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
         let  datosFactura=[];
         let  datosDetalles=[];
-        let idsalida=null;
+        let noFactura=null;
         let count=0;
         arregloFacturas.map(async item=>{
             let id= item.forEach(item=>{
@@ -3011,6 +2998,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
 
         datosFactura.map(item=>{
+            
              salida.push(
                  {
                     EntryDate:creacion,
@@ -3042,6 +3030,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                     let long=outputStored.length;
                     console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
                     let idfactura=item.SaleOrderInvoice;
+                    let numFactura=item.InvoieNumber;
                    let id= item._id;
                     console.log("ID+++++++++++++++++++++++++++++",id);
                      let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura, inAdvanced:false}).then(async function(data){
@@ -3204,6 +3193,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                             inventorytraceability.Company=Company;
                                             inventorytraceability.DocumentId=salidaId;
                                             inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.DocumentNumber=numFactura;
+                                            inventorytraceability.DocType="Factura Venta";
                                             inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
@@ -3279,6 +3270,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     inventorytraceability.Company=companyId;
                                                     inventorytraceability.DocumentId=salidaId;
                                                     inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.DocumentNumber=numFactura;
+                                                    inventorytraceability.DocType="Factura Compra";
                                                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
@@ -3420,6 +3413,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                     inventorytraceability.DocumentId=salidaId;
                                                     inventorytraceability.ProductDestiny=null;
                                                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
+                                                    inventorytraceability.DocumentNumber=numFactura;
+                                                    inventorytraceability.DocType="Factura Compra";
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
 
@@ -4043,6 +4038,7 @@ async function createSaleOrderInvoice2(req, res){
 
 
     let  invoiceId=null;
+    let invoiceN=null;
     let totalfactura=0.0;
     let sumimpuestos=0.0;
     let arreglo=[];
@@ -4091,6 +4087,8 @@ async function createSaleOrderInvoice2(req, res){
                 band=true;
                     arregloFacturas.push(SaleOrderStored);
                     invoiceId=SaleOrderStored.map(item=>{return item._id}).toString();
+                    
+                    invoiceN=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
                    let invoiceNumber=SaleOrderStored.map(item=>{return item.InvoiceNumber}).toString();
 
                    let correlativoId=correlativos.map(item => item._id);
@@ -4445,7 +4443,7 @@ async function createSaleOrderInvoice2(req, res){
 
         let  datosFactura=[];
         let  datosDetalles=[];
-        let idsalida=null;
+        let noFactura=null;
         let count=0;
         arregloFacturas.map(async item=>{
             let id= item.forEach(item=>{
@@ -4466,6 +4464,7 @@ async function createSaleOrderInvoice2(req, res){
 
 
         datosFactura.map(item=>{
+            noFactura=item.InvoiceNumber
              salida.push(
                  {
                     EntryDate:creacion,
@@ -4496,6 +4495,7 @@ async function createSaleOrderInvoice2(req, res){
                     let long=outputStored.length;
                     console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
                     let idfactura=item.SaleOrderInvoice;
+                    let numFactura=item.InvoiceNumber;
                    let id= item._id;
                     console.log("ID+++++++++++++++++++++++++++++",id);
                      let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura}).then(async function(data){
@@ -4626,6 +4626,8 @@ async function createSaleOrderInvoice2(req, res){
                                             inventorytraceability.Company=companyId;
                                             inventorytraceability.DocumentId=salidaId;
                                             inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.DocumentNumber=numFactura;
+                                            inventorytraceability.DocType="Factura Compra";
                                             inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){

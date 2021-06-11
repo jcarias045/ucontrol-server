@@ -177,7 +177,7 @@ async function createProductOutput(req, res) {
                 }
                 else{
                     let salidaId=outputStored._id;
-                  
+                    let codigo=outputStored.CodOutput;
                     salida.map(item =>{
                         outputDataDetail.push({
                             SaleInvoiceDetail:item.SaleInvoiceIdDetail,
@@ -286,6 +286,8 @@ async function createProductOutput(req, res) {
                                             inventorytraceability.Company=Company;
                                             inventorytraceability.DocumentId=salidaId;
                                             inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.DocumentNumber=codigo;
+                                            inventorytraceability.DocType="Registro Salida";
                                             inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
@@ -361,6 +363,8 @@ async function createProductOutput(req, res) {
                                                     inventorytraceability.Company=Company;
                                                     inventorytraceability.DocumentId=salidaId;
                                                     inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.DocumentNumber=codigo;
+                                                    inventorytraceability.DocType="Registro Salida";
                                                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
@@ -466,7 +470,7 @@ async function createProductOutputsinInvoice(req, res) {
                 }
                 else{
                     let salidaId=outputStored._id;
-                  
+                    let codigo=outputStored.CodOutput;
                     salida.map(item =>{
                         outputDataDetail.push({
                             SaleInvoiceDetail:null,
@@ -535,6 +539,8 @@ async function createProductOutputsinInvoice(req, res) {
                                             inventorytraceability.Company=Company;
                                             inventorytraceability.DocumentId=salidaId;
                                             inventorytraceability.ProductDestiny=null;
+                                            inventorytraceability.DocumentNumber=codigo;
+                                            inventorytraceability.DocType="Registro Salida";
                                             inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                             inventorytraceability.save((err, traceabilityStored)=>{
                                                 if(err){
@@ -589,6 +595,8 @@ async function createProductOutputsinInvoice(req, res) {
                                                     inventorytraceability.Company=Company;
                                                     inventorytraceability.DocumentId=salidaId;
                                                     inventorytraceability.ProductDestiny=null;
+                                                    inventorytraceability.DocumentNumber=codigo;
+                                                    inventorytraceability.DocType="Registro Salida";
                                                     inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
@@ -684,7 +692,7 @@ async function anularOutput(req, res){
         }
         if(update){
             let saleOrderInvoiceId=update.SaleOrderInvoice;
-        
+            let codigo =update.CodOutput;
             productOutputDetail.find({ProductOutput : outputId})
             .then(function (detalles){
                console.log("detallles");
@@ -757,6 +765,8 @@ async function anularOutput(req, res){
                                 inventorytraceability.Company=Company;
                                 inventorytraceability.DocumentId=item.SaleOrderInvoice;
                                 inventorytraceability.ProductDestiny=null;
+                                inventorytraceability.DocumentNumber=codigo;
+                                inventorytraceability.DocType="Registro Salida (Anulada)";
                                 inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                 inventorytraceability.save((err, traceabilityStored)=>{
@@ -794,6 +804,8 @@ async function anularOutput(req, res){
                             inventorytraceability.Company=Company;
                             inventorytraceability.DocumentId=item.SaleOrderInvoice;
                             inventorytraceability.ProductDestiny=null;
+                            inventorytraceability.DocumentNumber=codigo;
+                            inventorytraceability.DocType="Registro Salida(Analuda)";
                             inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                             inventorytraceability.save((err, traceabilityStored)=>{

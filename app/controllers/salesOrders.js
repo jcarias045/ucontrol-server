@@ -209,7 +209,7 @@ async function createSaleOrder(req, res){
                 }
                 else{
                     let SaleOrderId=SaleOrderStored._id;
-
+                    let codorder=SaleOrderStored.CodSaleOrder;
                     if(SaleOrderId){
 
                         saledetails.map(async item => {
@@ -283,6 +283,8 @@ async function createSaleOrder(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=SaleOrderId;
+                                                inventorytraceability.DocumentNumber=codorder;
+                                                inventorytraceability.DocType="Orden de Venta";
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                         // res.status(500).send({message: err});
@@ -344,6 +346,7 @@ async function createSaleOrder(req, res){
                 else{
                     let SaleOrderId=SaleOrderStored._id;
                     let quoteId=SaleOrderStored.CustomerQuote;
+                    let codorder=SaleOrderStored.CodSaleOrder
                     if(SaleOrderId){
 
                         saledetails.map(async item => {
@@ -416,6 +419,8 @@ async function createSaleOrder(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=SaleOrderId;
+                                                inventorytraceability.DocumentNumber=codorder;
+                                                inventorytraceability.DocType="Orden de Venta";
 
 
                                                 inventorytraceability.save((err, traceabilityStored)=>{
@@ -572,6 +577,7 @@ async function createSaleOrderWithQuote(req, res){
                 else{
                     let SaleOrderId=SaleOrderStored._id;
                     let quoteId=SaleOrderStored.CustomerQuote;
+                    let codorder=SaleOrderStored.CodSaleOrder;
                     if(SaleOrderId){
                         console.log("INGRESANDO LOS DETALLLES ");
                         saledetails.map(async item => {
@@ -686,6 +692,8 @@ async function createSaleOrderWithQuote(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=SaleOrderId;
+                                                inventorytraceability.DocumentNumber=codorder;
+                                                inventorytraceability.DocType="Orden de Venta";
 
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
@@ -748,7 +756,7 @@ async function createSaleOrderWithQuote(req, res){
                 }
                 else{
                     let SaleOrderId=SaleOrderStored._id;
-
+                    let codorder = SaleOrderStored.CodSaleOrder;
                     if(SaleOrderId){
 
                         saledetails.map(async item => {
@@ -869,7 +877,8 @@ async function createSaleOrderWithQuote(req, res){
                                                     inventorytraceability.User=User;
                                                     inventorytraceability.Company=companyId;
                                                     inventorytraceability.DocumentId=SaleOrderId;
-
+                                                    inventorytraceability.DocumentNumber=codorder;
+                                                    inventorytraceability.DocType="Orden de Venta";
                                                     inventorytraceability.save((err, traceabilityStored)=>{
                                                         if(err){
                                                             res.status(500).send({message: err});
@@ -971,7 +980,9 @@ async function updateSaleOrder(req, res){
                 console.log(saleUpdated);
                 res.status(404).send({message: "No se actualizo registro"});
             }else{
+                let codorder=saleUpdated.CodSaleOrder;
                 if(detailsAnt.length > 0) {
+                    
                      detailsAnt.map(async item => {
                         detallePrev.ProductName=item.ProductName;
                         detallePrev.SaleOrder=saleId;
@@ -1051,6 +1062,8 @@ async function updateSaleOrder(req, res){
                                                 reversionInventario.User=User;
                                                 reversionInventario.Company=companyId;
                                                 reversionInventario.DocumentId=saleId;
+                                                inventorytraceability.DocumentNumber=codorder;
+                                                inventorytraceability.DocType="Orden de Venta";
 
 
                                                 reversionInventario.save((err, traceabilityStored)=>{
@@ -1080,7 +1093,8 @@ async function updateSaleOrder(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=saleId;
-
+                                                inventorytraceability.DocumentNumber=codorder;
+                                                inventorytraceability.DocType="Orden de Venta";
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                         // res.status(500).send({message: err});
@@ -1183,7 +1197,8 @@ async function updateSaleOrder(req, res){
                                                 inventorytraceability.User=User;
                                                 inventorytraceability.Company=companyId;
                                                 inventorytraceability.DocumentId=saleId;
-
+                                                inventorytraceability.DocumentNumber=codorder;
+                                                inventorytraceability.DocType="Orden de Venta";
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                         // res.status(500).send({message: err});
@@ -1224,7 +1239,7 @@ async function updateSaleOrder(req, res){
 async function deleteSaleOrderDetail(req,res){
     let detalleid=req.params.id;
 
-    const {_id,quote,Quantity,Company,CodProduct,User}=req.body;
+    const {_id,quote,Quantity,Company,CodProduct,User,codorder}=req.body;
     const codigop=req.body.CodProduct;
     let creacion = moment().format('DD/MM/YYYY');
 
@@ -1338,6 +1353,8 @@ async function deleteSaleOrderDetail(req,res){
                                         inventorytraceability.WarehouseOrigin=item.Inventory; //origen
                                         inventorytraceability.User=User;
                                         inventorytraceability.Company=Company;
+                                        inventorytraceability.DocumentNumber=codorder;
+                                        inventorytraceability.DocType="Orden de Venta";
 
                                         inventorytraceability.save((err, traceabilityStored)=>{
                                             if(err){
@@ -1381,7 +1398,7 @@ async function anulaSaleOrder(req, res){
     let Company=req.body.Customer.Company;
     let quote=req.body.CustomerQuote;
     let User=req.body.User;
-    
+    let codorder=req.body.CodSaleOrder;
     const codigop=req.body.CodProduct;
     let creacion = moment().format('DD/MM/YYYY');
 
@@ -1505,7 +1522,8 @@ async function anulaSaleOrder(req, res){
                         inventorytraceability.WarehouseOrigin=item.Inventory; //origen
                         inventorytraceability.User=User;
                         inventorytraceability.Company=Company;
-
+                        inventorytraceability.DocumentNumber=codorder;
+                        inventorytraceability.DocType="Orden de Venta";
                         inventorytraceability.save((err, traceabilityStored)=>{
                             if(err){
                                 res.status(500).send({message: err});

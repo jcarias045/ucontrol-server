@@ -1,5 +1,6 @@
 const Inventory = require("../models/inventory.model");
 const Product=require("../models/product.model");
+const kardex = require("../models/inventorytraceability.model");
 
 function getInventory(req, res){
     const { id } = req.params;
@@ -194,6 +195,30 @@ function getProductInfoxInventary(req,res){
     
 }
 
+
+function getKardex(req, res){
+    const { id } = req.params;
+    kardex.find({Company:id})
+    .populate({path: 'Product', model: 'Product' ,
+        populate:{path: 'Measure', model: 'Measure'},
+        populate:{path: 'CatProduct', model: 'CatProduct'},
+        populate:{path: 'Brand', model: 'Brand'},
+        populate:{path: 'Measure', model: 'Measure'}
+    })
+   .populate({path:'MovementType', model: 'MovementType'})
+   .populate({path:'WarehouseOrigin' , model: 'Inventory', populate: {path: 'Bodega', model: 'Bodega', match:{Company: id}}})
+   .populate({path:'WarehouseDestination', model: 'Inventory', populate: {path: 'Bodega', model: 'Bodega', match:{Company: id}}})
+   .populate({path: 'User', model: 'User'})
+     .then(inventory => {
+         if(!inventory){
+             res.status(404).send({message:"No hay "});
+         }else{
+             
+             res.status(200).send({inventory})
+         }
+     });
+}
+
 module.exports={
     getInventory,
     createInventory,
@@ -202,7 +227,8 @@ module.exports={
     // deleteInventory,
     // getInventoriesID,
     getNameProduct,
-    getProductInfoxInventary
+    getProductInfoxInventary,
+    getKardex
 };
 // const db = require('../config/db.config.js');
 // const { Op } = require("sequelize");
