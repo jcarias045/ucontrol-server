@@ -30,7 +30,7 @@ function getBankMovement(req, res){
     let doc=req.params.doc;
     let id=req.params.id;
     try{
-        bankMovement.find({Company:id})
+        bankMovement.find()
         .then(BankMovement => {
             res.status(200).send({BankMovement});
           
