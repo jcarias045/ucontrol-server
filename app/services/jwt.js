@@ -34,7 +34,7 @@ exports.createRefreshToken=function(user){
        id: user._id,
       
        exp: moment()
-       .add(30,"days")
+       .add(1,"hours")
     // .add(120, 'seconds')
        .unix()
     };
