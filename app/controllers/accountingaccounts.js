@@ -127,11 +127,13 @@ function getAccountingAccountsGroups(req, res){
     try{
         accountingAccounts.aggregate([ 
             { 
-                $group : { 
+                $group :
+                { 
                     _id : "$NumberRef",
-                    itemsSold: { $push:  { nombre:"$Name", cuentaPadre: "$FatherAccount", NoCuenta: "$NumberAccount",  } }
-            } 
-        }
+                    grupo: { $push:  { nombre:"$Name", cuentaPadre: "$FatherAccount", NoCuenta: "$NumberAccount" } }
+                } 
+            },
+            // { $project : {  Name : 1 } }
         ] )
         .then(cuentas => {
             res.status(200).send({cuentas});
