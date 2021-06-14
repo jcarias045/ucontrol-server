@@ -28,7 +28,7 @@ function createSector(req, res){
 function getSectors(req, res){ 
     let id = req.params.id
 
-    sector.find()
+    sector.find().sort({CodMin:-1})
     .then(sector => {
         if(!sector){
             res.status(404).send({message:"No hay "});
