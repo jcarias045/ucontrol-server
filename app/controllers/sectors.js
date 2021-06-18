@@ -1,5 +1,6 @@
 const sector= require('../models/sector.model');
 
+//sectores o rubros  
 function createSector(req, res){
     const Sector = new sector();
     
@@ -35,10 +36,7 @@ function getSectors(req, res){
         }else{
             res.status(200).send({sector})
         }         
-    })
-
-        
-    
+    })  
 }
 
 module.exports={

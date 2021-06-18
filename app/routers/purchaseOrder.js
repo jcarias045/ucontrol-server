@@ -18,7 +18,7 @@ router.get('/export-purchaseorders', purchase.exportPruchaseOrder);
 router.get('/get-closedorders/:id/:company', purchase.getPurchaseOrdersClosed);
 router.get('/get-closedordersdetails/:id', purchase.getClosedPurchaseDetails);
 // router.get('/get-purchasebysupplier/:id/:fecha1/:fecha2', purchase.getPurchaseOrdersBySupplier);
-router.get('/get-purchasebysupplier/:id/:fecha1/:fecha2', purchase.getInvoicesBySupplier);
+router.get('/get-purchasebysupplier/:id/:fecha1/:fecha2', purchase.getPurchaseBySupplier);
 
 
 module.exports = router;

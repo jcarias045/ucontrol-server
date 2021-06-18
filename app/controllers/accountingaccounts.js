@@ -1,5 +1,5 @@
 const accountingAccounts= require('../models/accountingaccounts.model');
-
+var _ = require('lodash');
 async function createAccountingAccounts(req, res){
     const AccountingAccounts = new accountingAccounts();
    
@@ -72,6 +72,7 @@ function getAccountingAccounts(req, res){
         .populate({path:"AccountingAccount", model:"AccountingAccount"})
         .sort({NumberAccount:1})
         .then(cuentas => {
+           
             res.status(200).send({cuentas});
 
         })
@@ -126,16 +127,52 @@ function getAccountingAccountsGroups(req, res){
     // let companyId=req.params.company;
     try{
         accountingAccounts.aggregate([ 
-            { 
+             { 
                 $group :
                 { 
-                    _id : "$NumberRef",
-                    grupo: { $push:  { nombre:"$Name", cuentaPadre: "$FatherAccount", NoCuenta: "$NumberAccount" } }
+                    _id : { no:"$Group"},
+                    grupo: { $push:  { nombre:"$Name", cuentaPadre: "$FatherAccount", NoCuenta: "$NumberAccount",ref:"$ReferenceAccount" } }
+                    
+                    // usersIds: {
+                    //     $addToSet: '$NumberRef',
+                    //   }
                 } 
             },
+            
+            {
+                $lookup: {
+                    from: "accountingaccounts" ,
+                    let: {companyId: "$_id"},
+                    pipeline: [
+                        { $match:
+                            { $expr:
+                                { $and:
+                                [
+                                    { $eq: [ "$_id",  "$$companyId" ] },
+                                    
+                                ]
+                                }
+                            }
+                        },
+    
+                    ],
+                    as: "cuenta"
+                }
+            },
+           
             // { $project : {  Name : 1 } }
         ] )
+        // accountingAccounts.find()
+        // .populate({path:"ReferenceAccount", model: "AccountingAccount"})
         .then(cuentas => {
+            let grupos={};
+            cuentas.map(item=>{
+                grupos=item.grupo;
+            })
+            // console.log(grupos);
+            const result = _.chain(grupos)
+                .groupBy("cuentaPadre")
+            console.log("RESUL",result)
             res.status(200).send({cuentas});
 
         })
@@ -166,10 +203,121 @@ function desactivateAccount(req, res){
     })
 }
 
+
+function getCuentasPadre(req, res) {
+    console.log("cuentas contables");
+    const {company}=req.params;
+    // let companyId=req.params.company;
+    try{
+        accountingAccounts.find({Company:company, NumberRef:0})
+        .populate({path:"AccountingAccount", model:"AccountingAccount"})
+        .sort({NumberAccount:1})
+        .then(cuentas => {
+            res.status(200).send({cuentas});
+
+        })
+    }catch(error) {
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+function getCuentasHija(req, res) {
+    console.log("cuentas contables");
+    const {company,ref}=req.params;
+    // let companyId=req.params.company;
+    try{
+        accountingAccounts.find({Company:company, NumberRef:ref})
+        .populate({path:"AccountingAccount", model:"AccountingAccount"})
+        .sort({NumberAccount:1})
+        .then(cuentas => {
+            res.status(200).send({cuentas});
+
+        })
+    }catch(error) {
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
+
+
+function getPruebas(req, res) {
+    console.log("cuentas contables");
+    const {company,ref}=req.params;
+    // let companyId=req.params.company;
+    try{
+        accountingAccounts.find({Company:company})
+        .populate({path:"AccountingAccount", model:"AccountingAccount"})
+        .sort({NumberAccount:1})
+        .then(cuentas => {
+            const grouped = _.groupBy(cuentas, car => car.Group );
+              
+            //   console.log(grouped);
+              var result = _(cuentas)
+              .groupBy("Group")
+              .map(function(v, group) {
+                  _(v)
+                  .groupBy("NumberRef")
+                  .map(function(x,list){
+                        return {
+                            list,
+                    FatherAccount: _.map(x, function(o) {
+                    return {
+                      cuenrta: o.NumberAccount,
+                      ref:o.NumberRef
+                      
+                    };
+                  }),
+                }
+                  })
+              
+              })
+              .value();
+            // const result = _(cuentas)
+            // .groupBy('Group')
+            // .map(group => ({
+            //     ..._.omit(_.head(group), ['FatherAccount', 'NumberRef']),
+            //     events: _.map(group, o => ({ id: o.FatherAccount, name: o.NumberRef }))
+            // }))
+            // .value();
+            function groupBy( arr, prop ) {
+                return Object.values( arr.reduce( ( aggregate, item ) => {
+                  const val = item[prop];
+                  if (!aggregate[val]) {
+                    aggregate[val] = {
+                      [prop]: val,
+                      data: []
+                    };
+                  }
+                  aggregate[val].data.push( item );
+                  return aggregate;
+                }, {} ) );
+              }
+            const output = _.mapValues(_.groupBy(cuentas, i =>  i.Group ),app => _.groupBy(app, i => i.NumberRef))
+            const grouped2 = groupBy( cuentas, 'Group' )
+            .map( item => ({ ...item, data: groupBy( item.data, 'NumberRef' ) }) );
+            console.log(grouped2.data);
+            res.status(200).send({grouped2});
+
+        })
+    }catch(error) {
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
 module.exports={
     getAccountingAccounts,
     createAccountingAccounts,
     updateAccountingAccount,
     getAccountingAccountsGroups,
-    desactivateAccount
+    desactivateAccount,
+    getCuentasPadre,
+    getCuentasHija,
+    getPruebas
 }

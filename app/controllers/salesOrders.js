@@ -13,7 +13,7 @@ const customerInvoice = require("../models/saleorderinvoice.model");
 
 async function getSaleOrders(req, res){
     const { id,company,profile} = req.params;
-    if(profile==="Admin"){
+    if(profile==="Admin"){  //perfil administrador de la compañia
         saleOrder.find().populate({path: 'Customer', model: 'Customer', match:{Company: company},
         populate:{path:'Discount', model: 'Discount'}}).sort({CodSaleOrder:-1})
         .then(order => {
@@ -41,8 +41,8 @@ async function getSaleOrders(req, res){
 
 async function getSelesOrderClosed(req, res){
     const { id,company } = req.params;
-     //verificar si compania tiene ingreso requerido
-     let quotesOpenop=await Companyreg.findById(company) //esta variable la mando a llamar luego que se ingreso factura
+     //verificamos si la compañia tiene permitido la generacion de ordenes de venta a partir de cotizaciones con estado "Abierta"
+     let quotesOpenop=await Companyreg.findById(company) 
      .then(income => {
          if(!income){
              res.status(404).send({message:"No hay "});
@@ -53,7 +53,7 @@ async function getSelesOrderClosed(req, res){
      });
 
     console.log(quotesOpenop);
-    if(quotesOpenop){
+    if(quotesOpenop){  //si esta habilitada para aceptar ordenes con estado "Abierta", "Cerrada" y "Cerrada/Parcial"
         customerQuotes.find({User:id,State:{$in:['Cerrada','Abierta','Cerrada/Parcial']}}).populate({path: 'Customer', model: 'Customer', match:{Company: company}})
             .then(orders => {
                 if(!orders){
@@ -64,6 +64,7 @@ async function getSelesOrderClosed(req, res){
                 }
             });
     }else{
+        //solo admite cotizaciones con estado "Cerrada"
          customerQuotes.find({User:id,State:{$in:['Cerrada','Cerrada/Parcial']}}).populate({path: 'Customer', model: 'Customer', match:{Company: company}})
             .then(orders => {
                 if(!orders){
@@ -78,7 +79,7 @@ async function getSelesOrderClosed(req, res){
 }
 
 
-function getCustomerQuoteDetails(req, res){
+function getCustomerQuoteDetails(req, res){ //funcion para obtener los detalles de una cotizacion seleccionada 
     let quoteId = req.params.id;
     customerQuotesDetails.find({CustomerQuote:quoteId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
@@ -110,7 +111,7 @@ async function createSaleOrder(req, res){
 
     const SaleOrder= new saleOrder();
     let messageError=false;
-    const saledetails=req.body.details;
+    const saledetails=req.body.details; //detalle de productos
     const detalle=[];
     let deudor=false;
     let now= new Date();
@@ -122,7 +123,8 @@ async function createSaleOrder(req, res){
 
 
     let codigo=0;
-
+    
+    //obteniendo el ultimo codigo ingresado para generar el siguiente correlativo
     let codigoSaleOrder=await saleOrder.findOne().sort({CodSaleOrder:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
         console.log(doc);
@@ -132,9 +134,13 @@ async function createSaleOrder(req, res){
             }
         }
     });
+      
+    if(!codigoSaleOrder){
+        codigo =1;
+    }else {codigo=codigoSaleOrder+1}
 
-    //obteniendo informacion de la compañia para validar
-    let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    //obteniendo informacion de la compañia para validar (obtendo toda la información de la compañia)
+    let companyParams=await company.findById(companyId) 
     .then(params => {
         if(!params){
             res.status(404).send({message:"No hay "});
@@ -142,14 +148,11 @@ async function createSaleOrder(req, res){
             return(params)
         }
     });
-    console.log(companyParams);
 
-    if(!codigoSaleOrder){
-        codigo =1;
-    }else {codigo=codigoSaleOrder+1}
+  
         //++++++++++++++ verificando deudas +++++++++++++++++++
         //obtener fecha de facturas relacionadas con el cliente
-        let invoices=await customerInvoice.find({Pagada:false, Customer: Customer},'CreationDate')
+        let invoices=await customerInvoice.find({Pagada:false, Customer: Customer},'CreationDate')   //consultamos si el cliente tiene facturas
         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
         if(invoices.length>0){
             invoices.map(item =>{
@@ -159,11 +162,12 @@ async function createSaleOrder(req, res){
             let fecha=now.getTime();
             var date = new Date(item.CreationDate);
             console.log("FECHA DE LA FACTURA",date);
-            date.setDate(date.getDate() + diasCredito);
+            date.setDate(date.getDate() + diasCredito);  //a la fecha sumamos los dias de credito de ese cliente
             let fechaPago=date.toISOString().substring(0, 10);
             let fechaAct=now.toISOString().substring(0, 10);
             console.log('fecha sumada',date.toISOString().substring(0, 10));
             console.log(fechaAct);
+            //verificamos si tiene deuda o factura pendiente de pagar
             if(fechaPago <= fechaAct){
                deudor=true;
             } else { deudor=false;}
@@ -179,6 +183,8 @@ async function createSaleOrder(req, res){
           console.log('agregar ingreso');
         }
      //++++++++++++++  FIN  +++++++++++++++++++
+
+     //creamos objeto para insertar orden de venta
     SaleOrder.CodSaleOrder=codigo;
     SaleOrder.Customer=Customer;
     SaleOrder.CodCustomerQuote=null;
@@ -196,8 +202,10 @@ async function createSaleOrder(req, res){
 
     console.log(companyParams.OrderWithWallet);
     console.log(saledetails);
-    if(companyParams.OrderWithWallet && (deudor || !deudor) ){
-        console.log("no entro");
+    //verificamos si la compañia permite pedidos con cartera (es decir hacer pedidos aunque el cliente tenga deuda)
+    //SI PERMITE ENTONCES NO IMPORTA QUE TENGA DEUDA EL CLIENTE EN CASO CONTRARIO LA ORDEN NO SE PODRA REGISTRAR
+    if((companyParams.OrderWithWallet && (deudor || !deudor)) || (!companyParams.OrderWithWallet && !deudor) ){
+      
         SaleOrder.save((err, SaleOrderStored)=>{
             if(err){
                 res.status(500).send({message: err});
@@ -213,7 +221,7 @@ async function createSaleOrder(req, res){
                     if(SaleOrderId){
 
                         saledetails.map(async item => {
-                        detalle.push({
+                        detalle.push({  //areglo del detalles de la orden
                             ProductName:item.Name,
                             SaleOrder:SaleOrderId,
                             Quantity:parseFloat(item.Quantity) ,
@@ -232,11 +240,12 @@ async function createSaleOrder(req, res){
                      });
                      console.log(detalle);
                         if(detalle.length>0){
-                            saleOrderDetails.insertMany(detalle)
+                            saleOrderDetails.insertMany(detalle)  //guaardamos detalles de la orden
                             .then(function (detalles) {
                                 console.log("PROCESO DE RESERVA");
                                 console.log(detalles);
-
+                                 
+                                //verificamos si la empresa permite realizar reservaciones
                                 if(companyParams.AvailableReservation){
                                     console.log("EMPRESA HABILITADA PARA RESERVAS");
                                     detalles.map(async item=>{
@@ -245,9 +254,9 @@ async function createSaleOrder(req, res){
                                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                         console.log('EN STOCK:',infoInventary);
-
-                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
-                                                //descontando cantidad que se reservara
+                                     
+                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){ //validamos que si exista la cantidad necesaria para hacer reservacion
+                                                //descontando cantidad que se reservara del inventario principal
                                                 inventory.findByIdAndUpdate({_id:item.Inventory},{
                                                     Stock:parseFloat(infoInventary.Stock - item.Quantity),
                                                 }).then(result=> console.log(result))
@@ -258,9 +267,7 @@ async function createSaleOrder(req, res){
                                                 let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                                                 .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                console.log('BODEGA RESERVA');
-                                                console.log(productreserved);
-
+                                                
                                                 //actualizando el stock de reserva
                                                 inventory.findByIdAndUpdate({_id:productreserved._id},{
                                                     Stock:parseFloat(productreserved.Stock + item.Quantity),
@@ -332,143 +339,9 @@ async function createSaleOrder(req, res){
         })
 
     }
-
-    if(!companyParams.OrderWithWallet && !deudor){
-        SaleOrder.save((err, SaleOrderStored)=>{
-            if(err){
-                res.status(500).send({message: err});
-
-            }else {
-                if(!SaleOrderStored){
-                    res.status(500).send({message: "Error al crear el nuevo usuario."});
-                    console.log(SaleOrderStored);
-                }
-                else{
-                    let SaleOrderId=SaleOrderStored._id;
-                    let quoteId=SaleOrderStored.CustomerQuote;
-                    let codorder=SaleOrderStored.CodSaleOrder
-                    if(SaleOrderId){
-
-                        saledetails.map(async item => {
-                        detalle.push({
-                            ProductName:item.Name,
-                            SaleOrder:SaleOrderId,
-                            Quantity:parseFloat(item.Quantity) ,
-                            Discount:parseFloat(item.Discount),
-                            Price:parseFloat(item.Price),
-                            Inventory :item.Inventory,
-                            Measure:item.Measures,
-                            CodProduct:item.codproducts,
-                            SubTotal: parseFloat(item.total.toFixed(2)),
-                            Product:item.ProductId,
-                            iniQuantity:parseFloat(item.Quantity) ,
-                            GrossSellPrice:parseFloat(item.Price),
-                            inAdvanced:false
-                        })
-                     });
-                     console.log(detalle);
-                        if(detalle.length>0){
-                            saleOrderDetails.insertMany(detalle)
-                            .then(function (detalles) {
-                                console.log("PROCESO DE RESERVA");
-                                console.log(detalles);
-
-                                if(companyParams.AvailableReservation){
-                                    console.log("EMPRESA HABILITADA PARA RESERVAS");
-                                    detalles.map(async item=>{
-
-                                        //obteniendo stock de producto  (bodega principal)
-                                        let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
-                                        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                        console.log('EN STOCK:',infoInventary);
-
-                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
-                                                //descontando cantidad que se reservara
-                                                inventory.findByIdAndUpdate({_id:item.Inventory},{
-                                                    Stock:parseFloat(infoInventary.Stock - item.Quantity),
-                                                }).then(result=> console.log(result))
-                                                .catch(err => {console.log(err);});
-
-                                                //stock de bodega de reserva
-                                                console.log(infoInventary.Product);
-                                                let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
-                                                .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
-                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                console.log('BODEGA RESERVA');
-                                                console.log(productreserved);
-
-                                                //actualizando el stock de reserva
-                                                inventory.findByIdAndUpdate({_id:productreserved._id},{
-                                                    Stock:parseFloat(productreserved.Stock + item.Quantity),
-                                                }).then(result=> console.log(result))
-                                                .catch(err => {console.log(err);});
-
-                                                //obteniendo id del movimiento de tipo reserva
-                                                let movementId=await MovementTypes.findOne({Name:'reservacion'},['_id'])
-                                                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-
-                                                console.log('id del moviminto de reserva', movementId);
-                                                //registro de movimiento
-                                                const inventorytraceability= new inventoryTraceability();
-                                                inventorytraceability.Quantity=item.Quantity;
-                                                inventorytraceability.Product=item.Product;
-                                                inventorytraceability.WarehouseDestination=productreserved._id; //destino
-                                                inventorytraceability.MovementType=movementId._id;
-                                                inventorytraceability.MovDate=creacion;
-                                                inventorytraceability.WarehouseOrigin=item.Inventory; //origen
-                                                inventorytraceability.User=User;
-                                                inventorytraceability.Company=companyId;
-                                                inventorytraceability.DocumentId=SaleOrderId;
-                                                inventorytraceability.DocumentNumber=codorder;
-                                                inventorytraceability.DocType="Orden de Venta";
-
-
-                                                inventorytraceability.save((err, traceabilityStored)=>{
-                                                    if(err){
-                                                        // res.status(500).send({message: err});
-
-                                                    }else {
-                                                        if(!traceabilityStored){
-                                                            // res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                            console.log(traceabilityStored);
-                                                        }
-                                                        else{
-                                                            //   res.status(200).send({orden: traceabilityStored});
-                                                        }
-                                                    }
-                                                });
-
-
-                                        }
-                                        else{
-
-                                             res.status(500).send({ message: "Verificar Inventario" });
-                                        }
-
-                                    })
-
-                                }
-                                else{
-                                    res.status(200).send({orden: SaleOrderStored});
-                                }
-
-
-                                res.status(200).send({orden: SaleOrderStored});
-
-                            })
-                            .catch(function (err) {
-                                console.log(err);
-                            });
-
-
-                        }
-                    }
-
-
-                }
-            }
-        })
-    }
+    
+   
+    //no se ingresa orden 
     if(!companyParams.OrderWithWallet && deudor){
         res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
     }
@@ -494,7 +367,7 @@ async function createSaleOrderWithQuote(req, res){
 
 
     let codigo=0;
-
+    //OBTENIENDO ULTIMO CODIGO asignado (correlativo)
     let codigoSaleOrder=await saleOrder.findOne().sort({CodSaleOrder:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
         console.log(doc);
@@ -505,8 +378,12 @@ async function createSaleOrderWithQuote(req, res){
         }
     });
 
+    if(!codigoSaleOrder){
+        codigo =1;
+    }else {codigo=codigoSaleOrder+1}
+
     //obteniendo informacion de la compañia para validar
-    let companyParams=await company.findById(companyId) //esta variable la mando a llamar luego que se ingreso factura
+    let companyParams=await company.findById(companyId) 
     .then(params => {
         if(!params){
             res.status(404).send({message:"No hay "});
@@ -514,11 +391,8 @@ async function createSaleOrderWithQuote(req, res){
             return(params)
         }
     });
-    console.log(companyParams);
+    
 
-    if(!codigoSaleOrder){
-        codigo =1;
-    }else {codigo=codigoSaleOrder+1}
         //++++++++++++++ verificando deudas +++++++++++++++++++
         //obtener fecha de facturas relacionadas con el cliente
         let invoices=await customerInvoice.find({Pagada:false, Customer: Customer},'CreationDate')
@@ -531,11 +405,12 @@ async function createSaleOrderWithQuote(req, res){
             let fecha=now.getTime();
             var date = new Date(item.CreationDate);
 
-            date.setDate(date.getDate() + diasCredito);
+            date.setDate(date.getDate() + diasCredito); //sumamos los dias de credito para verificar si existe deuda
             let fechaPago=date.toISOString().substring(0, 10);
             let fechaAct=now.toISOString().substring(0, 10);
             console.log('fecha sumada',date.toISOString().substring(0, 10));
             console.log(fechaAct);
+            //determinacion si es deudor
             if(fechaPago <= fechaAct){
                deudor=true;
             } else { deudor=false;}
@@ -548,6 +423,8 @@ async function createSaleOrderWithQuote(req, res){
           console.log('agregar ingreso');
         }
      //++++++++++++++  FIN  +++++++++++++++++++
+
+     //creacion de objetos pora ingreso de orden
     SaleOrder.CodSaleOrder=codigo;
     SaleOrder.Customer=Customer;
     SaleOrder.CodCustomerQuote=CodCustomerQuote?CodCustomerQuote:null;
@@ -563,7 +440,9 @@ async function createSaleOrderWithQuote(req, res){
     SaleOrder.CustomerQuote=CustomerQuote;
     SaleOrder.AdvancePayment=false;
 
-    if(companyParams.OrderWithWallet && (deudor || !deudor) ){
+  //verificamos si la compañia permite pedidos con cartera (es decir hacer pedidos aunque el cliente tenga deuda)
+    //SI PERMITE ENTONCES NO IMPORTA QUE TENGA DEUDA EL CLIENTE EN CASO CONTRARIO LA ORDEN NO SE PODRA REGISTRAR
+    if((companyParams.OrderWithWallet && (deudor || !deudor) ) || (!companyParams.OrderWithWallet && !deudor)){
 
         SaleOrder.save((err, SaleOrderStored)=>{
             if(err){
@@ -581,7 +460,7 @@ async function createSaleOrderWithQuote(req, res){
                     if(SaleOrderId){
                         console.log("INGRESANDO LOS DETALLLES ");
                         saledetails.map(async item => {
-                        detalle.push({
+                        detalle.push({    //generamos arreglo con los detalles que componen la orden
                             ProductName:item.ProductName,
                             SaleOrder:SaleOrderId,
                             Quantity:parseFloat(item.Quantity) ,
@@ -603,23 +482,31 @@ async function createSaleOrderWithQuote(req, res){
                      });
                      console.log("EL DETALLE INSERTADO",detalle);
                         if(detalle.length>0){
-                            saleOrderDetails.insertMany(detalle)
+                            saleOrderDetails.insertMany(detalle)  //insertando detalles
                             .then(function (detalles) {
                                 console.log("PROCESO DE RESERVA");
                                 console.log(saledetails);
                                 saledetails.map(async item=>{
+                                    //colocamos los prodcutos de la cotizacion que ya se encuentran en un pedido o una orden
+                                    //para eso se cambia el estado OnRequest a true
                                     customerQuotesDetails.findByIdAndUpdate({_id:item._id},{OnRequest:true},async (err,update)=>{
                                         if(err){
                                             console.log(err);
                                         }
                                         if(update){
+
+                                            //realizamos conteo de cuantos prodcutos de la orden ya pertencen a una orden de venta
+                                            
+                                            //prodcutos en pedido
                                                let inRequest=await customerQuotesDetails.countDocuments({CustomerQuote:CustomerQuote , OnRequest:true}, function (err, count) {
                                                 console.log(count); return (count)
                                                });
+                                               //todo el detalle de  productos (cantidad total de productos en la cotizacion)
                                                let allDetails=await customerQuotesDetails.countDocuments({CustomerQuote:CustomerQuote}, function (err, count) {
                                                 console.log(count); return (count)
                                                });
-
+                                              
+                                               //en caso que no este completada la cotizacion esta pasa a tener un estado de "Abierta" a "Cerrada Parcial"
                                                if(parseInt(inRequest)< parseInt(allDetails)){
                                                 customerQuotes.findByIdAndUpdate({_id:CustomerQuote},{State:"Cerrada/Parcial"},async (err,update)=>{
                                                     if(err){
@@ -629,7 +516,7 @@ async function createSaleOrderWithQuote(req, res){
                                                         res.status(200).send({orden: SaleOrderStored});
                                                     }
                                                 })
-                                               }else if(parseInt(inRequest)=== parseInt(allDetails)){
+                                               }else if(parseInt(inRequest)=== parseInt(allDetails)){  // en el caso que todos los productos de la cotizacion formen parte del pedido se cambia a "Cerrada" el estado de la cotizacion
                                                 customerQuotes.findByIdAndUpdate({_id:CustomerQuote},{State:"Completada"},async (err,update)=>{
                                                     if(err){
                                                         console.log(err);
@@ -639,14 +526,13 @@ async function createSaleOrderWithQuote(req, res){
                                                     }
                                                 })
                                                }
-                                             console.log("en oden",inRequest);
-                                             console.log("no oden",allDetails);
+                                            
 
 
                                         }
                                     });
                                 });
-                                if(companyParams.AvailableReservation){
+                                if(companyParams.AvailableReservation){   //verificar si la empresa permite realizar reservaciones 
                                     console.log("EMPRESA HABILITADA PARA RESERVAS");
                                     detalles.map(async item=>{
 
@@ -655,7 +541,7 @@ async function createSaleOrderWithQuote(req, res){
                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                         console.log('EN STOCK:',infoInventary);
 
-                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
+                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){  //verificacion de existenncias
                                                 //descontando cantidad que se reservara
                                                 inventory.findByIdAndUpdate({_id:item.Inventory},{
                                                     Stock:parseFloat(infoInventary.Stock - item.Quantity),
@@ -667,8 +553,7 @@ async function createSaleOrderWithQuote(req, res){
                                                 let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                                                 .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                console.log('BODEGA RESERVA');
-                                                console.log(productreserved);
+                                              
 
                                                 //actualizando el stock de reserva
                                                 inventory.findByIdAndUpdate({_id:productreserved._id},{
@@ -677,6 +562,7 @@ async function createSaleOrderWithQuote(req, res){
                                                 .catch(err => {console.log(err);});
 
                                                 //obteniendo id del movimiento de tipo reserva
+                                            
                                                 let movementId=await MovementTypes.findOne({Name:'reservacion'},['_id'])
                                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
@@ -743,185 +629,7 @@ async function createSaleOrderWithQuote(req, res){
 
     }
 
-    if(!companyParams.OrderWithWallet && !deudor){
-        console.log(SaleOrder);
-        SaleOrder.save((err, SaleOrderStored)=>{
-            if(err){
-                res.status(500).send({message: err});
-
-            }else {
-                if(!SaleOrderStored){
-                    res.status(500).send({message: "Error al crear el nuevo usuario."});
-                    console.log(SaleOrderStored);
-                }
-                else{
-                    let SaleOrderId=SaleOrderStored._id;
-                    let codorder = SaleOrderStored.CodSaleOrder;
-                    if(SaleOrderId){
-
-                        saledetails.map(async item => {
-                        detalle.push({
-                            ProductName:item.ProductName,
-                            SaleOrder:SaleOrderId,
-                            Quantity:parseFloat(item.Quantity) ,
-                            Discount:parseFloat(item.Discount),
-                            Price:parseFloat(item.Price),
-                            Inventory :item.Inventory._id,
-                            Measure:item.Inventory.Product.Measure.Name,
-                            CodProduct:item.CodProduct,
-                            SubTotal: parseFloat(item.Price) * parseFloat(item.Quantity),
-                            Product:item.Inventory.Product._id,
-                            iniQuantity:parseFloat(item.Quantity) ,
-                            // Priceiva:parseFloat(item.Priceiva)
-                            // OnRequest:false
-                            GrossSellPrice:parseFloat(item.GrossSellPrice),
-                            inAdvanced:false
-                        })
-                     });
-                     console.log("DETALLE INGRESO", detalle);
-                        if(detalle.length>0){
-                            saleOrderDetails.insertMany(detalle)
-                            .then(function (detalles) {
-                                console.log("PROCESO DE RESERVA");
-                                console.log(detalles);
-                                if(detalles){
-
-                                 console.log(messageError);
-
-                                  //cambio de estado
-
-                                    console.log("cambiando estados");
-                                    saledetails.map(async item=>{
-                                        customerQuotesDetails.findByIdAndUpdate({_id:item._id},{OnRequest:true},async (err,update)=>{
-                                            if(err){
-                                                console.log(err);
-                                            }
-                                            if(update){
-                                                   let inRequest=await customerQuotesDetails.countDocuments({CustomerQuote:CustomerQuote , OnRequest:true}, function (err, count) {
-                                                    console.log(count); return (count)
-                                                   });
-                                                   let allDetails=await customerQuotesDetails.countDocuments({CustomerQuote:CustomerQuote}, function (err, count) {
-                                                    console.log(count); return (count)
-                                                   });
-
-                                                   if(parseInt(inRequest)< parseInt(allDetails)){
-                                                    customerQuotes.findByIdAndUpdate({_id:CustomerQuote},{State:"Cerrada/Parcial"},async (err,update)=>{
-                                                        if(err){
-                                                            console.log(err);
-                                                        }
-                                                        if(update){
-                                                            // res.status(200).send({orden: SaleOrderStored});
-                                                        }
-                                                    })
-                                                   }else if(parseInt(inRequest)=== parseInt(allDetails)){
-                                                    customerQuotes.findByIdAndUpdate({_id:CustomerQuote},{State:"Completada"},async (err,update)=>{
-                                                        if(err){
-                                                            console.log(err);
-                                                        }
-                                                        if(update){
-                                                            // res.status(200).send({orden: SaleOrderStored});
-                                                        }
-                                                    })
-                                                   }
-                                                 console.log("en oden",inRequest);
-                                                 console.log("no oden",allDetails);
-
-
-                                            }
-                                        });
-                                    });
-                                    if(companyParams.AvailableReservation){
-                                        console.log("EMPRESA HABILITADA PARA RESERVAS");
-                                        detalles.map(async item=>{
-
-                                            //obteniendo stock de producto  (bodega principal)
-                                            let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
-                                            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                            console.log('EN STOCK:',infoInventary);
-
-                                            if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
-                                                    //descontando cantidad que se reservara
-                                                    inventory.findByIdAndUpdate({_id:item.Inventory},{
-                                                        Stock:parseFloat(infoInventary.Stock - item.Quantity),
-                                                    }).then(result=> console.log(result))
-                                                    .catch(err => {console.log(err);});
-
-                                                    //stock de bodega de reserva
-                                                    console.log(infoInventary.Product);
-                                                    let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
-                                                    .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
-                                                    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                                    console.log('BODEGA RESERVA');
-                                                    console.log(productreserved);
-
-                                                    //actualizando el stock de reserva
-                                                    inventory.findByIdAndUpdate({_id:productreserved._id},{
-                                                        Stock:parseFloat(productreserved.Stock + item.Quantity),
-                                                    }).then(result=> console.log(result))
-                                                    .catch(err => {console.log(err);});
-
-                                                    //obteniendo id del movimiento de tipo reserva
-                                                    let movementId=await MovementTypes.findOne({Name:'reservacion'},['_id'])
-                                                    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-
-                                                    console.log('id del moviminto de reserva', movementId);
-                                                    //registro de movimiento
-
-                                                    const inventorytraceability= new inventoryTraceability();
-                                                    inventorytraceability.Quantity=item.Quantity;
-                                                    inventorytraceability.Product=item.Product;
-                                                    inventorytraceability.WarehouseDestination=productreserved._id; //destino
-                                                    inventorytraceability.MovementType=movementId._id;
-                                                    inventorytraceability.MovDate=creacion;
-                                                    inventorytraceability.WarehouseOrigin=item.Inventory; //origen
-                                                    inventorytraceability.User=User;
-                                                    inventorytraceability.Company=companyId;
-                                                    inventorytraceability.DocumentId=SaleOrderId;
-                                                    inventorytraceability.DocumentNumber=codorder;
-                                                    inventorytraceability.DocType="Orden de Venta";
-                                                    inventorytraceability.save((err, traceabilityStored)=>{
-                                                        if(err){
-                                                            res.status(500).send({message: err});
-
-                                                        }else {
-                                                            if(!traceabilityStored){
-                                                                res.status(500).send({message: "Error al crear el nuevo usuario."});
-                                                                console.log(traceabilityStored);
-                                                            }
-                                                            else{
-                                                                // res.status(200).send({orden: SaleOrderStored});
-                                                            }
-                                                        }
-                                                    });
-
-
-                                            }
-                                            else{
-                                                console.log(infoInventary.Stock,item.Quantity);
-                                                messageError=true;
-                                                res.status(500).send({ message: "Verificar Inventario" });
-                                            }
-
-                                        })
-
-                                    }
-                                    else{
-                                        res.status(200).send({orden: SaleOrderStored});
-                                    }
-                                }
-
-                            })
-                            .catch(function (err) {
-                                console.log(err);
-                            });
-                        }
-                    }
-
-
-                }
-            }
-        })
-    }
+   
     if(!companyParams.OrderWithWallet && deudor){
         res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
     }
@@ -949,10 +657,12 @@ function getSaleOrderDetails(req, res){
 
 async function updateSaleOrder(req, res){
     let saleId = req.params.id;
-    let saleDetalle=req.body.details;
-    let detailsAnt=req.body.ordenAnt;
+    let saleDetalle=req.body.details; //nuevo productos añadidos a la orden
+    let detailsAnt=req.body.ordenAnt; //prodcutos de la orden creada
     let updateSaleOrder={};
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
+
 
     const {Comments,Total,Customer,companyId,User}=req.body;
 
@@ -983,7 +693,7 @@ async function updateSaleOrder(req, res){
                 let codorder=saleUpdated.CodSaleOrder;
                 if(detailsAnt.length > 0) {
                     
-                     detailsAnt.map(async item => {
+                     detailsAnt.map(async item => {  //generando objeto con datos actualizados
                         detallePrev.ProductName=item.ProductName;
                         detallePrev.SaleOrder=saleId;
                         detallePrev.Quantity=parseFloat(item.Quantity) ;
@@ -992,7 +702,7 @@ async function updateSaleOrder(req, res){
                         detallePrev.Inventory =item.Inventory._id;
                         detallePrev.SubTotal=item.SubTotal;
                         // detallePrev.GrossSellPrice=item.Price
-                        saleOrderDetails.updateMany({_id: item._id ,SaleOrder:saleId},detallePrev)
+                        saleOrderDetails.updateMany({_id: item._id ,SaleOrder:saleId},detallePrev)  //actualizacion de datos
                             .then(function (detalles) {
                                console.log("Actualizados");
 
@@ -1001,6 +711,7 @@ async function updateSaleOrder(req, res){
                             .catch(function (err) {
                                 console.log(err);
                             });
+                            //verificando si la  compañia tiene habilitadas las reservas
                           if(companyParams.AvailableReservation){
                                     console.log("EMPRESA HABILITADA PARA RESERVAS");
 
@@ -1014,8 +725,8 @@ async function updateSaleOrder(req, res){
 
 
                                         console.log("en el inventaerio",infoInventary);
-                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
-                                                //descontando cantidad que se reservara
+                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){  //verifica existencias
+                                                //descontando cantidad que se reservara, se regresa cantidad inicial y se descuenta la nueva
                                                 inventory.findByIdAndUpdate({_id:item.Inventory._id},{
                                                     Stock:parseFloat((infoInventary.Stock + parseFloat(item.iniQuantity)) - item.Quantity),
                                                 }).then(result=> console.log(result))
@@ -1029,11 +740,11 @@ async function updateSaleOrder(req, res){
                                                 console.log('BODEGA RESERVA');
                                                 console.log(productreserved);
 
-                                                //actualizando el stock de reserva
+                                                //actualizando el stock de reserva se descuenta la cantidad inicial y se suma la nueva cantidad
                                                 inventory.findByIdAndUpdate({_id:productreserved._id},{
                                                     Stock:parseFloat(productreserved.Stock - item.iniQuantity)+parseFloat(item.Quantity),
                                                 }).then(result=> {
-                                                    saleOrderDetails.findByIdAndUpdate({_id: item._id },{
+                                                    saleOrderDetails.findByIdAndUpdate({_id: item._id },{ //actualizamos la cantidad inicial esto funciona para el momnto de actualizar los inventarios y no perder la cantidad que fue movida 
                                                         iniQuantity:parseFloat(item.Quantity),
                                                     }).then(result=> {
                                                        console.log(result);
@@ -1129,7 +840,7 @@ async function updateSaleOrder(req, res){
 
                 if(saleDetalle.length>0){
                     saleDetalle.map(async item => {
-                        detalle.push({
+                        detalle.push({  //arreglo de nuevos productos
 
                             ProductName:item.Name,
                             SaleOrder:saleId,
@@ -1147,10 +858,11 @@ async function updateSaleOrder(req, res){
                      });
                      console.log(detalle);
                         if(detalle.length>0){
-                            saleOrderDetails.insertMany(detalle)
+                            saleOrderDetails.insertMany(detalle)  //guardando los nuevos prodcutos que tendra la cotizacion
                             .then(async function (detalles) {
 
                                 console.log("INSERTADOS", detalles);
+                                //verificamos si  esta habilitada para hacer reservas
                                 if(companyParams.AvailableReservation){
                                     console.log("EMPRESA HABILITADA PARA RESERVAS");
                                     detalles.map(async item=>{
@@ -1160,7 +872,7 @@ async function updateSaleOrder(req, res){
                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                         console.log('EN STOCK:',infoInventary);
 
-                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
+                                        if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){ //verificar existencias
                                                 //descontando cantidad que se reservara
                                                 inventory.findByIdAndUpdate({_id:item.Inventory},{
                                                     Stock:parseFloat(infoInventary.Stock - item.Quantity),
@@ -1241,9 +953,11 @@ async function deleteSaleOrderDetail(req,res){
 
     const {_id,quote,Quantity,Company,CodProduct,User,codorder}=req.body;
     const codigop=req.body.CodProduct;
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
 
     console.log(_id);
+    //obteniendo informacion de la compañia
     let companyParams=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
     .then(params => {
         if(!params){
@@ -1253,7 +967,7 @@ async function deleteSaleOrderDetail(req,res){
         }
     });
 
-    saleOrderDetails.findByIdAndDelete(_id, (err, userDeleted) => {
+    saleOrderDetails.findByIdAndDelete(_id, (err, userDeleted) => {  //eliminando detalle
         if (err) {
           res.status(500).send({ message: "Error del servidor." });
         } else {
@@ -1261,28 +975,33 @@ async function deleteSaleOrderDetail(req,res){
              res.status(404).send({ message: "Detalle no encontrado" });
           } else {
             console.log(userDeleted);
+            //verificamos si ese detalle pertece a una cotizacion
             if(quote!==null){
-                customerQuotesDetails.find({CustomerQuote: quote, CodProduct: codigop.toString()})
+                //en caso de pertenecer a una cotizacion se tiene que cambiar el estado de este producto en dicha cotizacion.
+
+                customerQuotesDetails.find({CustomerQuote: quote, CodProduct: codigop.toString()})  //obtenemos la informacion del producto dentro de la cotizacion
                 .then(details => {
                     if(!details){
                         res.status(404).send({message:"No hay "});
                     }else{
                        console.log(details);
-                       details.map(async item=>{
+                       details.map(async item=>{ 
+                           //cambiamos el estado del producto dentro de la cotizacion  (OnRequest:false)
                             customerQuotesDetails.findByIdAndUpdate({_id:item._id},{OnRequest:false},async (err,update)=>{
                                 if(err){
                                     console.log(err);
                                 }
                                 if(update){
+                                    //conteo de productos  que estan en pedido
                                     let inRequest=await customerQuotesDetails.countDocuments({CustomerQuote:quote , OnRequest:true}, function (err, count) {
                                         console.log(count); return (count)
                                        });
+                                       //conteo de los productos de la cotizacion
                                        let allDetails=await customerQuotesDetails.countDocuments({CustomerQuote:quote}, function (err, count) {
                                         console.log(count); return (count)
                                        });
-                                        console.log("en orden",inRequest);
-                                        console.log("todos",allDetails);
-                                       if(parseInt(inRequest)< parseInt(allDetails)){
+                                       
+                                       if(parseInt(inRequest)< parseInt(allDetails)){  //si no esta completa la cotizacion dentro de un pedido
                                         customerQuotes.findByIdAndUpdate({_id:quote},{State:"Cerrada/Parcial"},async (err,update)=>{
                                             if(err){
                                                 console.log(err);
@@ -1291,7 +1010,7 @@ async function deleteSaleOrderDetail(req,res){
                                                console.log(update);
                                             }
                                         })
-                                       }else if(parseInt(inRequest)=== parseInt(allDetails)){
+                                       }else if(parseInt(inRequest)=== parseInt(allDetails)){ //si los prodcutos de la cotizacion en su totalidad estan en la orden
                                         customerQuotes.findByIdAndUpdate({_id:quote},{State:"Completada"},async (err,update)=>{
                                             if(err){
                                                 console.log(err);
@@ -1306,7 +1025,7 @@ async function deleteSaleOrderDetail(req,res){
                             }).catch(err => {return err})
 
                        })
-
+                        //si la compañia esta habilidad para realizar reservacion
                         if(companyParams.AvailableReservation){
                             console.log("EMPRESA HABILITADA PARA RESERVAS");
                             details.map(async item=>{
@@ -1317,7 +1036,7 @@ async function deleteSaleOrderDetail(req,res){
                                 console.log('EN STOCK:',infoInventary);
 
                                 if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity)){
-                                        //reingresando cantidad que se reservara
+                                        //reingresando cantidad que se reservo
                                         inventory.findByIdAndUpdate({_id:item.Inventory},{
                                             Stock:parseFloat(infoInventary.Stock + parseFloat( item.Quantity)),
                                         }).then(result=> console.log(result))
@@ -1328,10 +1047,9 @@ async function deleteSaleOrderDetail(req,res){
                                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                        console.log('BODEGA RESERVA');
-                                        console.log(productreserved);
-
+                                      
                                         //actualizando el stock de reserva
+                                        //sacando el producto
                                         inventory.findByIdAndUpdate({_id:productreserved._id},{
                                             Stock:parseFloat(productreserved.Stock - item.Quantity),
                                         }).then(result=> console.log(result))
@@ -1400,10 +1118,11 @@ async function anulaSaleOrder(req, res){
     let User=req.body.User;
     let codorder=req.body.CodSaleOrder;
     const codigop=req.body.CodProduct;
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
 
-    console.log("ANULANDO OIRDE DE VENTA");
-    let companyParams=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
+   //obteniendo informacion de la compañia
+    let companyParams=await company.findById(Company) 
     .then(params => {
         if(!params){
             res.status(404).send({message:"No hay "});
@@ -1412,19 +1131,20 @@ async function anulaSaleOrder(req, res){
         }
     });
 
-    saleOrder.findByIdAndUpdate({_id:saleId},{State:"Anulada"},async (err,update)=>{
+    saleOrder.findByIdAndUpdate({_id:saleId},{State:"Anulada"},async (err,update)=>{ //cambio de estado
         if(err){
             console.log(err);
         }
         if(update){
             if(quote!==null){
+                //verificamos si orden se genero a partir de una cotizacion
                 customerQuotesDetails.find({CustomerQuote: quote})
                 .then(details => {
                     if(!details){
                         res.status(404).send({message:"No hay "});
                     }else{
                        console.log("si actualizao" ,details);
-                       details.map(async item=>{
+                       details.map(async item=>{  //cambiamos estado de todos los productos de la cotizacion 
                             customerQuotesDetails.findByIdAndUpdate({_id:item._id},{OnRequest:false},async (err,update)=>{
                                 if(err){
                                     console.log(err);
@@ -1433,14 +1153,17 @@ async function anulaSaleOrder(req, res){
                                     res.status(404).send({message:"No hay "});
                                 }
                                 else{
+                                    //contamos los productos que estan en pedido
                                     let inRequest=await customerQuotesDetails.countDocuments({CustomerQuote:quote , OnRequest:true}, function (err, count) {
                                         console.log(count); return (count)
                                        });
+                                       //cantidad total de los productos
                                        let allDetails=await customerQuotesDetails.countDocuments({CustomerQuote:quote}, function (err, count) {
                                         console.log(count); return (count)
                                        });
                                         console.log("en orden",inRequest);
                                         console.log("todos",allDetails);
+                                        //si no esta completada la cotizacion pase a cerrada
                                        if(parseInt(inRequest)< parseInt(allDetails)){
                                         customerQuotes.findByIdAndUpdate({_id:quote},{State:"Cerrada"},async (err,update)=>{
                                             if(err){
@@ -1450,6 +1173,7 @@ async function anulaSaleOrder(req, res){
                                                
                                             }
                                         })
+                                        //si esta completada pasa a Completada
                                        }else if(parseInt(inRequest)=== parseInt(allDetails)){
                                         customerQuotes.findByIdAndUpdate({_id:quote},{State:"Completada"},async (err,update)=>{
                                             if(err){
@@ -1473,6 +1197,7 @@ async function anulaSaleOrder(req, res){
                 });
                
            }
+           //si empresa tiene habilitada la reserva
            if(companyParams.AvailableReservation){
             console.log("EMPRESA HABILITADA PARA RESERVAS");
             saleOrderDetails.find({SaleOrder: saleId})
@@ -1483,13 +1208,14 @@ async function anulaSaleOrder(req, res){
                 let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                 console.log('EN STOCK:',infoInventary);
+                //obteniendo stock de producto de reserva
                 let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                 .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity)){
+                if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity)){ //validando stock
                     console.log("ENCONTRO A REVERSION DEL INVENTARIO");
                         //reingresando cantidad que se reservara
-                        inventory.findByIdAndUpdate({_id:item.Inventory},{
+                        inventory.findByIdAndUpdate({_id:item.Inventory},{  //regresamos el producto que estaba en reserva a la bodega principal
                             Stock:parseFloat(infoInventary.Stock + parseFloat( item.Quantity)),
                         }).then(result=> console.log(result))
                         .catch(err => {console.log(err);});
@@ -1500,7 +1226,7 @@ async function anulaSaleOrder(req, res){
                         console.log('BODEGA RESERVA');
                         console.log(productreserved);
 
-                        //actualizando el stock de reserva
+                        //actualizando el stock de reserva SACAMOS EL PRODUCTO DE RESERVA
                         inventory.findByIdAndUpdate({_id:productreserved._id},{
                             Stock:parseFloat(productreserved.Stock - item.Quantity),
                         }).then(result=> console.log(result))
@@ -1638,11 +1364,9 @@ function getSaleOrdersbyCustomers(req, res){
             }, 
             
         ]).then(result => {
-            var order = result.filter(function (item) {
+            var order = result.filter(function (item) {  //filtrado por fecha para obtener solo las ordenes en el rango especificado por el usuario
                 let fecha=new Date(item.CreationDate);
-                console.log("creacion",fecha);
-                console.log("f1",f1);
-                console.log("f2",f2);
+                
                 return fecha>=f2 && fecha<=f1;
               });
             res.status(200).send(order);

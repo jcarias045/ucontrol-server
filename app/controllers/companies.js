@@ -7,14 +7,14 @@ function getCompanies(req, res) {
   
     Company.find().then(company => {
       if (!company) {
-        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
+        res.status(404).send({ message: "No existen compañias registradas" });
       } else {
         res.status(200).send({ company });
       }
     });
-  }
+}
 
-
+//obtener informacion de una compañia en especifico
 function getInfoCompany(req, res) {
 
     const {id} = req.params;
@@ -22,12 +22,13 @@ function getInfoCompany(req, res) {
     console.log(id);
     Company.find({ _id: id}).then(company => {
       if (!company) {
-        res.status(404).send({ message: "No se ha encontrado ningun usuario." });
+        res.status(404).send({ message: "La compañia no existe" });
       } else {
         res.status(200).send({ company });
       }
     });
   }
+
   
 function createCompany (req, res){
     
@@ -72,7 +73,7 @@ function createCompany (req, res){
 
         }else {
             if(!companyStored){
-                res.status(500).send({message: "Error al crear el nuevo usuario."});
+                res.status(500).send({message: "Error al crear compañia"});
                 console.log(companyStored);
             }else{
                 res.status(200).send({Company: companyStored})
@@ -127,23 +128,23 @@ async function desactivateCompany(req, res) {
       
       await Company.findByIdAndUpdate(companyId, {Active}, (CompanyStored) => {
           if (!CompanyStored) {
-              res.status(404).send({ message: "No se ha encontrado la plaza." });
+              res.status(404).send({ message: "Compañia no encontrada" });
           }
           else if (Active === false) {
-              res.status(200).send({ message: "Plaza desactivada correctamente." });
+              res.status(200).send({ message: "Compañia desactivada con exito" });
           }
       })
       
   } catch(error){
       res.status(500).json({
-          message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+          message: "Error, compañia no desactivada",
           error: error.message
       });
   }
 }
 
 
-function uploadAvatar(req, res) {
+function uploadAvatar(req, res) {  //para cargar el logo de las compañias
   const params = req.params;
    console.log("id companuia", params.id);
   Company.findById({ _id: params.id }, (err, companyData) => {
@@ -164,7 +165,7 @@ function uploadAvatar(req, res) {
           let extSplit = fileName.split(".");
           let fileExt = extSplit[1];
            console.log(fileExt);
-          if (fileExt !== "png" && fileExt !== "jpg"  && fileExt !== "jpeg") {
+          if (fileExt !== "png" && fileExt !== "jpg"  && fileExt !== "jpeg") {  //acá se valida la extensión de las imagenes a cargar
             console.log("aqui quedi");
             res.status(400).send({
               message:

@@ -19,7 +19,8 @@ const AccountingAccountSchema = Schema({
         // autopopulate: true,
     },
     NumberRef:Number,
-    FatherAccount:String
+    FatherAccount:String,
+    Group:Number
 })
 
 module.exports = moongose.model('AccountingAccount', AccountingAccountSchema)

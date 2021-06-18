@@ -5,8 +5,9 @@ const mongoose = require('mongoose');
 
 require("dotenv").config({
     path: "./config.env"
-})
+});
 
+//importancion de los archivos que contienen las rutas de los controladores
 let userRoutes = require('./app/routers/user');
 let customerRoutes = require('./app/routers/customer');
 let authRoutes = require('./app/routers/auth');
@@ -76,6 +77,8 @@ let checkbookRoutes= require('./app/routers/checkbook.route');
 let writeCheckRoutes= require('./app/routers/writecheck.route');
 let accountingAccountsRoutes= require('./app/routers/accountingaccounts.route');
 
+
+
 const app=express();
 //funcion cors
 // const cors = require('cors');
@@ -87,7 +90,7 @@ const app=express();
 // }
 // app.use(cors(corsOptions));
 
-
+//se utiliza para no tener problemas con CORS
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
     res.header(
@@ -104,6 +107,8 @@ app.use((req, res, next) => {
 
 app.use(bodyParser.urlencoded({extended:false}));
 app.use(bodyParser.json());
+
+//sección para habilitar las rutas (para que se tenga acceso desde la app donde se consuma la api)
 app.use(express.static('resources'));
 app.use('/api', userRoutes);
 app.use('/api', customerRoutes);
@@ -190,25 +195,22 @@ if(process.env.NODE_ENV === 'production'){
     res.send(403, 'Sorry! you cant see that.');
 }
 
+//**********CONEXION A BASE DE DATOS
 
-// Create a Server
-// const server = app.listen(3050, function () {
+//url para conectarse de manera local a la base de datos (en caso contrario comentar la url)
+const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
 
-//   let host = server.address().address
-//   let port = server.address().port
-
-//   console.log("App listening at http://%s:%s", host, port);
-// })
-//conexion
-// const CONNECTION_URL='mongodb://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0-shard-00-00.juv1p.mongodb.net:27017,cluster0-shard-00-01.juv1p.mongodb.net:27017,cluster0-shard-00-02.juv1p.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-uvwby0-shard-0&authSource=admin&retryWrites=true&w=majority'
-// const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
-//HOLAAAAAAAA
 const PORT = process.env.PORT || 3050 ;
-// const CONNECTION_URL='mongodb+srv://sa_ucontrol:g3eX7amgBxVn3GhJ@cluster0.juv1p.mongodb.net/ucontrol?retryWrites=true&w=majority'
+
+//habilitar esta conxion cuando se haga el deploy y comentar la que se encuentra abajo 
+//hace referencia a variables colocadas en heroku
+
 // mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-//  mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
-// mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+
+//para trabajar de manera local habilitar esta conexion Y NO OLVIDE COMENTAR LA DE ARRIBA
+ mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+
+ //NOTA SIEMPRE TIENE QUE COMENTAR ALGUNA DE LAS DOS DEPENDIENDO LAS SITUACIONES PLANTEADAS ANTERIORMENTE
 
     .then( () => app.listen(PORT, () => {
         console.log(`Server Running on Port: http://localhost:3050`)

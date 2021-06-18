@@ -58,56 +58,7 @@ function createProfileOptions(req, res){
 function getSysUserOptions(req, res){
     let rolId = req.params.id;
     try{
-        // ({
-        //     model:  ProfileOptions,
-        //     include: [
-              
-        //     {
-        //         group: 'ID_Grupo',   
-        //         model:  SysOptions,
-        //         required: true,
-        //         on:{
-                   
-        //             ID_Grupo: sequelize.where(sequelize.col("sys_optionmenus.ID_Grupo"), "=", sequelize.col("sys_grupos.ID_Grupo")),
-                    
-        //         },
-        //         include:[
-        //               {
-                         
-        //         model:  ProfileOptions,
-        //         on:{
-                   
-        //             ID_OptionMenu: sequelize.where(sequelize.col("sys_optionmenus->sys_profileoption.ID_OptionMenu"), "=", sequelize.col("sys_optionmenus.ID_OptionMenu")),
-        //             ID_Rol: rolId
-        //         },
-        //         required: true
-        //          },
-                 
-        //         ]
-        //     }
-        // ]
-        // 
-        // Grupos.find().populate({path: 'SysOptions', model: 'SysOptions', populate:{path: 'OpMenu', model: 'OpMenu'}})
-        // // .populate({path: 'ProfileOptions', populate:{path: 'OpMenu'} })
-        // Grupos.aggregate([
-        //     {
-        //         $lookup:{
-        //             from: "opmenus",
-        //             localField: "_id",
-        //             foreignField: "Grupos",
-        //             as: "opciones",
-        //         },
-        //         $lookup1:{
-        //             from: "profileoptions",
-        //             localField: "_id",
-        //             foreignField: "OpMenu",
-        //             as: "menu",
-        //         }
-        //     }
-        // ])
-        // Grupos.aggregate.model() === SysOptions;
-        // Grupos.aggregate.model() === ProfileOptions;
-        console.log(rolId);
+   
         var ObjectID = require('mongodb').ObjectID
         Grupos.aggregate([
             {
@@ -122,31 +73,7 @@ function getSysUserOptions(req, res){
                             "let": {"opmenuid": "$_id"},
                             "pipeline": [
                                 { $match: {  Rol:ObjectID(rolId)} },
-                                {"$match": {"$expr": {"$eq":["$OpMenu", "$$opmenuid"] }}},
-                                // { $match:
-                                //     { $expr:
-                                //        { $and:
-                                //           [
-                                //             { $eq: [ "$OpMenu",  "$$opmenuid" ] },
-                                //             {  $eq: [ "$Checked", true ] }
-                                //           ]
-                                //        }
-                                //     }
-                                //  },
-                               //     {"$match": { "$expr": { "$eq": [ "$Rol" , rolId ] } }},
-                                // { $match: { _id: rolId } },
-
-                            //    { $match:
-                            //     { $expr:
-                            //        { $and:
-                            //           [
-                            //             { $eq: [ "$OpMenu",  "$$idsysop" ] },
-                            //             { $eq: [ "$_id", rolId ] },
-                            //           ]
-                            //        }
-                            //     }
-                            //   },
-                            
+                                {"$match": {"$expr": {"$eq":["$OpMenu", "$$opmenuid"] }}},             
                                    {"$lookup": {
                                         "from": "rols" ,
                                         "let": {"profileoptions": "$_id"}, 
@@ -236,14 +163,14 @@ async function createSystemGroup(req, res){
             }
         });
         }else{
-            console.log("entra2");
+            
             res.status(500).send({ message: "Error el Grupo ya existe."});
         }
 
     })
 }
 
-async function createSystemOption(req, res){
+async function createSystemOption(req, res){  //se crean las opciones que componen los grupos
     // let option = {};
     console.log(req.body);
     const sysOptions = new SysOptions();
@@ -260,9 +187,9 @@ async function createSystemOption(req, res){
              let opId=result._id;
              console.log("ingresando datos opciones ");
              console.log(result);
-             roles.find().then(role =>{
-                role.map(async item=>{
-                    sysOp.push({
+             roles.find().then(role =>{  //lo que se hace acá es que se obtiene el id  de todos los roles 
+                role.map(async item=>{  //y se hace un insert a la tabla profileoption para agregar esa nueva opcion como falsa
+                    sysOp.push({        //evita que surjan problemas al querer editar el rol
                         Checked:false,
                         Rol:item._id,
                         OpMenu:opId
@@ -337,13 +264,13 @@ async function changeStateOption(req, res){
                 res.status(404).send({ message: "No se ha encontrado la plaza." });
             }
             else if (State === false) {
-                res.status(200).send({ message: "Plaza desactivada correctamente." });
+                res.status(200).send({ message: "Opcion desactivada correctamente." });
             }
         })
         
     } catch(error){
         res.status(500).json({
-            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            message: "Error -> No se puede actualizar  " + req.params.id,
             error: error.message
         });
     }

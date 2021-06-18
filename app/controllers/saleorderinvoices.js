@@ -41,8 +41,9 @@ const cashMovement= require('../models/cashmovement.model');
 
 
 function getSaleOrderInvoices(req, res){
-   const { id,company,profile } = req.params;
-   if(profile==="Admin"){
+   const { id,company,profile } = req.params
+   //verificar el perfil para filtrar informacion
+   if(profile==="Admin"){  
      saleOrderInvoice.find().populate({path: 'Customer', model: 'Customer', match:{Company: company}}).sort({CodInvoice:-1})
     .then(invoices => {
         if(!invoices){
@@ -106,19 +107,9 @@ function getDetallesVentaConsumidorFinal(req, res){
     });
 }
 
-async function getSaleOrdersClosed(req, res){
+async function getSaleOrdersClosed(req, res){ //funcion para cargar ordenes en el select que aparece al momento de crear una factura
     const { id,company } = req.params;
-     //verificar si compania tiene ingreso requerido
-    //  let quotesOpenop=await Companyreg.findById(company) //esta variable la mando a llamar luego que se ingreso factura
-    //  .then(income => {
-    //      if(!income){
-    //          res.status(404).send({message:"No hay "});
-    //      }else{
-    //          console.log(income);
-    //         return(income.WorksOpenQuote)
-    //      }
-    //  });
-
+     
 
      saleOrders.find({User:id,State:'Cerrada'}).populate({path: 'Customer', model: 'Customer', match:{Company: company}})
     .then(orders => {
@@ -134,7 +125,7 @@ async function getSaleOrdersClosed(req, res){
 }
 
 
-function getSaleOrderInfo(req, res){
+function getSaleOrderInfo(req, res){ //se utiliza para obtener la info de la orden que se selecciono en la pantalla de facturas
     let saleId = req.params.id;
 
     saleOrders.find({_id: saleId}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
@@ -148,7 +139,7 @@ function getSaleOrderInfo(req, res){
     });
 }
 
-function getSaleOrderDetails(req, res){
+function getSaleOrderDetails(req, res){  //utilizada para obtener todos los productos relacionados con la orden seleccionada
     let saleId = req.params.id;
 
     saleOrderDetails.find({SaleOrder:saleId}).populate({path: 'Inventory', model: 'Inventory',
@@ -167,6 +158,7 @@ function getSaleOrderDetails(req, res){
 }
 
 
+//función inicial ue ya no esta en uso
 async function createSaleOrderInvoiceWithOrder(req, res){
 
     const SaleOrderInvoice= new saleOrderInvoice();
@@ -703,7 +695,7 @@ async function createSaleOrderInvoiceWithOrder(req, res){
 
 }
 
-
+//función inicial ue ya no esta en uso
 async function createSaleOrderInvoice(req, res){
     const SaleOrderInvoice= new saleOrderInvoice();
     const ProductOuput= new productOutput();
@@ -1198,7 +1190,8 @@ async function createSaleOrderInvoice(req, res){
 }
 
 
-function getSaleInvoiceDetails(req, res){
+function getSaleInvoiceDetails(req, res){ 
+    //se usa al momento de editar una factura, se encarga de mostrar el detalle de la factura que se va a editar
     let invoiceId = req.params.id;
 
     saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).populate({path: 'Inventory', model: 'Inventory',
@@ -1218,6 +1211,7 @@ function getSaleInvoiceDetails(req, res){
 function getExportInfoFacturas(req, res){
     let Company = req.params.id;
     console.log(Company);
+    //exportar todo el detalle de la facturas (para generar archivo excel)
     saleOrderInvoiceDetails.find().populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',
@@ -1235,8 +1229,8 @@ function getExportInfoFacturas(req, res){
 
 async function updateSaleOrderInvoice(req, res){
     let invoiceId = req.params.id;
-    let invoiceDetalle=req.body.details;
-    let detailsAnt=req.body.ordenAnt;
+    let invoiceDetalle=req.body.details; //productos nuevos
+    let detailsAnt=req.body.ordenAnt; //productos que ya estaban en la factura
     let companyId=req.body.Company;
     let Customer=req.body.Customer;
     let iva=req.body.iva;
@@ -1280,12 +1274,8 @@ async function updateSaleOrderInvoice(req, res){
             }
         }
     });
-    //  let existPago=await PaymentToSupplier.findOne({SaleOrderInvoice:invoiceId}).catch(err => {console.log(err);});
-    //  if(existPago!==null){
-    //     console.log('tiene pafgos');
-    //     res.status(500).send({message: "Esta factura contiene pagos registrados"});
-    // }else{
-                saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},updateInvoice,async (err,invoiceUpdate)=>{
+   
+                saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},updateInvoice,async (err,invoiceUpdate)=>{ //actualiza datos
                 if(err){
                     res.status(500).send({message: "Error del Servidor."});
                     console.log(err);
@@ -1297,7 +1287,7 @@ async function updateSaleOrderInvoice(req, res){
                     else{
 
                         let codInvoice;
-                        let idd=await saleOrderDetails.find({SaleOrder: invoiceId}).then(function(doc){
+                        let idd=await saleOrderDetails.find({SaleOrder: invoiceId}).then(function(doc){  //obtiendi id del detalles de la orden
                             if(doc){
                                     if(doc.CodInvoice!==null){
                                 return(doc._id)
@@ -1316,7 +1306,7 @@ async function updateSaleOrderInvoice(req, res){
                             detallePrev.PriceDiscount=parseFloat(item.PrecioDescuento),
                             detallePrev.Inventory =item.Inventory._id,
                             detallePrev.SubTotal=parseFloat((item.PrecioDescuento)*(item.Quantity))
-                            saleOrderInvoiceDetails.updateMany({_id: item._id ,SaleOrderInvoice:invoiceId},detallePrev)
+                            saleOrderInvoiceDetails.updateMany({_id: item._id ,SaleOrderInvoice:invoiceId},detallePrev) //actualizamos la info de los prodcutos que ya estaban en la factura
                                 .then(function (detalles) {
                                     if(!companyParams.RequieredOutput){
 
@@ -1343,7 +1333,7 @@ async function updateSaleOrderInvoice(req, res){
 
                     if(invoiceDetalle.length>0){
                             invoiceDetalle.map(async item => {
-                            detalle.push({
+                            detalle.push({  //se hace el arreglo con los productos nuevos que seran agreados a la factura
                                 ProductName:item.Name,
                                         SaleOrderInvoice:invoiceId,
                                         Quantity:parseFloat(item.Quantity) ,
@@ -1365,7 +1355,7 @@ async function updateSaleOrderInvoice(req, res){
                             });
                             console.log("DETALLLES A INSETRTAR",detalle);
                             if(detalle.length>0){
-                                saleOrderInvoiceDetails.insertMany(detalle)
+                                saleOrderInvoiceDetails.insertMany(detalle)  //agregamos los productos nuevos
                                 .then(async function (detalleStored) {
                                     console.log(detalleStored);
                                     console.log("INSERTADOS");
@@ -1378,9 +1368,12 @@ async function updateSaleOrderInvoice(req, res){
                                     }).catch(err => {console.log(err);})
                                     console.log(invoiceId);
                                     console.log(outputId);
+
+                                    //verificar si la empresa tenia deshabilitado el ingreso requerido
                                     if(!companyParams.RequieredOutput){
+                                        //esto es para registrar la salida de los nuevos productos que fueron agregados
                                         detalleStored.map(item =>{
-                                            outputDataDetail.push({
+                                            outputDataDetail.push({ 
                                                 SaleInvoiceDetail:item._id,
                                                 ProductOutput:outputId,
                                                 Quantity:item.Quantity,
@@ -1391,7 +1384,7 @@ async function updateSaleOrderInvoice(req, res){
                                                 CodProduct:item.CodProduct,
                                                 Product:item.Product
                                                 });
-                                            productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) {
+                                            productOutputDetail.insertMany(outputDataDetail) .then(function (outputStored) { //registramos el detalle de la salida o sea el producto
                                                 console.log("INSERTANDO SALIDA DETALLE");
                                                 console.log(outputStored);
                                                     if(outputStored){
@@ -1411,6 +1404,7 @@ async function updateSaleOrderInvoice(req, res){
                     }
                     if(!companyParams.RequieredOutput){
                     console.log("CALCULOS POR INGRESO REQUERIDO");
+                    //ACTULIZACION DEL INVENTARIO DE TODOS LOS PRODCUTOS INGRESADOS TANTO NUEVOS COMO ANTIGUOS
                     saleOrderInvoiceDetails.find({SaleOrderInvoice:invoiceId}).then(function (detalles)
                     {
                         detalles.map(async item=>{
@@ -1419,19 +1413,19 @@ async function updateSaleOrderInvoice(req, res){
                             let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                             console.log('EN STOCK:',infoInventary);
-
+                            
+                            //obteniendo stock de la bodega de reserva
                             let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                             .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            console.log('BODEGA RESERVA');
-                            console.log(productreserved);
-
+                            
                              //obteniendo id del movimiento de tipo reserva
                              let movementId=await MovementTypes.findOne({Name:'salida'},['_id'])
                              .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
                             if(parseFloat(infoInventary.Stock)>=parseFloat(item.Quantity) && !companyParams.AvailableReservation){
-                                    //descontando cantidad que se reservara
+                                     //MOVIENDO PRODCUTOS DE PRINCIPAL
+                                //descontando cantidad que se reservara
                                     inventory.findByIdAndUpdate({_id:item.Inventory},{
                                         Stock:parseFloat((infoInventary.Stock + parseFloat(item.iniQuantity)) - item.Quantity),
                                     }).then(result=> console.log(result))
@@ -1480,9 +1474,10 @@ async function updateSaleOrderInvoice(req, res){
 
                                     res.status(200).send({orden: detalles});
                             }
+                            
                             else if(parseFloat(productreserved.Stock)>=parseFloat(item.Quantity) && companyParams.AvailableReservation){
-                                //descontando cantidad que se reservara
-                                                      // //actualizando el stock de reserva
+                               //MOVIENDO DE RESERVA
+                               //se realiza descuento en la bodega de reserva
                                     inventory.findByIdAndUpdate({_id:productreserved._id},{
                                         Stock:parseFloat((infoInventary.Stock + parseFloat(item.iniQuantity)) - item.Quantity),
                                     }).then(result=> console.log(result))
@@ -1542,7 +1537,7 @@ async function updateSaleOrderInvoice(req, res){
                     }
                 }
             });
-    // }
+  
 }
 
 async function deleteSaleInvoiceDetails(req,res){
@@ -1575,7 +1570,7 @@ async function deleteSaleInvoiceDetails(req,res){
     console.log("deuda",deudaAct);
     saleOrderInvoiceDetails.find({_id: _id}).then(function (detalles){
              //cuenta por cobrar
-             let nuevaCuenta =parseFloat(deudaAct)-parseFloat(SubTotal);
+             let nuevaCuenta =parseFloat(deudaAct)-parseFloat(SubTotal); //calculo de saldo a cobrar
              customer.findByIdAndUpdate({_id: Customer},{
                 AccountsReceivable:nuevaCuenta.toFixed(2),
             }).then(function(update){
@@ -1583,12 +1578,13 @@ async function deleteSaleInvoiceDetails(req,res){
 
                 }
                 else{}}).catch(err =>{console.log(err)});
+                //MOVIMIENTO DE INVENTARIO
           detalles.map(async item =>{
                //obteniendo stock de producto  (bodega principal)
                let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                console.log('EN STOCK:',infoInventary);
-
+            //obteniendo stock de la bodega de reserva
                let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -1599,8 +1595,8 @@ async function deleteSaleInvoiceDetails(req,res){
                 let movementId=await MovementTypes.findOne({Name:'reversion'},['_id'])
                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-                if(!companyParams.AvailableReservation){
-                     //descontando cantidad que se reservara
+                if(!companyParams.AvailableReservation){ //SI COMPAÑIA NO ESTA HABILITADA PARA RESERVA
+                     //AGREGANDO EL PRODDUCTO A LA BODEGA PRINCIPAL
                      inventory.findByIdAndUpdate({_id:item.Inventory},{
                         Stock:parseFloat((infoInventary.Stock + parseFloat(item.Quantity)) ),
                     }).then(result=> console.log(result))
@@ -1652,8 +1648,8 @@ async function deleteSaleInvoiceDetails(req,res){
                     });
 
                 }
-                if(companyParams.AvailableReservation){
-                        //descontando cantidad que se reservara
+                if(companyParams.AvailableReservation){ //HABILITADA BODE RESERVA
+                        //REGRESANDO EL PRODCUTO A LA RESERVA
                         inventory.findByIdAndUpdate({_id:productreserved._id},{
                             Stock:parseFloat((productreserved.Stock + parseFloat(item.Quantity)) ),
                         }).then(result=> console.log(result))
@@ -1709,10 +1705,6 @@ async function deleteSaleInvoiceDetails(req,res){
           })
 
     })
-
-
-
-
 }
 
 async function anularSaleInovice(req,res){
@@ -1726,7 +1718,7 @@ async function anularSaleInovice(req,res){
     const codigop=req.body.CodProduct;
     let creacion = moment().format('DD/MM/YYYY');
 
-
+    //obtiendo informacion de la compañia
     let companyParams=await company.findById( companyId) //esta variable la mando a llamar luego que se ingreso factura
     .then(params => {
         if(!params){
@@ -1747,7 +1739,7 @@ async function anularSaleInovice(req,res){
         });
 
 
-    saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{State:"Anulada"},async (err,update)=>{
+    saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{State:"Anulada"},async (err,update)=>{  //cambiando el estado de factura
         if(err){
             res.status(500).send({ message: "Error del servidor." });
         }
@@ -1761,14 +1753,15 @@ async function anularSaleInovice(req,res){
 
                 }
             else{}}).catch(err =>{console.log(err)});
-            if(saleOrder!==null){
+            
+            if(saleOrder!==null){  //si factura se genero con orden de venta se tiene que cambiar el estado de la orden de venta
                 saleOrders.findByIdAndUpdate({_id:saleOrder},{State:"Cerrada"},async (err,update)=>{
                     if(err){
                         res.status(500).send({ message: "Error del servidor." });
                     }
                     if(update){}})
             }
-            saleOrderInvoiceDetails.find({SaleOrderInvoice : invoiceId})
+            saleOrderInvoiceDetails.find({SaleOrderInvoice : invoiceId}) //obtenemos los detales de la factura para poder realizar el movimiento de inventario
             .then(function (detalles){
 
                     detalles.map(async item =>{
@@ -1777,17 +1770,17 @@ async function anularSaleInovice(req,res){
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         console.log('EN STOCK:',infoInventary);
 
+                         //obteniendo stock de la bodega de reserva
                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                        console.log('BODEGA RESERVA');
-                        console.log(productreserved);
+                       
 
                             //obteniendo id del movimiento de tipo reserva
                             let movementId=await MovementTypes.findOne({Name:'reversion'},['_id'])
                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                            if(!companyParams.AvailableReservation){
-                                                //descontando cantidad que se reservara
+                            if(!companyParams.AvailableReservation){  //compañia no habilitada para reserva
+                                                //regresando producto a la bodega principal
                                 inventory.findByIdAndUpdate({_id:item.Inventory},{
                                     Stock:parseFloat((infoInventary.Stock +  parseFloat(item.Quantity)) ),
                                 }).then(result=> console.log(result))
@@ -1822,8 +1815,8 @@ async function anularSaleInovice(req,res){
                                         }
                                         else{}}})
                      }
-                     if(companyParams.AvailableReservation){
-                                            //descontando cantidad que se reservara
+                     if(companyParams.AvailableReservation){  //emprsa habilitada para reservar producto
+                                            //regresando el producto a la bodega de reserva
                             inventory.findByIdAndUpdate({_id:productreserved._id},{
                                 Stock:parseFloat((productreserved.Stock + parseFloat(item.Quantity)) ),
                             }).then(result=> console.log(result))
@@ -1872,17 +1865,7 @@ async function anularSaleInovice(req,res){
 
 async function getSaleInvoicesNoPagadas(req, res){
     const { id,company } = req.params;
-     //verificar si compania tiene ingreso requerido
-    //  let quotesOpenop=await Companyreg.findById(company) //esta variable la mando a llamar luego que se ingreso factura
-    //  .then(income => {
-    //      if(!income){
-    //          res.status(404).send({message:"No hay "});
-    //      }else{
-    //          console.log(income);
-    //         return(income.WorksOpenQuote)
-    //      }
-    //  });
-
+    //se usa para registrar los cobros a la facturas
 
     saleOrderInvoice.find({User:id,Pagada:false}).populate({path: 'Customer', model: 'Customer', match:{Company: company}})
     .then(invoices => {
@@ -1895,6 +1878,7 @@ async function getSaleInvoicesNoPagadas(req, res){
     });
 }
 function getSaleInvoiceHeader(req, res){
+    //se utiliza para exportar
     let invoiceId = req.params.id;
     let userId = req.params.user;
     let companyId = req.params.company;
@@ -1912,9 +1896,7 @@ function getSaleInvoiceHeader(req, res){
 
 function getSaleInvoicePendientesIngreso(req, res){
 
-    console.log(req.params.id);
-    // PaymentToSupplier.find().populate({path: 'User', model: 'User',match:{_id:req.params.id}})
-    // .populate({path: 'PurchaseInvoice', model: 'PurchaseInvoice',match:{Pagada:false}, populate:{path: 'Supplier', model: 'Supplier'}})
+    //para mostrar las factura que tiene pendiente una salida (crud de salidas)
     saleOrderInvoice.find({Entregada:false,User:req.params.id}).populate({path: 'Customer', model: 'Customer'})
     .then(invoices => {
         if(!invoices){
@@ -1929,7 +1911,7 @@ function getSaleInvoicePendientesIngreso(req, res){
 function getChargestoCustomers(req, res){
     const { id ,user,profile} = req.params;
     var ObjectID = require('mongodb').ObjectID
-  console.log("ID COMPA{IA",user);
+  //obteniendo cobros de los clientes relacionado con las facturas
   if(profile==="Admin"){
 
          customer.aggregate([
@@ -2110,7 +2092,8 @@ function getChargestoCustomers(req, res){
 }
 
 
-function getSaleOrderInvoicebyCustomers(req, res){
+function getSaleOrderInvoicebyCustomers(req, res){ 
+    //para obtener las facturas por cada cliente de acuerdo a un rango de fechas
     let supplierId = req.params.id;
     let companyId = req.params.company;
     let f1=new Date(req.params.fecha1);
@@ -3556,8 +3539,10 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 }
 
 async function getSalesForUsers(req,res){
+    //se encarga de obtener todo lo facturado por los usuarios
     const id=req.params.id;
     const supplierId=req.params.customer;
+    
     let companyId = req.params.company;
     let f1=new Date(req.params.fecha1);
     let f2=new Date(req.params.fecha2);
@@ -3669,7 +3654,9 @@ async function getSalesForUsers(req,res){
 
 
 async function getSalesForProducts(req,res){
-    const id=req.params.id;
+    //obtener todo lo facturado de un producto, esto mostrara cuanto ha sido el monto facturado de cada productos registrado por la empresa
+     //a partir de un rango de fecha especifico
+     const id=req.params.id;
     const supplierId=req.params.customer;
     let companyId = req.params.company;
     let f1=new Date(req.params.fecha1);
@@ -3689,7 +3676,7 @@ async function getSalesForProducts(req,res){
                             { $and:
                                [
 
-                                 { $lte: [ "$CreationDate", f1 ] },
+                                 { $lte: [ "$CreationDate", f1 ] },   //forma de comparar fechas con mongodb
                                  { $gte: [ "$CreationDate", f2] },
                                ]
                             }
@@ -4675,9 +4662,12 @@ async function createSaleOrderInvoice2(req, res){
 }
 
 async function ImprimirPdf (req,res){
+    //se tiene que generar una factura sin ningun formato ya que esto se imprimera sobre una factura preimpresa de la compañia
+    // ucontrol solo tiene que generar la informacion a imprimir
     const {id} = req.params.id;
-    
-
+     
+    //obtenmos la cabecera de la factura
+ 
     let facturas = await saleOrderInvoice.findOne({_id: req.params.id})
     .populate({path: 'Customer', model: 'Customer'
     ,populate:{path: 'Sector', model: 'Sector'}})
@@ -4687,7 +4677,7 @@ async function ImprimirPdf (req,res){
     ,populate:{path: 'DocumentType', model: 'DocumentType'}})
     .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
     console.log(facturas);
-
+   //obtemos el cuerpo de la factura es decir todos sus prodcuctos
     let resultado = await saleOrderInvoiceDetails.find({SaleOrderInvoice: facturas._id})
     .populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
@@ -4696,8 +4686,9 @@ async function ImprimirPdf (req,res){
     )})
     .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
     .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
-    
-    if(facturas.Customer.TypeofTaxpayer === "ConsumidorFinal"){
+    //se valida que tipo de factura es ya que son de formato diferente tipos : credito fiscal y consumidor final
+    //varia la forma de visualizacion de los imppuestos, ya que para credito fiscal se muestra en el detalle de la factura
+    if(facturas.Customer.TypeofTaxpayer === "ConsumidorFinal"){   //para consumidor final
             const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
             var i = 0
             let total = 0
@@ -4742,7 +4733,7 @@ async function ImprimirPdf (req,res){
             });
             console.log("Termino")
 
-        }else{
+        }else{   //en el caso de credito fiscal
             var i = 0
             let total = 0
             const doc = new PDFDocument()
@@ -4795,6 +4786,7 @@ async function ImprimirPdf (req,res){
 
 
 async function getSalesThisMonth(req,res){
+    //obtener lo facturado por el usuario logueado en el mes actual
     const id=req.params.id;
     const supplierId=req.params.customer;
     let now= new Date();
@@ -4809,7 +4801,7 @@ async function getSalesThisMonth(req,res){
     let f2= date;
     console.log("ahora",f1);
     console.log("mes",f2);
-    var date = new Date(), y = date.getFullYear(), m = date.getMonth();
+    var date = new Date(), y = date.getFullYear(), m = date.getMonth();  //obteniendo dia inicial del mes actual
     console.log("y",y);
     var firstDay = new Date(y, m, 1);
     console.log("inicial",firstDay);
@@ -4820,8 +4812,8 @@ async function getSalesThisMonth(req,res){
                 { $and:
                    [
                     { $eq: [ "$User",  ObjectID(id) ] },
-                     { $lte: [ "$InvoiceDate", f1 ] },  // $lte menor o igual
-                     { $gte: [ "$InvoiceDate", firstDay] },   //$gte mayor o igual
+                     { $lte: [ "$InvoiceDate", f1 ] },  // $lte menor o igual  (fecha actual)
+                     { $gte: [ "$InvoiceDate", firstDay] },   //$gte mayor o igual (pprimer dia del mes)
                    ]
                 }
              }
@@ -4840,6 +4832,7 @@ async function getSalesThisMonth(req,res){
     }).catch(err => {console.log(err)})
 }
 async function getSalesLastMonth(req,res){
+    // obtiene lo facturado el mes anterior 
     const id=req.params.id;
     const supplierId=req.params.customer;
     var ObjectID = require('mongodb').ObjectID;
@@ -4848,12 +4841,13 @@ async function getSalesLastMonth(req,res){
     let fecha=now.getTime();
     var date = new Date(fecha);
     
-    date.setMonth(date.getMonth() - 1);
-    /* Obtenemos la fecha en formato YYYY-mm */
+    date.setMonth(date.getMonth() - 1); //calculo para obtener el mes anterior al actual
+    
     let mesanterior= date;
   
     console.log("mes",mesanterior);
-    var date = new Date(), y = date.getFullYear(), m = date.getMonth()-1;
+    //determinando primer y ultimo día del mes anterior
+    var date = new Date(), y = date.getFullYear(), m = date.getMonth()-1; 
     var firstDay = new Date(y, m, 1);
     var lastDay = new Date(y, m + 1, 0);
     console.log("inicial",firstDay);
@@ -4865,8 +4859,8 @@ async function getSalesLastMonth(req,res){
                 { $and:
                    [
                     { $eq: [ "$User",  ObjectID(id) ] },
-                     { $lte: [ "$InvoiceDate", lastDay ] },  // $lte menor o igual
-                     { $gte: [ "$InvoiceDate", firstDay] },   //$gte mayor o igual
+                     { $lte: [ "$InvoiceDate", lastDay ] },  // $lte menor o igual (ultimo dia )
+                     { $gte: [ "$InvoiceDate", firstDay] },   //$gte mayor o igual (primer dia)
                    ]
                 }
              }

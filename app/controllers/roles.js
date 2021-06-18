@@ -39,8 +39,8 @@ async function createRol(req, res){
     
     const rol = new Roles();
     const sysOp = new profileOptions();
-    let opciones=req.body.opciones;
-    let noCheck=req.body.nocheck;
+    let opciones=req.body.opciones;  //opciones que si fueron seleccionadas
+    let noCheck=req.body.nocheck;  //las opciones que no fueron seleccionadas
     console.log(opciones);
     
     try{
@@ -57,7 +57,8 @@ async function createRol(req, res){
         .then(async result => {    
         res.status(200).json(result);
           rolId=result._id;
-          if(opciones.length>0){
+          //proceso para crear los accesos a las opciones del sistema
+          if(opciones.length>0){  //ingreso de las opciones que fueron seleccionadas (estado true)
               for(let item of opciones){   
                 sysOp.Rol=rolId;
                 sysOp.OpMenu=item.id;
@@ -74,7 +75,7 @@ async function createRol(req, res){
 
           }
 
-          if(noCheck.length>0){
+          if(noCheck.length>0){  //ingreso de las opciones que NO fueron seleccionadas (estado false)
             for(let item of noCheck){   
                 sysOp.Rol=rolId;
                 sysOp.OpMenu=item.id;
@@ -130,8 +131,8 @@ async function updateRol(req, res){
    
    
     let rolId = req.params.id;     
-    let habilitados=req.body.check;
-    let deshabilitados=req.body.noCheck;
+    let habilitados=req.body.check; //seleccionados
+    let deshabilitados=req.body.noCheck; //no seleccionados
 
     const {Description,Name}=req.body;
 
@@ -139,12 +140,12 @@ async function updateRol(req, res){
     let rol = await Roles.findById(rolId);
     let options = await profileOptions.find({Rol: rolId});
     
-    profileOptions.remove({Rol:rolId}).then(async function(result) {
+    profileOptions.remove({Rol:rolId}).then(async function(result) {  //eliminamos todas las opciones enlazadas a ese rol para volver a insertar
        
         if(result){
              Roles.findByIdAndUpdate({_id:rolId},{Description:Description, Name:Name}).catch(function (err){return err})
 
-            if(habilitados.length>0){
+            if(habilitados.length>0){  //ingreso de opciones seleccionadas
                 for(let item of habilitados){   
                   sysOp.Rol=rolId;
                   sysOp.OpMenu=item.id;
@@ -160,7 +161,7 @@ async function updateRol(req, res){
   
             }
   
-            if(deshabilitados.length>0){
+            if(deshabilitados.length>0){ //ingreso de opciones no seleccionadas
               for(let item of deshabilitados){   
                   sysOp.Rol=rolId;
                   sysOp.OpMenu=item.id;
@@ -190,16 +191,16 @@ async function changeStateRol(req,res){
         
         await Roles.findByIdAndUpdate(rolId, {State}, (supplierStored) => {
             if (!supplierStored) {
-                res.status(404).send({ message: "No se ha encontrado el proveedor." });
+                res.status(404).send({ message: "No se ha encontrado el rol." });
             }
             else if (Active === false) {
-                res.status(200).send({ message: "Proveedor desactivado correctamente." });
+                res.status(200).send({ message: "Rol desactivado correctamente." });
             }
         })
         
     } catch(error){
         res.status(500).json({
-            message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
+            message: "Error -> No se puede actualizar el rol con ID = " + req.params.id,
             error: error.message
         });
     }

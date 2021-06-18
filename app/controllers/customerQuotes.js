@@ -11,17 +11,33 @@ const blobStream = require('blob-stream');
 
 
 function getCustomerQuote(req, res){
-    const { id,company } = req.params;
-    CustomerQuote.find({User:id}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
-    .sort({CodCustomerQuote:-1})
-    .then(quotes => {
-        if(!quotes){
-            res.status(404).send({message:"No hay "});
-        }else{
-            
-            res.status(200).send({quotes})
-        }
-    });
+    const { id,company, profile } = req.params;
+    //filtrado por tipo de perfil
+    if(profile==="Admin"){
+        CustomerQuote.find().populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}, 
+        match:{Company:company}})
+        .sort({CodCustomerQuote:-1})
+        .then(quotes => {
+            if(!quotes){
+                res.status(404).send({message:"No hay "});
+            }else{
+                
+                res.status(200).send({quotes})
+            }
+        });
+    }else{  //perfil usuario
+         CustomerQuote.find({User:id}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
+        .sort({CodCustomerQuote:-1})
+        .then(quotes => {
+            if(!quotes){
+                res.status(404).send({message:"No hay "});
+            }else{
+                
+                res.status(200).send({quotes})
+            }
+        });
+    }
+   
 }
 
 
@@ -30,8 +46,8 @@ async function createCustomerQuote(req,res){
     const cotizacion= new CustomerQuote();
 
     moment.locale();
-    let nuevows = moment().format('L');
-    let creacion = moment().format('DD/MM/YYYY');
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
     
    
     const {Customer,CustomerName,Description,Total,User,companyId} = req.body;
@@ -40,8 +56,9 @@ async function createCustomerQuote(req,res){
     const detalle=[];
     
     let codigo=0;
-
-    let codigoQuote=await CustomerQuote.findOne().sort({CodCustomerQuote:-1})
+    
+    //obteniendo el ultimo codigo ingresado para generar correlativo
+    let codigoQuote=await CustomerQuote.findOne().sort({CodCustomerQuote:-1}) 
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
             if(doc){
                     if(doc.CodCustomerQuote!==null){
@@ -50,11 +67,12 @@ async function createCustomerQuote(req,res){
         }
        
     });
-
+    //sumando 1 para siguiente correlativo 
     if(!codigoQuote){
         codigo =1;
     }else {codigo=codigoQuote+1}
-    console.log(codigo);
+    
+    //creacion de objeto para insertar
     cotizacion.Customer=Customer;
     cotizacion.Total=Total;
     cotizacion.Active=true;
@@ -81,7 +99,7 @@ async function createCustomerQuote(req,res){
                 if(quoteId){
                     
                     quoteDetail.map(async item => {
-                    detalle.push({
+                    detalle.push({   //arreglo del detalle de la cotizacion (info productos)
                         ProductName:item.Name,
                         CustomerQuote:quoteId,
                         Quantity:parseFloat(item.Quantity) ,
@@ -101,7 +119,7 @@ async function createCustomerQuote(req,res){
                         QuoteDetails.insertMany(detalle)
                         .then(function () {
                             
-                            console.log("INSERTADOS");
+                          
                             
                         })
                         .catch(function (err) {
@@ -118,7 +136,7 @@ async function createCustomerQuote(req,res){
 
 function getCustomerQuotesDetails(req, res){
     let customerQuoteId = req.params.id; 
-    console.log("DETALLE DE LA COTIZACION",customerQuoteId );
+   
     QuoteDetails.find({CustomerQuote:customerQuoteId}).populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
     populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
@@ -134,8 +152,8 @@ function getCustomerQuotesDetails(req, res){
 
 async function updateCustomerQuote(req, res){
     let quoteId = req.params.id;
-    let quoteDetail=req.body.details;
-    let detailsAnt=req.body.ordenAnt;
+    let quoteDetail=req.body.details; //productos nuevos
+    let detailsAnt=req.body.ordenAnt; //productos que ya formaban parte de la cotizacion
     let updateQuote={};
 
     let now= new Date();
@@ -161,7 +179,7 @@ async function updateCustomerQuote(req, res){
                 }
                
                 if(detailsAnt.length > 0) {
-                     detailsAnt.map(async item => {  
+                     detailsAnt.map(async item => {    //modificando detalles ya existentes
                         detallePrev.ProductName=item.ProductName;
                         detallePrev.Quantity=parseFloat(item.Quantity);
                         detallePrev.Discount=parseFloat(item.Discount);
@@ -170,7 +188,7 @@ async function updateCustomerQuote(req, res){
                         detallePrev.SubTotal =parseFloat(item.SubTotal);
                         // detallePrev.Priceiva=parseFloat(item.Priceiva)
                        
-                        QuoteDetails.updateMany({_id: item._id ,CustomerQuote:quoteId},detallePrev)
+                        QuoteDetails.updateMany({_id: item._id ,CustomerQuote:quoteId},detallePrev) //actualizando
                             .then(function () {
                                 
                                 console.log("Actualizados");
@@ -185,7 +203,7 @@ async function updateCustomerQuote(req, res){
                 }
 
                 if(quoteDetail.length>0){
-                    quoteDetail.map(async item => {
+                    quoteDetail.map(async item => {  //arreglo de nuevos productos
                         detalle.push({
                             ProductName:item.Name,
                             CustomerQuote:quoteId,
@@ -199,7 +217,7 @@ async function updateCustomerQuote(req, res){
                      });
                      console.log(detalle);
                         if(detalle.length>0){
-                            QuoteDetails.insertMany(detalle)
+                            QuoteDetails.insertMany(detalle)  //insertando nuevos prodcutos a cotización
                             .then(function () {
                                 
                                 console.log("INSERTADOS");
@@ -219,6 +237,7 @@ async function updateCustomerQuote(req, res){
 async function deleteQuoteDetail(req, res){
     console.log(req.params.id);
     let detalleid=req.params.id;
+    //elimina los productos de una ctoizacion cuando esta va ser editada
     QuoteDetails.findByIdAndRemove(detalleid, (err, userDeleted) => {
         if (err) {
           res.status(500).send({ message: "Error del servidor." });
@@ -229,6 +248,7 @@ async function deleteQuoteDetail(req, res){
             res
               .status(200)
               .send({ userDeleted});
+            
           }
         }
       });
@@ -256,7 +276,7 @@ async function changeQuoteState(req, res){
     })
 }
 
-function getCustomerAllQuotesDetails(req, res){
+function getCustomerAllQuotesDetails(req, res){ //pendiente
 
     QuoteDetails.find().populate({path: 'Inventory', model: 'Inventory',
     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
@@ -318,10 +338,8 @@ function getQuotesbyCustomers(req, res){
         ]).then(result => {
             var order = result.filter(function (item) {
                 let fecha=new Date(item.CreationDate);
-                console.log("creacion",fecha);
-                console.log("f1",f1);
-                console.log("f2",f2);
-                return fecha>=f2 && fecha<=f1;
+               
+                return fecha>=f2 && fecha<=f1;  //filtrado por fechas
               });
             res.status(200).send(order);
             
@@ -343,6 +361,7 @@ async function ImprimirCotizacionPDF(req,res) {
     
        
         console.log("aqwui imprimo cotizacion");
+        //se busca la informacion de la cotizacion (header)
         let cotizacion = await CustomerQuote.findOne({_id: req.params.id})
         .populate({path: 'Customer', model: 'Customer',populate:{path: 'Sector', model: 'Sector'}})
         .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
@@ -352,6 +371,7 @@ async function ImprimirCotizacionPDF(req,res) {
        
 
         console.log(cotizacion._id);
+        //obteniendo detalles de la cotización (cuerpo de la cotizacion)
         let detalles = await  QuoteDetails.find({CustomerQuote:cotizacion._id})
         .populate({path: 'Inventory', model: 'Inventory',
         populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),

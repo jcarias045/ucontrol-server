@@ -5,7 +5,7 @@ let router = express.Router();
 const quotes = require('../controllers/customerQuotes');
 
 
-router.get('/get-customerquotes/:id', quotes.getCustomerQuote);
+router.get('/get-customerquotes/:id/:company/:profile', quotes.getCustomerQuote);
 router.get('/get-customerquotespdf/:id/:logo', quotes.ImprimirCotizacionPDF);
 router.post('/create-customerquotes', quotes.createCustomerQuote);
 router.get('/get-customerquotesdetails/:id', quotes.getCustomerQuotesDetails);

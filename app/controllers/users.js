@@ -55,7 +55,7 @@ function createUser(req,res){
                 }
             });
         }else{
-                    console.log("entra2");
+                    
                     res.status(500).send({ message: "Error el Usuario ya existe."});
         }
 
@@ -141,7 +141,7 @@ function signIn(req, res) {
                                     .send({ code: 200, message: "El usuario no se ha activado." });
                             } else {
                                 res.status(200).send({
-                                    accessToken: jwt.createAccessToken(userStored),
+                                    accessToken: jwt.createAccessToken(userStored), //acá se genera el token si se desea agregar una nueva variable al token dirigirse a esa fucnión y agregar
                                     refreshToken: jwt.createRefreshToken(userStored)
                                 });
                             }
