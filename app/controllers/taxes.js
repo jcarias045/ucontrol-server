@@ -10,7 +10,6 @@ function createTaxes(req, res){
     Taxes.percentage= percentage;
     Taxes.Company=Company;
 
-    console.log(Taxes);
     Taxes.save((err, TaxesStored)=>{
         if(err){
             res.status(500).send({message: err});

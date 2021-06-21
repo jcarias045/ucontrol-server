@@ -39,31 +39,8 @@ function getEntries(req, res){
                 
             }
         }, 
-        // {
-        //     $lookup: {
-        //         from:"suppliers",
-        //         let: { supplierId: "$SupplierId" },
-        //         pipeline: [
-        //             { $match:
-        //                 { $expr:
-        //                     { 
-                             
-        //                         $eq: [ "$_id",  "$$supplierId" ] ,
-                                
-                            
-        //                     }
-        //                 }
-        //             },
-        //             {  $match: {Company:company}},
-                
-        //         ],
-        //         as:"supplier",
-                
-        //     }  
-        // },
-        // {
-        //     $unwind: { path: "$supplier", preserveNullAndEmptyArrays: false }
-        //   },
+
+  
 
     ]).sort({CodEntry:-1})
 
@@ -228,11 +205,7 @@ async function createProductEntry(req, res){
                                 ingresos=parseFloat(proIngresados.Ingresados) + parseFloat(item.Quantity);
                              
                                 let updateIngresados={};
-                                console.log('inventario',item.Inventory);
-                                console.log('cantidad',cantidad);
-                                console.log('cantidad de detalle',item.Quantity);
-                                console.log('ingresos',ingresos);
-                                console.log('defactactua',quantityInvoice.Quantity);
+                             
                                
                                 //cambiando estados e ingresos de  detalle factur
                                 if(proIngresados!==null){

@@ -1,4 +1,4 @@
-const { boolean } = require('joi');
+
 const moongose = require('mongoose');
 const Schema = moongose.Schema
 const Company = require('../models/company.model');
