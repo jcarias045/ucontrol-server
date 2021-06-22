@@ -71,28 +71,7 @@ function getEntries(req, res){
                 
             }
         }, 
-        // {
-        //     $lookup: {
-        //         from:"suppliers",
-        //         let: { supplierId: "$SupplierId" },
-        //         pipeline: [
-        //             { $match:
-        //                 { $expr:
-        //                     { 
-        //                         $eq: [ "$Company",  company ] ,
-        //                         $eq: [ "$_id",  "$$supplierId" ] ,
-                                
-                            
-        //                     }
-        //                 }
-        //             },
-                
-                
-        //         ],
-        //         as:"customer",
-                
-        //     }
-        // },
+ 
     ]).sort({CodEntry:-1})
 
     .then(entries =>{

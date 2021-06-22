@@ -16,11 +16,13 @@ async function getSaleOrders(req, res){
     if(profile==="Admin"){  //perfil administrador de la compañia
         saleOrder.find().populate({path: 'Customer', model: 'Customer', match:{Company: company},
         populate:{path:'Discount', model: 'Discount'}}).sort({CodSaleOrder:-1})
-        .then(order => {
-            if(!order){
+        .then(orden => {
+            if(!orden){
                 res.status(404).send({message:"No hay "});
             }else{
-
+                var order = orden.filter(function (item) {
+                    return item.Customer!==null;
+                  });
                 res.status(200).send({order})
             }
         }); 

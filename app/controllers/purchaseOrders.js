@@ -17,21 +17,28 @@ function getPurchaseOrders(req, res){
     //generada  por los demás usuarios
    if(profile==="Admin"){
     PurchaseOrder.find().populate({path: 'Supplier', model: 'Supplier', match:{Company: company}}).sort({CodPurchase:-1})
-    .then(order => {
-        if(!order){
+    .then(ordenes => {
+        if(!ordenes){
             res.status(404).send({message:"No hay "});
         }else{
-            
+            var order = ordenes.filter(function (item) {
+                return item.Supplier!==null;
+              });
+           
             res.status(200).send({order})
         }
     });
    }else{
     PurchaseOrder.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company}}).sort({CodPurchase:-1})
-    .then(order => {
-        if(!order){
+    .then(ordenes => {
+        if(!ordenes){
             res.status(404).send({message:"No hay "});
         }else{
             
+            var order = ordenes.filter(function (item) {
+                return item.Supplier!==null;
+              });
+           
             res.status(200).send({order})
         }
     });

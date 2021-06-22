@@ -45,21 +45,25 @@ function getSaleOrderInvoices(req, res){
    //verificar el perfil para filtrar informacion
    if(profile==="Admin"){  
      saleOrderInvoice.find().populate({path: 'Customer', model: 'Customer', match:{Company: company}}).sort({CodInvoice:-1})
-    .then(invoices => {
-        if(!invoices){
+    .then(facturas => {
+        if(!facturas){
             res.status(404).send({message:"No hay "});
         }else{
-
+            var invoices = facturas.filter(function (item) {
+                return item.Customer!==null;
+              });
             res.status(200).send({invoices})
         }
     });  
    }else{
     saleOrderInvoice.find({User:id}).populate({path: 'Customer', model: 'Customer', match:{Company: company}}).sort({CodInvoice:-1})
-    .then(invoices => {
-        if(!invoices){
+    .then(facturas => {
+        if(!facturas){
             res.status(404).send({message:"No hay "});
         }else{
-
+            var invoices = facturas.filter(function (item) {
+                return item.Customer!==null;
+              });
             res.status(200).send({invoices})
         }
     });  
@@ -2314,46 +2318,49 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
     let codigo=0;
     let codigoSalidas=0;
+
  ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
- let idMovimiento;
- let idTipoMovimiento;     
- let efectivoMovimiento;
- let tarjetaCreditoMov;
- let tarjetaTipo;
- let chequeMov;
- let chequeTipo;
- if(PaymentMethodName==="Transferencia"){
-    idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+  //TODO ESTO PARA EL REGISTRO DE TRANSACCIONES (SE VEN REFLEJADOS EN EL MODULO DE BANCO/CAKA)
+        let idMovimiento;
+        let idTipoMovimiento;     
+        let efectivoMovimiento;
+        let tarjetaCreditoMov;
+        let tarjetaTipo;
+        let chequeMov;
+        let chequeTipo;
+        if(PaymentMethodName==="Transferencia"){
+            idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-    idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+            idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
- }
- if(PaymentMethodName==="Contado"){
-    efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
- }
+        }
+        if(PaymentMethodName==="Contado"){
+            efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+        }
 
- if(PaymentMethodName==="TarjetadeCredito"){
-    tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+        if(PaymentMethodName==="TarjetadeCredito"){
+            tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-    tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-   
- }
- if(PaymentMethodName==="Cheque"){
-    chequeMov=await bankMovement.findOne({Name:'Abono', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+            tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+        
+        }
+        if(PaymentMethodName==="Cheque"){
+            chequeMov=await bankMovement.findOne({Name:'Abono', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-    chequeTipo=await movementType.findOne({Name:'Cheque', Company:companyId},['_id'])
-    .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
+            chequeTipo=await movementType.findOne({Name:'Cheque', Company:companyId},['_id'])
+            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
- }
+        }
 
 ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
-
+   
+    //Obteniendo ultimi correlativo 
     let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
 
@@ -2393,7 +2400,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         }
     });
     let deuda=deudaAct;
-    //OBTENCION DE CORRELATIVOS
+   
     //OBTENIENDO TIPO DE CLIENTE
     let customerType=await customer.findOne({_id:Customer}).then(function(doc){
             if(doc){
@@ -2402,6 +2409,9 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             }
         }
     });
+    //obtener variable que indica si el cliente es excento de impuestos
+    //excento=true  entonces no se aplican impuestos
+    //excento=false se aplican todos los impuestos
     let excento=await customer.findOne({_id:Customer}).then(function(doc){
         if(doc){
                 if(doc.Exempt!==null){
@@ -2409,7 +2419,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         }
         }
     });
-
+    
+    //verificar que tipo de contribuyentes  (consumidor final o credito fiscal)
     let contribuyente=await customer.findOne({_id:Customer}).then(function(doc){
         if(doc){
                 if(doc.Contributor!==null){
@@ -2417,10 +2428,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         }
     }
     });
-     console.log("type",customerType);
+    
      var tipo=customerType.toString();
-     console.log(tipo);
+    //*************************************************** */
 
+    //Correlativos para el manejo de facturas
     let correlativosselect= await correlativeDocument.find({ State:true})
     .populate({path: 'DocumentType', model:'DocumentType' ,  match:{Referencia: tipo, Company: companyId}})
     .then(docCorrelative => {
@@ -2429,33 +2441,30 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
        }
 
     });
-    var correlativos = correlativosselect.filter(function (item) {
+    var correlativos = correlativosselect.filter(function (item) {  //se filtra para evitar que venga un dato nulo
         return item.DocumentType != null ;
       });
+     
+ 
 
+    let lengEndNumber=(correlativos.map(item => item.EndNumber)).toString().length; //para obtener la longitud del numero final del correlativo 
+    let nLineas=parseInt(companyParams.InvoiceLines); //verificar parametro de compañia para determinar la cantidad de lineas  de la factura
+    let iniNumber=correlativos.map(item => item.CurrentNumber);  //numero actual de correlativos
 
-
-    let lengEndNumber=(correlativos.map(item => item.EndNumber)).toString().length;
-    let nLineas=parseInt(companyParams.InvoiceLines);
-    let iniNumber=correlativos.map(item => item.CurrentNumber);
-
-    console.log(iniNumber);
-    console.log("lineas", nLineas);
-    let longitudArreglo=dePurchaseOrder.length;
+    let longitudArreglo=dePurchaseOrder.length; 
     console.log(longitudArreglo);
     let contador=0;
     let i=0;
     let step=0;
     let correlativeNumber=parseInt(iniNumber);
 
-    //FIN DE OBTENCION DE CORRELATIVOS
-    //Creacion de correlativo de doc
-
+    
+    //Creacion de correlativo de doc (de la factura)
     if(!codigoSaleOrderInvoice){
         codigo =1;
     }else {codigo=codigoSaleOrderInvoice+1}
 
-
+   //codigo para salida
     if(!codOutput){
         codigoSalidas =1;
     }else {codigoSalidas=codOutput+1}
@@ -2481,11 +2490,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             let fecha=now.getTime();
             var date = new Date(item.CreationDate);
 
-            date.setDate(date.getDate() + diasCredito);
+            date.setDate(date.getDate() + diasCredito); //sumar dias de credito para verificar si se paso de  la fecha de pago
             let fechaPago=date.toISOString().substring(0, 10);
             let fechaAct=now.toISOString().substring(0, 10);
 
-            if(fechaPago <= fechaAct){
+            if(fechaPago <= fechaAct){  //para verificar si es deudor o tiene mora
                deudor=true;
             } else { deudor=false;}
 
@@ -2513,11 +2522,11 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
         SaleOrderInvoice.InvoiceNumber=correlativeNumber;
 
-       while(contador<longitudArreglo){
+       while(contador<longitudArreglo){   //para comenzar a ingresar los productos y crear la factura
         let band=false;
 
 
-        while (correlativeNumber.toString().length < lengEndNumber) {
+        while (correlativeNumber.toString().length < lengEndNumber) {  //para generar el numero de factura como 001,002,...010,011
 
             correlativeNumber = "0" + correlativeNumber;
 
@@ -2566,6 +2575,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                        }});
                     let quoteId=SaleOrderStored.CustomerQuote;
+
                    // cambio de estado a orden de venta
 
                     saleOrders.findByIdAndUpdate({_id:SaleOrderId},{State:"Facturada"},async (err,update)=>{
@@ -2573,7 +2583,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                             res.status(500).send({ message: "Error del servidor." });
                         }
                         if(update){}});
-                        //OBTENIENDO INFORMACIÓN DE ANTICIPO 
+
+                        //OBTENIENDO INFORMACIÓN DE ANTICIPO  
                         let anticipo=await  CustomerAdvance.find({SaleOrder: SaleOrderId})
                         .then(result =>{return result});
                         let detalleAnticipo=await  CustomerAdvanceDetails.find({SaleOrder: SaleOrderId})
@@ -2581,13 +2592,13 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                     if(invoiceId){
 
-
+                       //creando arreglo de productos dependiendo de la cantidad de lineas de factura
                         for(let i=0; i<nLineas;i++){
-
+  
                             if(dePurchaseOrder[contador+ i]){
                                //    console.log("prueba",dePurchaseOrder[contador+ i].dato);
 
-                               totalfactura+=(parseFloat(dePurchaseOrder[contador+ i].SubTotal));
+                               totalfactura+=(parseFloat(dePurchaseOrder[contador+ i].SubTotal)); //calculando el total por la cantidad de productos que llevara esa factura
                                   deOrden.push({
 
                                         ProductName:dePurchaseOrder[contador+ i].ProductName,
@@ -2615,7 +2626,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                             }
                             else{deOrden[null]}
                         }
-                     //para hacer el calculo de impuestos por factura
+                     //para hacer el calculo de impuestos por factura 
+                     //valido segun la diferentes condiciones
                         var impuestosSinRetencion = impuestosList.filter(function (item) {   //obteniendo todos los impuestos menos la retencion
                             return item.Name != "Retencion";
                           });
@@ -2652,7 +2664,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                         }
                         if(update){}});
-                        console.log("AREGGLO DEL DETALLE DE LA FACTURA", deOrden);
+                      
                      if(deOrden.length>0 || deOrden!==null){    //insertando detalles de los detalles de la orden
                         await saleOrderInvoiceDetails.insertMany(deOrden)
                         .then(async function (detalles) {
@@ -2663,7 +2675,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                 //cuenta por cobrar
                                 let iddetalle=detalles.map(item=>{return item._id}).toString();
                       
-                                      //CUANDO SE CONDICION DE PAGO =CONTADO  y tambien al ingresar los detalles se agrega transaccion
+                                      //CUANDO SEa CONDICION DE PAGO =CONTADO  y tambien al ingresar los detalles se agrega transaccion
                                     if(condicionPago==='Contado'){
                                         await saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Pagada:true},(err,updateDeuda)=>{
                                             if(err){
@@ -2674,7 +2686,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         
                                         
 
-                                        let pago=[{
+                                        let pago=[{  //arreglo de pago
                                          SaleOrderInvoice:invoiceId,
                                          DatePayment:creacion,
                                          User:User,
@@ -2695,10 +2707,10 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                                               }
                                               else{
-                                                console.log("PAGO INGRESADO",paymentStored);
-                                                  let paymentid=paymentStored.map(item=>{return item._id}).toString();
-                                                  let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString();
-                                                   payDetail.push({
+                                             
+                                                  let paymentid=paymentStored.map(item=>{return item._id}).toString(); //id del pago agregado
+                                                  let codInvoice=paymentStored.map(item=>{return item.SaleOrderInvoice}).toString(); //codigo de la factura que registro el pago
+                                                   payDetail.push({  //detalle del pago
                                                           CreationDate:creacion,
                                                             Reason:Reason,
                                                             PaymentMethods:PaymentMethodId,
@@ -2723,7 +2735,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                   
         
                                                     detalleAnticipo.map(item =>{
-                                                        arrayAnticipo.push({
+                                                        arrayAnticipo.push({  //para convertir el anticipo en un pago de la factura (no convertir como tal si no que ya pasa a ser un pago)
                                                             CreationDate:creacion,
                                                             Reason:item.Reason,
                                                             PaymentMethods:item.PaymentMethods,
@@ -2748,7 +2760,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                 }
                                                 else{ chargeDetail=payDetail }
                                              
-                                                  CustomerPaymentDetails.insertMany(chargeDetail)
+                                                  CustomerPaymentDetails.insertMany(chargeDetail)  //ingresando detalle del pago (solo existe un registro de pago por factura PERO ese registrar multiples pagos a esa factura)
                                                     .then(async function (detailStored) {
 
                                                           if(!detailStored){
@@ -2802,11 +2814,12 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                   }
                                   else{
                                       console.log("CONDICION DE PAGO CREDITO");
+                                      //EN CASO QUE SEA UN CLIENTE CON LA CONDICION DE PAGO "CREDITO"
                                     let arrayAnticipo=[];
                                     let anticipos=[];
                                     if(detalleAnticipo.length>0){
                                                   
-                                        anticipo.map(item => {
+                                        anticipo.map(item => {  //por si se registro algun anticipo
                                             anticipos.push({
                                                 SaleOrderInvoice:invoiceId,
                                                 DatePayment:item.DatePayment,
@@ -2818,7 +2831,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                         })
                                 
                                        
-                                        await CustomerPayment.insertMany(anticipos)
+                                        await CustomerPayment.insertMany(anticipos) //insertamo pago (solo anticipo )
                                         .then(function (paymentStored) {
                                             if(paymentStored){
                                                 console.log("PAGO INGRESADO",paymentStored);
@@ -2848,7 +2861,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                                    
                                                 });
 
-                                                  CustomerPaymentDetails.insertMany(arrayAnticipo)
+                                                  CustomerPaymentDetails.insertMany(arrayAnticipo) //insertando detalle del pago
                                                   .then(async function (detailStored) {
 
                                                         if(!detailStored){
@@ -2934,6 +2947,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             }
            return
         })
+        //variables para controlar en que momento generar varias facturas dependiendo de las lineas con la que compañia se registro
         deOrden=[];
         totalfactura=0.0;
         sumimpuestos=0.0;
@@ -2949,12 +2963,12 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
     
   
-    if(!companyParams.OrderWithWallet && deudor){
+    if(!companyParams.OrderWithWallet && deudor){  //si tiene deuda no se registrar factura
         res.status(500).send({message: "No se puede registrar orden de venta a cliente"});
     }
 
 
-    if(!companyParams.RequieredOutput){
+    if(!companyParams.RequieredOutput){  //registro de salidas 
 
         let salida=[];
 
@@ -2962,7 +2976,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         let  datosDetalles=[];
         let noFactura=null;
         let count=0;
-        arregloFacturas.map(async item=>{
+        arregloFacturas.map(async item=>{  //aqui se ha guardado el detalle de las facturas
             let id= item.forEach(item=>{
                 datosFactura.push(item)
 
@@ -2980,7 +2994,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         })
 
 
-        datosFactura.map(item=>{
+        datosFactura.map(item=>{  //el detalle de las facturas lo uso para generar la salida
             
              salida.push(
                  {
@@ -2999,7 +3013,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
 
         })
-        await productOutput.insertMany(salida).then(async function (outputStored) {
+        await productOutput.insertMany(salida).then(async function (outputStored) { //registro salida
             if(!outputStored){
 
 
@@ -3011,24 +3025,24 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 
                  outputStored.map(async  item=> {
                     let long=outputStored.length;
-                    console.log("INICIO CATASTROFE ¨¨¨¨¨¨¨¨");
+                   
                     let idfactura=item.SaleOrderInvoice;
                     let numFactura=item.InvoieNumber;
                    let id= item._id;
-                    console.log("ID+++++++++++++++++++++++++++++",id);
+                   
                      let data= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura, inAdvanced:false}).then(async function(data){
                          return data;
-                     });
+                     }); //obteniendo productos que no estan en anticipo
 
                      let dataInAdvance= await saleOrderInvoiceDetails.find({SaleOrderInvoice : idfactura, inAdvanced:true}).then(async function(data){
                         return data;
-                    });
+                    });  //obteniendo  productos que estan en anticpo
                      
                      let anticiposdetails=await  CustomerAdvanceDetails.find({SaleOrder: SaleOrderId})
                         .then(result =>{return result});
                     
                      if(dataInAdvance.length>0){
-                        dataInAdvance.map( item =>{
+                        dataInAdvance.map( item =>{  //registro de salidas de productos en anticipo
                             detalleAnticipo.push(
                                 {
                                     SaleInvoiceDetail:item._id,
@@ -3047,7 +3061,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
      
                         });
                      }
-                     data.map( item =>{
+                     data.map( item =>{ //registro de salida de prodcutos 
                        detalles.push(
                            {
                                SaleInvoiceDetail:item._id,
@@ -3090,7 +3104,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                         let infoInventary=await inventory.findOne({_id:item.Inventory},['Stock','Product'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                         console.log('EN STOCK:',infoInventary);
-
+                       
+                        //stock de la bodega de reserva
                         let productreserved=await inventory.findOne({Product:infoInventary.Product, _id: { $nin: infoInventary._id }},['Stock','Product'])
                         .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
@@ -3165,6 +3180,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                                             .catch(err => {console.log(err);});
 
                                         }
+                                            //registrando movimiento de inventario
                                             const inventorytraceability= new inventoryTraceability();
                                             inventorytraceability.Quantity=item.Quantity;
                                             inventorytraceability.Product=item.Product;
@@ -3288,7 +3304,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                         })
                             }
                     });
-                      //SACANDO PRODUCTOS QUE SI ESTAN EN ANTICIPO
+                      //SACANDO PRODUCTOS QUE SI ESTAN EN ANTICIPO 
                     productOutputDetail.insertMany(detalleAnticipo) .then(async function (outputStored) {
                         console.log("INSERTANDO DETALLES");
                         console.log(outputStored);
@@ -3303,7 +3319,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                         console.log('EN STOCK:',infoInventary);
                         let bodegaAnticipo=await bodega.findOne({Name:'Anticipo', Company:companyId},['_id'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-
+                          //stock de la bodega de anticipo
                         let productinAnticipo=await inventory.findOne({Product:infoInventary.Product, Bodega:bodegaAnticipo._id},['Stock','Product'])
                         .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
@@ -3436,7 +3452,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         });
     }
 
-    if(payDetail.length > 0){
+    if(payDetail.length > 0){  //para registrar alguna transaccion o el pago que tenga la factura, es decir el pago de contado
             //Reegistro de movimiento de banco
             let Type;
             let BankMovement;
@@ -3472,7 +3488,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                })
             }
        
-         
+           //verificamo el metodo de pago implementado
             if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque" ){
                 console.log("ENTRO A MOVMIENTOS");
                 let doc;
@@ -3496,7 +3512,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                        Type=chequeTipo;
                        doc=NumberAccount;
                    }
-               let BankingTransaction=new bankingTransaction();
+               let BankingTransaction=new bankingTransaction(); //cuando son transacciones bancarias
                BankingTransaction.Type= Type
                BankingTransaction.TransactionDate= creacion;
                BankingTransaction.Concept= Reason;

@@ -17,22 +17,26 @@ function getCustomerQuote(req, res){
         CustomerQuote.find().populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}, 
         match:{Company:company}})
         .sort({CodCustomerQuote:-1})
-        .then(quotes => {
-            if(!quotes){
+        .then(cotizacion => {
+            if(!cotizacion){
                 res.status(404).send({message:"No hay "});
             }else{
-                
+                var quotes = cotizacion.filter(function (item) {
+                    return item.Customer!==null;
+                  });
                 res.status(200).send({quotes})
             }
         });
     }else{  //perfil usuario
          CustomerQuote.find({User:id}).populate({path: 'Customer', model: 'Customer',populate:{ path:'Discount', model:'Discount'}})
         .sort({CodCustomerQuote:-1})
-        .then(quotes => {
-            if(!quotes){
+        .then(cotizacion => {
+            if(!cotizacion){
                 res.status(404).send({message:"No hay "});
             }else{
-                
+                var quotes = cotizacion.filter(function (item) {
+                    return item.Customer!==null;
+                  });
                 res.status(200).send({quotes})
             }
         });

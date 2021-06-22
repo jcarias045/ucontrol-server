@@ -16,26 +16,35 @@ const inventory = require('../models/inventory.model')
 
 function getSuppliersInvoices(req, res){
     const { id,company, profile} = req.params;
+    console.log("FACTURA COMPR");
+    var ObjectID = require('mongodb').ObjectID
     if(profile==="Admin"){
-        purchaseInvoice.find().populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
+        console.log("ENTRO A ADMIN");
+        purchaseInvoice.find().populate({path: 'Supplier', model: 'Supplier', match:{Company: ObjectID(company)},
         populate: {path: 'SupplierType', model: 'SupplierType'}}).sort({CodInvoice:-1})
-        .then(invoices => {
-            if(!invoices){
+        .then(facturas => {
+            if(!facturas){
                 res.status(404).send({message:"No hay "});
             }else{
-
+                console.log(facturas);
+                var invoices = facturas.filter(function (item) {
+                    return item.Supplier!==null;
+                  });
                 res.status(200).send({invoices})
             }
         });
     }else{
         purchaseInvoice.find({User:id}).populate({path: 'Supplier', model: 'Supplier', match:{Company: company},
         populate: {path: 'SupplierType', model: 'SupplierType'}}).sort({CodInvoice:-1})
-        .then(invoices => {
-            if(!invoices){
+        .then(facturas => {
+            if(!facturas){
                 res.status(404).send({message:"No hay "});
             }else{
 
-                res.status(200).send({invoices})
+                var invoices = facturas.filter(function (item) {
+                    return item.Supplier!==null;
+                  });
+                res.status(200).send({invoices});
             }
         });
     }

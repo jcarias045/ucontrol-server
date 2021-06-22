@@ -12,8 +12,10 @@ const TaxesSchema = Schema({
              ref: "Company",
             // autopopulate: true,
            },
-  Parametros: String,
-  Estado: String,         
+  Parameter: String, //campo
+  Value:String,
+  DocValue:Number,
+  State: String,         
 })
 
 module.exports = moongose.model('Taxes', TaxesSchema)
