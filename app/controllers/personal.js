@@ -1,7 +1,9 @@
 const personal = require('../models/personal.model')
 
 function getAllPersonal(req, res) {
-    personal.find().populate({path: 'Company', model: 'Company'}).
+    const {company} = req.params;
+    console.log("personal",company);
+    personal.find({Company: company}).populate({path: 'Company', model: 'Company', match:{_id: company}}).
     populate({path: 'Job', model: 'Job'}).
     populate({path: 'Bank', model: 'Bank'})
     .then(personal => {
@@ -93,11 +95,11 @@ function createPersonal(req, res) {
 
     const {name, codPersonal, lastName, CellPhone , Phone,
     email, address, birthDate, Bank, bankAccount,Job, salary, Company, dui, nit,
-gender, active, nationality, nameRef, phoneRef, companyRef, 
-addressRef,nameRef2, phoneRef2, companyRef2, addressRef2,
-nameRef3, phoneRef3, companyRef3, addressRef3,
-spouseName, numberOfChildren, dateOfUnion, civilStatus, workplace, 
-branchOffice, addressWorkPlace, officeWorkPlace} = req.body
+    gender, active, nationality, nameRef, phoneRef, companyRef, 
+    addressRef,nameRef2, phoneRef2, companyRef2, addressRef2,
+    nameRef3, phoneRef3, companyRef3, addressRef3,
+    spouseName, numberOfChildren, dateOfUnion, civilStatus, workplace, 
+    branchOffice, addressWorkPlace, officeWorkPlace} = req.body
     
             Personal.codPersonal= codPersonal
             Personal.name= name;
@@ -116,7 +118,7 @@ branchOffice, addressWorkPlace, officeWorkPlace} = req.body
             Personal.dui=dui;
             Personal.nit= nit;
             Personal.gender= gender;
-            Personal.active= active;
+            Personal.active= true;
             Personal.nationality= nationality;
             Personal.nameRef= nameRef;
             Personal.phoneRef= phoneRef;
@@ -177,7 +179,7 @@ async function updatePersonal(req, res){
             if(!personalUpdate){
                 res.status(404).sen({message: "No hay"});
             }else{
-                res.status(200).send({message: "Personal Actualizado"})
+                res.status(200).send({personal:personalUpdate })
             }
         }
     })

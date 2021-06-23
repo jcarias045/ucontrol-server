@@ -76,7 +76,9 @@ function getSuppliers(req, res){
  function updateSupplier(req, res){
     let supplierData = req.body;
     const params = req.params;
-
+    console.log("com",supplierData.Company._id);
+    console.log("com",supplierData.codsupplier);
+    // supplier.findOne({codsupplier: codsup,Company: compania})
     supplier.findByIdAndUpdate({_id: params.id}, supplierData, (err, supplierUpdate)=>{
         if(err){
             res.status(500).send({message: "Error del Servidor."});

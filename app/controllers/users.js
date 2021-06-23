@@ -98,18 +98,47 @@ async function deleteUser(req,res){
 async function updateUser(req,res) {
     let userData = req.body;
     const params = req.params;
-
-    User.findByIdAndUpdate({_id: params.id}, userData, (err, userUpdate)=>{
-        if(err){
-            res.status(500).send({message: "Error del Servidor."});
-        } else {
-            if(!userUpdate){
-                res.status(404).send({message: "No hay"});
-            }else{
-                res.status(200).send({message: "Compañia Actualizada"})
+    let Password=userData.Password;
+    console.log("pas",userData.Password);
+    if(userData.Password){
+        bcrypt.hash(Password, null, null, (err, hash) => {
+            if (err) {
+              res.status(500).send({ message: "Error al encriptar la contraseña." });
+            } else {
+              userData.Password = hash;
+              console.log("lo que cambio", userData.Password);
+              //actualizando 
+              User.findByIdAndUpdate({_id: params.id}, userData, (err, userUpdate)=>{
+                if(err){
+                    res.status(500).send({message: "Error del Servidor."});
+                } else {
+                    if(!userUpdate){
+                        res.status(404).send({message: "Usuario no encontrado"});
+                    }else{
+                      
+                        res.status(200).send({updated: userUpdate})
+                    }
+                }
+            })
+              
             }
-        }
-    })
+            });
+    }else{
+        User.findByIdAndUpdate({_id: params.id}, userData, (err, userUpdate)=>{
+            if(err){
+                res.status(500).send({message: "Error del Servidor."});
+            } else {
+                if(!userUpdate){
+                    res.status(404).send({message: "Usuario no encontrado"});
+                }else{
+                  
+                    res.status(200).send({updated: userUpdate})
+                }
+            }
+        })
+    }
+   
+   
 }
 
 function signIn(req, res) {
