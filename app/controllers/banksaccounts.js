@@ -106,11 +106,15 @@ function getBankCurrentAccountsCompany(req,res){  //para obtener las cuentas de 
     // BankAccount.find({Company: req.params.id, Type:"Corriente"})
     // .populate({path: 'Company', model: 'Company'})
     // .populate({path: 'Bank', model: 'Bank'})
+    var ObjectID = require('mongodb').ObjectID
+    console.log("CUENTAS",id);
     BankAccount.aggregate([
         {$match:{ $expr:
             { $and:
                [
-                 { Company: id},
+                //  { Company: ObjectID(id)},
+                 { $eq: [ "$Company", ObjectID(id) ] },
+
                  { $eq: [ "$Type",  "Corriente" ] },
                
                 

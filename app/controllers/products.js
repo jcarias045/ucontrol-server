@@ -22,7 +22,7 @@ function getPoducts(req, res){
             res.status(200).send({product})
         }
     });
-    console.log(product);
+   
 }
 
 async function createProduct(req, res){
@@ -69,11 +69,10 @@ async function createProduct(req, res){
         .then(result => {
             return result
         });
-        console.log("Ingreso producto");
-        console.log(existProduct);
+    
 
         if(existProduct===null){
-            console.log("si ingreso");
+           
             Product.save(async (err, ProductStored)=>{
                 if(err){
                     res.status(500).send({message: err});
@@ -199,7 +198,7 @@ async function createProduct(req, res){
 function uploadLogo(req,res){
     const params= req.params;
     const id=params.id;
-    console.log(req.files);
+    
     Product.find({_id:id}).then((productData)=>{        
           if(!productData){
             res.status(404)
@@ -207,14 +206,14 @@ function uploadLogo(req,res){
           }
           else{
             let product =productData;
-            console.log(productData);
+           
             if(req.files){
                 let filePath=req.files.avatar.path;                
                 let fileSplit=filePath.split("\\");
                 let fileName=fileSplit[3];
                 let extSplit=fileName.split(".");
                 let fileExt=extSplit[1];
-                console.log(fileName);
+               
                 if(fileExt !== "png" && fileExt!=="jpg"){
                     res.status(400)
                     .send({message: "la extesion no es valida"});
@@ -566,13 +565,13 @@ function getRecommendedProductsInventory(req,res){
     .populate({path: 'Product', model: 'Product',populate:{path: 'Measure', model: 'Measure'},match:{Supplier: supplier,Company: id}})
     .exec((err, products) => {
         if (err) {
-            console.log(err);
+            
             return res.send(err.message);
           }
           if(!products){
 
           }else{
-              console.log(products);
+           
               const productsByCourse = products.filter(
                 (product) => {
                     
@@ -814,7 +813,7 @@ function getProductData(req, res){
 }
 
 async function getRecipeDetails(req, res){
-    var ObjectID = require('mongodb').ObjectID
+    var ObjectID = require('mongodb').ObjectID;
     const { id,company}=req.params;
     let productreserved=await inventory.findOne({Product:id, Company:company},['Stock','Product'])
     .populate({path: 'Bodega', model: 'Bodega', match:{Name:'Reserva'}})

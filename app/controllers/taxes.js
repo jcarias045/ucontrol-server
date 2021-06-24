@@ -54,7 +54,52 @@ function getTaxes(req, res){
     }
 }
 
+function getTaxesCustom(req, res){
+    // Buscamos informacion para llenar el modelo de 
+    let doc=req.params.doc;
+    let companyId=req.params.company;
+    console.log("IMPUESTOS", req.body);
+    let {proveedor,total}=req.body;
+    let infoProveedor=proveedor;
+    try{
+        taxes.find({document:doc,Company:companyId})
+        .then(taxes => {
+            let exento;
+            let contribuyente;
+            infoProveedor.map(item => {
+                exento = item.Exempt;
+                contribuyente = item.Contributor;
+            });
+            let impuestos; //esta sera la variable final que se enviara
+            //filtrado de condiciones del proveedor
+            //si gran contribuyente
+            // if(contribuyente==="Grande" && parseFloat(total)>=){}
+            console.log(exento);
+            console.log(contribuyente);
+            
+            var filtered = taxes.filter(function (item) {
+               if(parseFloat(total) >= parseFloat(item.DocValue)){
+                   console.log("si es mas grande");
+               }
+                return (parseFloat(total) >= parseFloat(item.DocValue) && item.Value===contribuyente) ||
+                (item.Value === exento.toString() ) ;
+              });
+               console.log("los impuestos", filtered);
+             
+              res.status(200).send({taxes: filtered})
+          
+        })
+    }catch(error) {
+        // imprimimos a consola
+        console.log(error);
+        res.status(500).json({
+            message: "Error en query!",
+            error: error
+        });
+    }
+}
 module.exports={
     getTaxes,
-    createTaxes
+    createTaxes,
+    getTaxesCustom
 }

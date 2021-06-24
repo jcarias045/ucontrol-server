@@ -1307,9 +1307,9 @@ async function updateSaleOrderInvoice(req, res){
                             detallePrev.Quantity=parseFloat(item.Quantity) ,
                             detallePrev.Discount=parseFloat(item.Discount),
                             detallePrev.Price=parseFloat(item.Price),
-                            detallePrev.PriceDiscount=parseFloat(item.PrecioDescuento),
+                            detallePrev.PriceDiscount=parseFloat(item.PriceDiscount),
                             detallePrev.Inventory =item.Inventory._id,
-                            detallePrev.SubTotal=parseFloat((item.PrecioDescuento)*(item.Quantity))
+                            detallePrev.SubTotal=parseFloat((item.PriceDiscount)*(item.Quantity))
                             saleOrderInvoiceDetails.updateMany({_id: item._id ,SaleOrderInvoice:invoiceId},detallePrev) //actualizamos la info de los prodcutos que ya estaban en la factura
                                 .then(function (detalles) {
                                     if(!companyParams.RequieredOutput){

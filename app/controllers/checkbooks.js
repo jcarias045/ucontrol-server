@@ -44,10 +44,16 @@ function getCheckbook(req, res){
     // Buscamos informacion para llenar el modelo de 
    
     const {company,bank}=req.params
+    console.log("ID BANCO", bank);
+    var ObjectID = require('mongodb').ObjectID;
     try{
         checkbook.find()
-        .populate({path: 'BankAccount', model:'BankAccount', match:{Bank:bank}})
-        .then(docCheckbook => {
+        .populate({path: 'BankAccount', model:'BankAccount', match:{Bank:ObjectID(bank), Type:"Corriente"}})
+        .then(chequeras => {
+            console.log(chequeras);
+            var docCheckbook = chequeras.filter(function (item) {
+                return item.BankAccount != null;
+              });
             res.status(200).send({docCheckbook});
           
         })

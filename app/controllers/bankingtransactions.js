@@ -2,21 +2,28 @@ const bankingTransaction= require('../models/bankingtransaction.model');
 const bankAccount= require('../models/bankaccount.model');
 const bankTranfers= require('../models/logbanktransfer.model');
 
+//PARA EMITIR CHEQUES
+const writeCheck= require('../models/writecheck.model');
+const checkbook= require('../models/checkbook.model');
+
 
 function createBankingTransaction(req, res){
     const BankingTransaction = new bankingTransaction();
     const BankingTransaction2 = new bankingTransaction();
     const logTransferencia = new bankTranfers();
-
+    const docwriteCheck = new writeCheck();
+    let now= new Date();
+    let creacion=now.toISOString().substring(0, 10);
     const {Type, TransactionDate, Concepto, OperationNumber,User,DocumentNumber,Deposit,Withdrawal,BankMovement, 
-        BankMovementName, ConceptName,DestinationAccount,BankId,CurrentAccount,NumberAccount,BankOrigin} = req.body
+        BankMovementName, ConceptName,DestinationAccount,BankId,CurrentAccount,NumberAccount,BankOrigin,ChequeraId,
+        NoChequeAct,Receiver,NoCheque} = req.body
 
     BankingTransaction.Type= Type
     BankingTransaction.TransactionDate= TransactionDate;
     BankingTransaction.Concept= Concepto;
     BankingTransaction.OperationNumber=OperationNumber;
     BankingTransaction.User= User;
-    BankingTransaction.DocumentNumber= DocumentNumber;
+    BankingTransaction.DocumentNumber=ConceptName==="Cheque" && BankMovementName==="Retiro"?NoCheque: DocumentNumber;
     BankingTransaction.Deposit= Deposit?Deposit:0;
     BankingTransaction.Withdrawal= Withdrawal? Withdrawal:0;
     BankingTransaction.BankMovement= BankMovement;
@@ -125,13 +132,48 @@ function createBankingTransaction(req, res){
                 }
                 if(BankMovementName==="Retiro" ){
                     bankAccount.findByIdAndUpdate({_id:CurrentAccount},
-                        {Saldo: parseFloat(parseFloat(saldoCurrentAccount) - parseFloat(Deposit)).toFixed(2)},
+                        {Saldo: parseFloat(parseFloat(saldoCurrentAccount) - parseFloat(Withdrawal)).toFixed(2)},
                         (err,updateDeuda)=>{
                         if(err){
                             console.log(err);
                         }
                     });
+                      //en caso de cheque 
+                      if(ConceptName==="Cheque"){
+                        docwriteCheck.Checkbook= ChequeraId;
+                        docwriteCheck.Bank= BankId;
+                        docwriteCheck.User= User;
+                        docwriteCheck.State="Aplicado";
+                        docwriteCheck.CreationDate=creacion;
+                        docwriteCheck.Receiver=Receiver;
+                        docwriteCheck.Amount=Withdrawal;
+                        docwriteCheck.CheckNumber=NoCheque;
+                        docwriteCheck.Comment="Generado en transaccion bancaria";
+                        docwriteCheck.Active=true;
+                        docwriteCheck.save((err, docwriteCheckStored)=>{
+                            if(err){
+                                console.log(err);
+                                res.status(500).send({message: "Error en el servidor"});
+                            }else{
+                                if(!docwriteCheckStored){
+                                    res.status(500).send({message: "Error"});
+                                }else{
+                                    let salto=parseInt(NoChequeAct)+1;
+                                    checkbook.findByIdAndUpdate({_id:ChequeraId},{CurrentNumber:salto},(err,CheckbookUpdate)=>{
+                                        if(err){
+                                            console.log(err);
+                                        }else{
+                                           
+                                        }
+                                    })
+                                   
+                                }
+                            }
+                        });
+                       
+                    }
                 }
+
                 res.status(200).send({BankingTransaction: BankingTransactionStored})
             }
         }
