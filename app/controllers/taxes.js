@@ -66,9 +66,11 @@ function getTaxesCustom(req, res){
         .then(taxes => {
             let exento;
             let contribuyente;
+            let clasificacion;
             infoProveedor.map(item => {
                 exento = item.Exempt;
                 contribuyente = item.Contributor;
+                clasificacion=item.Classification;
             });
             let impuestos; //esta sera la variable final que se enviara
             //filtrado de condiciones del proveedor
@@ -82,7 +84,7 @@ function getTaxesCustom(req, res){
                    console.log("si es mas grande");
                }
                 return (parseFloat(total) >= parseFloat(item.DocValue) && item.Value===contribuyente) ||
-                (item.Value === exento.toString() ) ;
+                (item.Value === exento.toString() ) ||  (item.Value === clasificacion );
               });
                console.log("los impuestos", filtered);
              
