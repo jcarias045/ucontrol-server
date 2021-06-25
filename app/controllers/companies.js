@@ -159,7 +159,7 @@ function uploadAvatar(req, res) {  //para cargar el logo de las compañias
         console.log(req.files);
         if ("archivo",req.files) {
           let filePath = req.files.avatar.path;
-          let fileSplit = filePath.split("\\");
+          let fileSplit = filePath.split("/");
           let fileName = fileSplit[3];
           
           let extSplit = fileName.split(".");
@@ -201,14 +201,15 @@ function uploadAvatar(req, res) {  //para cargar el logo de las compañias
 }
 
 function getAvatar(req, res) {
-  const avatarName = req.params.avatarName;
-  const filePath = "./app/uploads/avatar/" + avatarName;
-   console.log(filePath);
+  const FileName = req.params.avatarName;
+  const filePath = "./app/uploads/avatar/" + FileName;
+
   fs.exists(filePath, exists => {
     if (!exists) {
-      res.status(404).send({ message: "El avatar que buscas no existe." });
+      res.status(404).send({ message: "El archivo que buscas no existe." });
     } else {
       res.sendFile(path.resolve(filePath));
+      console.log(path.resolve(filePath))
     }
   });
 }
