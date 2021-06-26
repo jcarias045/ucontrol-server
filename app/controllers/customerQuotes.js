@@ -447,7 +447,7 @@ async function ImprimirCotizacionPDF(req, res) {
         generateFooter(doc, cotizacion);
         const stream = doc.pipe(blobStream())
         doc.end();
-        fs.readFile('Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf', (err, data) => {
+        fs.readFile('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf', (err, data) => {
             if (err) {
                 console.log("error:", err);
                 console.log("entro al error");
@@ -455,7 +455,7 @@ async function ImprimirCotizacionPDF(req, res) {
             else {
                 console.log("entro al else");
                 console.log(data);
-                fs.createReadStream('Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf');
+                fs.createReadStream('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf');
                 res.sendFile(path.resolve('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf'))
             }
         });
