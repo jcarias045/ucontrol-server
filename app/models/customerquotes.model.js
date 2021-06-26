@@ -20,7 +20,8 @@ const CustomerQuoteSchema = Schema({
   Description:String,
   Active:Boolean,
   CustomerName:String,
-  DateUpdate:String
+  DateUpdate:String,
+  SubTotal:Number,
 })
 
 module.exports = mongoose.model('CustomerQuote', CustomerQuoteSchema)

@@ -84,7 +84,7 @@ function getTaxesCustom(req, res){
                    console.log("si es mas grande");
                }
                 return (parseFloat(total) >= parseFloat(item.DocValue) && item.Value===contribuyente) ||
-                (item.Value === exento.toString() ) ||  (item.Value === clasificacion );
+                (item.Value === exento.toString() ) ;
               });
                console.log("los impuestos", filtered);
              

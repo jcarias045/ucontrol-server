@@ -184,11 +184,26 @@ function getBankCurrentAccountsCompany(req,res){  //para obtener las cuentas de 
         }
     });
 }
+
+function getBankAccountByCompany(req,res){
+
+    BankAccount.find({Company: req.params.id})
+    .populate({path: 'Company', model: 'Company'})
+    .populate({path: 'Bank', model: 'Bank'})
+    .then(bankAccount => {
+        if(!bankAccount){
+            res.status(404).send({message:"No hay "});
+        }else{
+            res.status(200).send({bankAccount})
+        }
+    });
+}
 module.exports = {
     CreatBankAccounts,
     GetBankAccount,
     updateBankAccount,
     desactivateBanksAccounts,
     getBankAccountCompany,
-    getBankCurrentAccountsCompany
+    getBankCurrentAccountsCompany,
+    getBankAccountByCompany
 }

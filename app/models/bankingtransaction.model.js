@@ -12,7 +12,7 @@ const BankingTransactionSchema = Schema({
     ref: "Concept",
    // autopopulate: true,
   }, 
-  OperationNumber: Number,
+  OperationNumber: String,  //para guardar el numero de otra cuenta, chequera y otros
   User: { type: Schema.ObjectId, 
              ref: "User",
             // autopopulate: true,
@@ -31,6 +31,7 @@ const BankingTransactionSchema = Schema({
     ref: "BankAccount",
    // autopopulate: true,
    },
+   Extra:String   //para campos adicionales como nombre u otros datos
    
    
 })
