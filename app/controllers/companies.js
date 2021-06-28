@@ -159,17 +159,18 @@ function uploadAvatar(req, res) {  //para cargar el logo de las compañias
         console.log(req.files);
         if ("archivo",req.files) {
           let filePath = req.files.avatar.path;
-          let fileSplit = filePath.split("/");
+          // let fileSplit = filePath.split("\\"); //LOCAL
+          let fileSplit = filePath.split("/"); //REMOTO
           let fileName = fileSplit[3];
           
           let extSplit = fileName.split(".");
           let fileExt = extSplit[1];
            console.log(fileExt);
-          if (fileExt !== "png" && fileExt !== "jpg"  && fileExt !== "jpeg") {  //acá se valida la extensión de las imagenes a cargar
+          if ( fileExt !== "jpg"  && fileExt !== "jpeg") {  //acá se valida la extensión de las imagenes a cargar
             console.log("aqui quedi");
             res.status(400).send({
               message:
-                "La extension de la imagen no es valida. (Extensiones permitidas: .png y .jpg)"
+                "La extension de la imagen no es valida. (Extensiones permitidas:  .jpg)"
             });
           } else {
             company.Logo = fileName;
@@ -209,7 +210,7 @@ function getAvatar(req, res) {
       res.status(404).send({ message: "El archivo que buscas no existe." });
     } else {
       res.sendFile(path.resolve(filePath));
-      console.log(path.resolve(filePath))
+      console.log(path.resolve("ruta del loho",filePath))
     }
   });
 }

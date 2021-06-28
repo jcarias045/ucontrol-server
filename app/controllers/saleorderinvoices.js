@@ -2469,12 +2469,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         codigoSalidas =1;
     }else {codigoSalidas=codOutput+1}
 
-    //IMPUESTOS
-    let impuestosList=await taxes.find({document:'venta',Company:companyId})
-    .then(taxes => {
-        return(taxes)
 
-    })
     //
 
 
@@ -2631,32 +2626,30 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
                         var impuestosSinRetencion = impuestosList.filter(function (item) {   //obteniendo todos los impuestos menos la retencion
                             return item.Name != "Retencion";
                           });
-                          console.log("dtos del cliente", excento, contribuyente, customerType);
-                        if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()==="Grande"){
-                            console.log("GRAN CONTRIBUYENTE SIN RENTECION", totalfactura);
-                            if(parseFloat(Total)>100){
-                                impuestosList.map(item=>{
-                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                                })
-                            }else{
-                                impuestosSinRetencion.map(item=>{
-                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                                    })
+
+                                            //IMPUESTOS
+                    let impuestosList=await taxes.find({document:'venta',Company:companyId})
+                    .then(taxes => {
+                        var filtered = taxes.filter(function (item) {
+                            if(parseFloat(totalfactura) >= parseFloat(item.DocValue)){
+                                console.log("si es mas grande");
                             }
-                        
+                            return (parseFloat(totalfactura) >= parseFloat(item.DocValue) && item.Value===contribuyente) ||
+                            (item.Value === excento.toString() ) ;
+                        });
+                        return(filtered)
+
+                    })
+                     
+                          if(customerType.toString()==="CreditoFiscal"){
+                            impuestosList.map(item=>{
+                                sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
+                            })
                         }
-                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="true" && contribuyente.toString()==="Grande")
-                        {sumimpuestos=0}
-                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="true")
-                        {sumimpuestos=0}
-                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
-                        {impuestosSinRetencion.map(item=>{
-                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                        })}
-                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
-                        {impuestosSinRetencion.map(item=>{
-                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                            })}
+                          
+                    else{
+                            sumimpuestos=0.0;
+                        }
                        totalfactura=totalfactura+sumimpuestos;
 
                        saleOrderInvoice.findByIdAndUpdate({_id:invoiceId},{Total:totalfactura},async (err,update)=>{
@@ -3943,7 +3936,8 @@ async function createSaleOrderInvoice2(req, res){
             }
         }
     });
-    let excento=await customer.findOne({_id:Customer}).then(function(doc){
+    //obteniendo info del cliente (CUANDO SE NECESITE ALGUNA OTRA VALIDACION PARA IMPUESTOS OBTENERLA COMO ESTE CASO)
+    let excento=await customer.findOne({_id:Customer}).then(function(doc){ 
         if(doc){
                 if(doc.Exempt!==null){
             return(doc.Exempt)
@@ -4001,12 +3995,7 @@ async function createSaleOrderInvoice2(req, res){
         codigoSalidas =1;
     }else {codigoSalidas=codOutput+1}
 
-    //IMPUESTOS
-    let impuestosList=await taxes.find({document:'venta',Company:companyId})
-    .then(taxes => {
-        return(taxes)
 
-    })
     //
 
 
@@ -4148,34 +4137,32 @@ async function createSaleOrderInvoice2(req, res){
                         }
 
 
-                      //para hacer el calculo de impuestos por factura
-                      var impuestosSinRetencion = impuestosList.filter(function (item) {   //obteniendo todos los impuestos menos la retencion
-                        return item.Name != "Retencion";
-                      });
-                            console.log("dtos del cliente", excento, contribuyente, customerType);
-                        if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()==="Grande"){
-                            console.log("GRAN CONTRIBUYENTE SIN exento", totalfactura);
-                            if(parseFloat(Total)>100){
+                    //   //para hacer el calculo de impuestos por factura
+                    //   var impuestosSinRetencion = impuestosList.filter(function (item) {   //obteniendo todos los impuestos menos la retencion
+                    //     return item.Name != "Retencion";
+                    //   });
+                          //IMPUESTOS
+                    let impuestosList=await taxes.find({document:'venta',Company:companyId})
+                    .then(taxes => {
+                        
+                        var filtered = taxes.filter(function (item) {
+                        
+                            return (parseFloat(totalfactura) >= parseFloat(item.DocValue) && item.Value===contribuyente) ||
+                            (item.Value === excento.toString() ) ;
+                        });
+                        return(filtered)
+                    })
+                    
+                            if(customerType.toString()==="CreditoFiscal"){
                                 impuestosList.map(item=>{
                                     sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
                                 })
-                            }else{
-                                impuestosSinRetencion.map(item=>{
-                                    sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                                    })
                             }
-                        console.log("IMPUESTOS A SUMAR",sumimpuestos);
-                        }
-                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="true" && contribuyente.toString()==="Grande")
-                        {sumimpuestos=0}
-                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="true")
-                        {sumimpuestos=0}
-                        else if(customerType.toString()==="CreditoFiscal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
-                        {impuestosSinRetencion.map(item=>{
-                            sumimpuestos+=parseFloat(totalfactura* item.percentage/100);
-                        })}
-                        else if(customerType.toString()==="ConsumidorFinal" && excento.toString()==="false" && contribuyente.toString()!=="Grande")
-                        {sumimpuestos=0}
+                              
+                        else{
+                                sumimpuestos=0.0;
+                            }
+                       
                        
 
                        totalfactura=totalfactura+sumimpuestos;

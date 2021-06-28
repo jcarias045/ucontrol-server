@@ -40,6 +40,7 @@ function createCustomer(req, res) {
             customerNew.PaymentCondition= PaymentCondition;
             customerNew.Classification=Classification;
             customerNew.Exempt=Exempt;
+          
             customerNew.Contributor=Contributor;
             console.log(customerNew.codCustomer);
             const comparar = customerNew.codCustomer;

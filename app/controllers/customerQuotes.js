@@ -368,9 +368,19 @@ function getQuotesbyCustomers(req, res){
 async function ImprimirCotizacionPDF(req, res) {
 
     const { id, logo } = req.params;
+    var multiples_3=[];
+    var multiplos=[];
 
+    // bucle del 1 al 100
+    for(var i=1;i<=100;i++)
+    {
+        if (i%6 == 0 ) { multiplos.push(i) } 
+    };
+    
 
-    console.log("aqwui imprimo cotizacion");
+    console.log("aqwui imprimo cotizacion",multiplos);
+    let comentario;
+   
     //se busca la informacion de la cotizacion (header)
     let cotizacion = await CustomerQuote.findOne({ _id: req.params.id })
         .populate({ path: 'Customer', model: 'Customer', populate: { path: 'Sector', model: 'Sector' } })
@@ -433,6 +443,7 @@ async function ImprimirCotizacionPDF(req, res) {
        total=cotizacion.Total 
    }
    console.log("TOTAL CAL", total);
+ 
     async function createInvoice(cotizacion, QuotesName, detalles) {
         let doc = new PDFDocument({ size: "A4", margin: 50 });
         let img = "./app/uploads/avatar/" + logo;
@@ -491,9 +502,13 @@ async function ImprimirCotizacionPDF(req, res) {
         var date = new Date(invoice.CreationDate);
         doc
             .fontSize(10)
-            .text("Cliente:", 50, customerInformationTop)
+            .text("Para:", 50, customerInformationTop)
             .font("Helvetica-Bold")
-            .text(invoice.Customer.Name, 100, customerInformationTop)
+            .text(invoice.Customer.Images?invoice.Customer.Images:invoice.Customer.Name, 100, customerInformationTop)
+            .font("Helvetica")
+            .text("Cliente:", 50, customerInformationTop+15)
+            .font("Helvetica-Bold")
+            .text(invoice.Customer.Name, 100, customerInformationTop+15)
             .font("Helvetica")
             .text("Dirección:", 50, customerInformationTop+30)
             .font("Helvetica-Bold")
@@ -503,24 +518,24 @@ async function ImprimirCotizacionPDF(req, res) {
                 "," +
                 invoice.Customer.Country, 100, customerInformationTop+30)
             .font("Helvetica")
-            .text("Correo:", 50, customerInformationTop+15)
+            .text("Correo:", 50, customerInformationTop+45)
             .font("Helvetica-Bold")
-            .text(invoice.Customer.Email, 100, customerInformationTop+15)
+            .text(invoice.Customer.Email, 100, customerInformationTop+45)
             .font("Helvetica")
            
-            .text("Total", 50, customerInformationTop + 45)
+            .text("Total", 50, customerInformationTop + 60)
             .text(
                 formatCurrency(invoice.Total.toFixed(2)),
                 100,
-                customerInformationTop + 45
+                customerInformationTop + 60
             )
-             .text("Fecha Cotizacion", 300, customerInformationTop + 45)
-            .text(date.toLocaleDateString(), 400, customerInformationTop + 45) .font("Helvetica-Bold")
+             .text("Fecha Cotizacion", 300, customerInformationTop + 60)
+            .text(date.toLocaleDateString(), 400, customerInformationTop + 60) .font("Helvetica-Bold")
           
            
             .moveDown();
 
-        generateHr(doc, 260);
+        generateHr(doc, 275);
     }
 
     async function generateInvoiceTable(doc, invoice, detalles) {
@@ -542,21 +557,37 @@ async function ImprimirCotizacionPDF(req, res) {
 
         for (i = 0; i < detalles.length; i++) {
             const item = detalles[i];
-            const position = invoiceTableTop + (i + 1) * 30;
-           
+            const position = invoiceTableTop + (i + 1) * 32;
+            console.log("longitud",( item.Inventory.Product.ShortName).length);
+            let aumentarAncho;
+            if(( item.Inventory.Product.ShortName).length > 100 &&  (item.Inventory.Product.ShortName).length < 200){
+                aumentarAncho =10
+            }
+            if(( item.Inventory.Product.ShortName).length < 100){
+                aumentarAncho =0
+
+            }
+            if(( item.Inventory.Product.ShortName).length > 200){
+                aumentarAncho =15
+
+            }
             generateTableRow(
                 doc,
                 position,
                 item.Quantity,
-                item.ProductName,
+                item.Inventory.Product.ShortName,
                 item.Measure,
                 formatCurrency(item.Price.toFixed(2)),
                 formatCurrency(item.SubTotal.toFixed(2))
             );
 
             TotalSinIva = item.SubTotal + TotalSinIva
+           
 
-            generateHr(doc, position + 20);
+            
+            
+            generateHr(doc, position + 20 + aumentarAncho);
+         
         }
 
         console.log(TotalSinIva);
@@ -564,7 +595,7 @@ async function ImprimirCotizacionPDF(req, res) {
 
 
 
-        const subtotalPosition = invoiceTableTop + (i + 1) * 30;
+        const subtotalPosition = invoiceTableTop + (i + 1) * 35;
         generateTableRow(
             doc,
             subtotalPosition,
@@ -607,6 +638,8 @@ async function ImprimirCotizacionPDF(req, res) {
             formatCurrency(invoice.Total.toFixed(2))
         );
         doc.font("Helvetica");
+        console.log("total posicion", duePosition);
+        comentario=duePosition;
     }
 
     function generateComent(doc, invoice) {
@@ -616,11 +649,11 @@ async function ImprimirCotizacionPDF(req, res) {
                 "Comentario: " +
                 invoice.Description,
                 50,
-                580,
+                715,
                 { align: "left", width: 500 }
             );
-        generateHr(doc, 565);
-        generateHr(doc, 665);
+        generateHr(doc, 700);
+        generateHr(doc, 750);
     }
 
     function generateFooter(doc, invoice) {

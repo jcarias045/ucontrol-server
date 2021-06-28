@@ -958,7 +958,7 @@ async function deleteSaleOrderDetail(req,res){
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
 
-    console.log(_id);
+    console.log("ordenes de venta detalle eliminado",_id);
     //obteniendo informacion de la compañia
     let companyParams=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
     .then(params => {
@@ -1102,11 +1102,11 @@ async function deleteSaleOrderDetail(req,res){
                             })
                              
                         }
-                            res.status(200).send({ userDeleted});
+                           
                     }
                 });
            }
-        
+           res.status(200).send({ userDeleted});
            
           }
         }
