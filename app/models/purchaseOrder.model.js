@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const Supplier = require('./supplier.model');
 const User= require('./user.model')
+const Company = require('./company.model')
 
 const PurchaseOrderSchema = Schema({
   Supplier: {type: Schema.ObjectId, 
@@ -21,6 +22,10 @@ const PurchaseOrderSchema = Schema({
   State:String,
   Description:String,
   CodPurchase:Number,
+  Company: {type: Schema.ObjectId, 
+    ref: "Company",
+    // autopopulate: true,
+  },
 })
 
 module.exports = mongoose.model('PurchaseOrder', PurchaseOrderSchema)

@@ -14,7 +14,7 @@ router.put('/update-customerquotes/:id', quotes.updateCustomerQuote);
 router.delete('/delete-customerquotedetails/:id', quotes.deleteQuoteDetail);
 router.put('/update-customerquotestate/:id', quotes.changeQuoteState);
 router.get('/get-quotesbycustomer/:id/:fecha1/:fecha2', quotes.getQuotesbyCustomers);
-// router.get('/get-pdfprueba/:id/:logo', quotes.pdfPrueba);
+router.get('/get-pdfprueba/:id/:logo', quotes.pdfMakePrueba);
 
 
 module.exports = router;

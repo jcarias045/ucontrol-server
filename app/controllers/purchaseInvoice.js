@@ -84,7 +84,7 @@ async function createSupplierInvoice(req, res){
     let codigoEntradas=0;
 
     //para generar correlativo de factura
-    let codInvoice=await purchaseInvoice.findOne().sort({CodInvoice:-1})  //para obtener el correlativo por compañia
+    let codInvoice=await purchaseInvoice.findOne({Company: companyId}).sort({CodInvoice:-1})  //para obtener el correlativo por compañia
     .populate({path: 'Supplier', model: 'Supplier', match:{Company: companyId}}).then(function(doc){
             if(doc){
                     if(doc.CodInvoice!==null){
@@ -506,7 +506,7 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
         }
     });
 
-    let codInvoice=await purchaseInvoice.findOne().sort({CodInvoice:-1})  //codigo correlativo de la factura por compañia
+    let codInvoice=await purchaseInvoice.findOne({Company: companyId}).sort({CodInvoice:-1})  //codigo correlativo de la factura por compañia
     .populate({path: 'Supplier', model: 'Supplier', match:{Company: companyId}}).then(function(doc){
             if(doc){
                     if(doc.CodInvoice!==null){

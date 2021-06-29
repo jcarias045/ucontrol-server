@@ -2361,7 +2361,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
 ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS fin ******** */
    
     //Obteniendo ultimi correlativo 
-    let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
+    let codigoSaleOrderInvoice=await saleOrderInvoice.findOne({Company: companyId}).sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
 
             if(doc){
@@ -2544,7 +2544,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
             Entregada:!companyParams.RequieredOutput?true:false,
             InvoiceNumber:correlativeNumber,
             DocumentCorrelative: correlativos.map(item => item._id),
-            iva:parseFloat(iva)
+            iva:parseFloat(iva),
+            Company: companyId
         }]
         console.log("save",correlativeNumber);
         console.log("CONTADOR ",contador);
@@ -3887,7 +3888,7 @@ async function createSaleOrderInvoice2(req, res){
     let codigo=0;
     let codigoSalidas=0;
 
-    let codigoSaleOrderInvoice=await saleOrderInvoice.findOne().sort({CodInvoice:-1})
+    let codigoSaleOrderInvoice=await saleOrderInvoice.findOne({Company: companyId}).sort({CodInvoice:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
 
             if(doc){
@@ -4066,7 +4067,8 @@ async function createSaleOrderInvoice2(req, res){
             Entregada:!companyParams.RequieredOutput?true:false,
             InvoiceNumber:correlativeNumber,
             DocumentCorrelative: correlativos.map(item => item._id),
-            iva:parseFloat(iva)
+            iva:parseFloat(iva),
+            Company: companyId
         }]
         console.log("save",correlativeNumber);
         console.log("CONTADOR ",contador);

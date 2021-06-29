@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Schema =  mongoose.Schema;
 const Customer = require('./customer.model');
 const User= require('./user.model')
+const Company = require('./company.model')
 
 const CustomerQuoteSchema = Schema({
   Customer: {type: Schema.ObjectId, 
@@ -22,6 +23,10 @@ const CustomerQuoteSchema = Schema({
   CustomerName:String,
   DateUpdate:String,
   SubTotal:Number,
+  Company: {type: Schema.ObjectId, 
+    ref: "Company",
+    // autopopulate: true,
+  },
 })
 
 module.exports = mongoose.model('CustomerQuote', CustomerQuoteSchema)
