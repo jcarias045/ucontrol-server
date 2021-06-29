@@ -851,18 +851,15 @@ async function ImprimirCotizacionPDF(req,res){
         //     }
         // });
 
-        pdf.create(contenidoHtml,options).toStream(function(err, stream){
-            stream.pipe(res);
-            console.log("creado correctamente");
-               // once we are done reading end the response
-      stream.on('end', () => {
-        // done reading
-        return res.end()
-      })
-
-      // pipe the contents of the PDF directly to the response
-      stream.pipe(res)
-          });
+        pdf.create(contenidoHtml,options).toBuffer(function (err, buffer) {
+            if (err) {
+                console.log(err)
+            } else {
+                console.log(buffer)
+                res.header('Content-type', 'application/pdf')
+                res.send(buffer)
+            }
+        })
 }
 
 
