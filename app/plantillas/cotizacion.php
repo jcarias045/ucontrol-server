@@ -11,10 +11,10 @@
         }
 
         .empresa {
-        font-size: 20px;
+        font-size: 10px;
         }
         .cliente {
-        font-size: 30px;
+        font-size: 15px;
         }
 
         p {
