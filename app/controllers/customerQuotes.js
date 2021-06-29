@@ -831,25 +831,38 @@ async function ImprimirCotizacionPDF(req,res){
             }
           }
          };
-        pdf.create(contenidoHtml,options).toFile("./app/uploads/cotizaciones/Cotizacion-"+cotizacion.CodCustomerQuote + '.pdf', (error) => {
-            if (error) {
-                console.log("Error creando PDF: " + error)
-            } else {
-                fs.readFile('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf', (err, data) => {
-                    if (err) {
-                        console.log("error:", err);
-                        console.log("entro al error");
-                    }
-                    else {
-                        console.log("entro al else");
-                        console.log(data);
-                        fs.createReadStream('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf');
-                        res.sendFile(path.resolve('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf'))
-                    }
-                });
-                console.log("PDF creado correctamente");
-            }
-        });
+        // pdf.create(contenidoHtml,options).toFile("./app/uploads/cotizaciones/Cotizacion-"+cotizacion.CodCustomerQuote + '.pdf', (error) => {
+        //     if (error) {
+        //         console.log("Error creando PDF: " + error)
+        //     } else {
+        //         fs.readFile('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf', (err, data) => {
+        //             if (err) {
+        //                 console.log("error:", err);
+        //                 console.log("entro al error");
+        //             }
+        //             else {
+        //                 console.log("entro al else");
+        //                 console.log(data);
+        //                 fs.createReadStream('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf');
+        //                 res.sendFile(path.resolve('./app/uploads/cotizaciones/Cotizacion-' + cotizacion.CodCustomerQuote + '.pdf'))
+        //             }
+        //         });
+        //         console.log("PDF creado correctamente");
+        //     }
+        // });
+
+        pdf.create(contenidoHtml,options).toStream(function(err, stream){
+            stream.pipe(res);
+            console.log("creado correctamente");
+               // once we are done reading end the response
+      stream.on('end', () => {
+        // done reading
+        return res.end()
+      })
+
+      // pipe the contents of the PDF directly to the response
+      stream.pipe(res)
+          });
 }
 
 
