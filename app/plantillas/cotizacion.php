@@ -11,7 +11,10 @@
         }
 
         .empresa {
-        font-size: 5px;
+        font-size: 20px;
+        }
+        .cliente {
+        font-size: 30px;
         }
 
         p {
@@ -56,10 +59,10 @@
          <hr>
          <div class='row'>
              <div class='col-10'>
-             <strong>Paraphp:</strong>    <h1 class='h6'><?php print("GOLA ") ?> {{para}} </h1>
-             <strong>Cliente:</strong>    <h1 class='h6'> {{cliente}} </h1>
-             <strong>Dirección:</strong>    <h1 class='h6'> {{direccion}} </h1>
-             <strong>Correo:</strong>    <h1 class='h6'> {{correo}} </h1>
+             <strong>Paraphp:</strong>    <h1 class='cliente'><?php print("GOLA ") ?> {{para}} </h1>
+             <strong>Cliente:</strong>    <h1 class='cliente'> {{cliente}} </h1>
+             <strong>Dirección:</strong>    <h1 class='cliente'> {{direccion}} </h1>
+             <strong>Correo:</strong>    <h1 class='cliente'> {{correo}} </h1>
              </div>
         
          </div>
