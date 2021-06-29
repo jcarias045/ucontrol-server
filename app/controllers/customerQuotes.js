@@ -709,7 +709,7 @@ async function ImprimirCotizacionPDF(req,res){
     const { id, logo } = req.params;
     let img = "https://ucontrolv1.herokuapp.com/api/get-logo/" + logo;
     
-    const ubicacionPlantilla = require.resolve("../plantillas/plantilla1.php");
+    const ubicacionPlantilla = require.resolve("../plantillas/cotizacion.php");
     let contenidoHtml = fs.readFileSync(ubicacionPlantilla, 'utf8')
         
         //se busca la informacion de la cotizacion (header)
