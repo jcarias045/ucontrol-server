@@ -20,6 +20,28 @@
         p {
         font-size: 14px;
         }
+        #customers {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#customers td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#customers tr:nth-child(even){background-color: #f2f2f2;}
+
+#customers tr:hover {background-color: #ddd;}
+
+#customers th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #04AA6D;
+  color: white;
+}
 </style>
 
            <body>
@@ -70,7 +92,7 @@
   
          <div class='row'>
              <div class='col-xs-12'>
-                 <table  class='table table-hover'>
+                 <table  id="customers">
                      <thead  class='thead-dark'>
                          <tr>
                              <th>Cantidad</th>
