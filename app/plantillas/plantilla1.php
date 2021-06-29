@@ -30,7 +30,7 @@
              <table>
                  <tr>
                      <td> {{logo}}</td>
-                     <td width='100px'> </td>
+                    
                      <td style='text-align:right' width='400px'>
                          <div class='col'
                              <p class='empresa'> {{nombreEmpresa}} </p>
