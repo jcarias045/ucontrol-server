@@ -12,95 +12,98 @@
     </head>
     
     <body>
-        <div class="container-fluid">
-            <div class="row">
-                <table>
-                    <tr>
-                        <td> {{logo}}</td>
-                        <td width="250px"> </td>
-                        <td style="text-align:right" width="400px">
-                            <div class="col"
-                                <p> {{nombreEmpresa}} </p>
-                                <p> {{direccionEmpresa}} </p>
-                                <p> {{webEmpresa}} </p>
-                           
-                        </td>
-                    </tr>
-                </table>
-        
-               
-              
-            </div>
-            <div class="row">
-                <table>
-                    <tr>
-                        <td> <small>Fecha</small> <h6> {{fecha}}</h6></td>
-                        <td width="250px"> </td>
-                        <td style="text-align:right" width="450px">
-                            <div class="col"
-                            <small>Cotización</small>
-                            <h1 class="h2"> # {{codigo}} </h1>
-                           
-                        </td>
-                    </tr>
-                </table>
-               
-            </div>
-            
-            <hr>
-            <div class="row">
-                <div class="col-10">
-                <strong>Para:</strong>    <h1 class="h6"> {{para}} </h1>
-                <strong>Cliente:</strong>    <h1 class="h6"> {{cliente}} </h1>
-                <strong>Dirección:</strong>    <h1 class="h6"> {{direccion}} </h1>
-                <strong>Correo:</strong>    <h1 class="h6"> {{correo}} </h1>
-                </div>
-           
-            </div>
-            <hr>
+        <?php echo "
+         <div class='container-fluid'>
+         <div class='row'>
+             <table>
+                 <tr>
+                     <td> {{logo}}</td>
+                     <td width='250px'> </td>
+                     <td style='text-align:right' width='400px'>
+                         <div class='col'
+                             <p> {{nombreEmpresa}} </p>
+                             <p> {{direccionEmpresa}} </p>
+                             <p> {{webEmpresa}} </p>
+                        
+                     </td>
+                 </tr>
+             </table>
      
-            <div class="row">
-                <div class="col-xs-12">
-                    <table  class="table table-hover">
-                        <thead  class="thead-dark">
-                            <tr>
-                                <th>Cantidad</th>
-                                <th>Nombre</th>
-                                <th>Medida</th>
-                                <th>Precio</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{tablaProductos}}
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colspan="3" class="text-right">
-                                    <h4>Subtotal</h4>
-                                </td>
-                                <td>
-                                    <h4>{{subtotal}}</h4>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" class="text-right" ></td>
-                                <td>{{impuestos}}</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3" class="text-right">
-                                    <h4>Total</h4>
-                                </td>
-                                <td>
-                                    <h4>{{total}}</h4>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
+            
+           
+         </div>
+         <div class='row'>
+             <table>
+                 <tr>
+                     <td> <small>Fecha</small> <h6> {{fecha}}</h6></td>
+                     <td width='250px'> </td>
+                     <td style='text-align:right' width='450px'>
+                         <div class='col'
+                         <small>Cotización</small>
+                         <h1 class='h2'> # {{codigo}} </h1>
+                        
+                     </td>
+                 </tr>
+             </table>
+            
+         </div>
          
-        </div>
+         <hr>
+         <div class='row'>
+             <div class='col-10'>
+             <strong>Para:</strong>    <h1 class='h6'> {{para}} </h1>
+             <strong>Cliente:</strong>    <h1 class='h6'> {{cliente}} </h1>
+             <strong>Dirección:</strong>    <h1 class='h6'> {{direccion}} </h1>
+             <strong>Correo:</strong>    <h1 class='h6'> {{correo}} </h1>
+             </div>
+        
+         </div>
+         <hr>
+  
+         <div class='row'>
+             <div class='col-xs-12'>
+                 <table  class='table table-hover'>
+                     <thead  class='thead-dark'>
+                         <tr>
+                             <th>Cantidad</th>
+                             <th>Nombre</th>
+                             <th>Medida</th>
+                             <th>Precio</th>
+                             <th>Total</th>
+                         </tr>
+                     </thead>
+                     <tbody>
+                         {{tablaProductos}}
+                     </tbody>
+                     <tfoot>
+                         <tr>
+                             <td colspan='3' class='text-right'>
+                                 <h4>Subtotal</h4>
+                             </td>
+                             <td>
+                                 <h4>{{subtotal}}</h4>
+                             </td>
+                         </tr>
+                         <tr>
+                             <td colspan='3' class='text-right' ></td>
+                             <td>{{impuestos}}</td>
+                         </tr>
+                         <tr>
+                             <td colspan='3' class='text-right'>
+                                 <h4>Total</h4>
+                             </td>
+                             <td>
+                                 <h4>{{total}}</h4>
+                             </td>
+                         </tr>
+                     </tfoot>
+                 </table>
+             </div>
+         </div>
+      
+     </div>
+        "
+       
         <!-- <footer>
             <small> {{saludo}} </small>
         </footer> -->
