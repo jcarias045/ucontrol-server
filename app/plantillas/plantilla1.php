@@ -10,7 +10,19 @@
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title><?php echo "Cotizacion" ?></title>
     </head>
-    
+    <style>
+        h1 {
+        font-size: 40px;
+        }
+
+        .empresa {
+        font-size: 10px;
+        }
+
+        p {
+        font-size: 14px;
+        }
+</style>
     <body>
         <?php echo "
          <div class='container-fluid'>
@@ -18,12 +30,12 @@
              <table>
                  <tr>
                      <td> {{logo}}</td>
-                     <td width='250px'> </td>
+                     <td width='100px'> </td>
                      <td style='text-align:right' width='400px'>
                          <div class='col'
-                             <p> {{nombreEmpresa}} </p>
-                             <p> {{direccionEmpresa}} </p>
-                             <p> {{webEmpresa}} </p>
+                             <p class='empresa'> {{nombreEmpresa}} </p>
+                             <p class='empresa'> {{direccionEmpresa}} </p>
+                             <p class='empresa'> {{webEmpresa}} </p>
                         
                      </td>
                  </tr>
