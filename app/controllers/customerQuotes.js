@@ -724,7 +724,7 @@ async function ImprimirCotizacionPDsF(req,res){
     const { id, logo } = req.params;
     let img = "https://ucontrolv1.herokuapp.com/api/get-logo/" + logo;
     
-    const ubicacionPlantilla = require.resolve("../../public/plantilla1.html");
+    const ubicacionPlantilla = require.resolve("../plantillas/cotizacion.php");
     let contenidoHtml = fs.readFileSync(ubicacionPlantilla, 'utf8')
         console.log("CONTENIDI", contenidoHtml);
 
@@ -845,7 +845,9 @@ async function ImprimirCotizacionPDsF(req,res){
               ", saludos, " + cotizacion.User.Company.Name +"</small>" // fallback value
             //   last: 'Last Page'
             }
-          }
+          },
+           // HTTP Cookies that are used for requests
+     
          };
         // pdf.create(contenidoHtml,options).toFile("./app/uploads/cotizaciones/Cotizacion-"+cotizacion.CodCustomerQuote + '.pdf', (error) => {
         //     if (error) {
@@ -1025,6 +1027,6 @@ module.exports={
     getCustomerAllQuotesDetails,
     getQuotesbyCustomers,
     ImprimirCotizacionPDF,
-    pdfMakePrueba
-    // pdfPrueba
+    pdfMakePrueba,
+    ImprimirCotizacionPDsF
 }

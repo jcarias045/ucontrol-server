@@ -156,6 +156,7 @@ async function createSupplierInvoice(req, res){
     invoice.Comments=Description;
     invoice.InvoiceComments	=InvoiceComments;
     invoice.Pagada=false;
+    invoice.Company=companyId;
     invoice.Recibida=!requiredIncome?true:false;
     // invoice.Recibida=false;
     invoice.CodInvoice=codigo;
@@ -573,6 +574,8 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
     invoice.Comments=Description;
     invoice.InvoiceComments	=InvoiceComments;
     invoice.Pagada=false;
+    invoice.Company=companyId;
+
     invoice.Recibida=!requiredIncome?true:false;
     // invoice.Recibida=false;
     invoice.CodInvoice=codigo;

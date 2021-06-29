@@ -89,6 +89,8 @@ async function createPurchaseOrder(req,res){
     orden.State='Abierta'; 
     orden.Description=Description; 
     orden.CodPurchase=codigo;
+    orden.Company=companyId;
+
    
     console.log(orden);
     orden.save((err, ordenStored)=>{
