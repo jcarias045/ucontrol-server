@@ -102,7 +102,8 @@ app.use((req, res, next) => {
     next();
   });
 
-
+// use the express-static middleware
+app.use(express.static("public"))
 
 
 app.use(bodyParser.urlencoded({extended:false}));

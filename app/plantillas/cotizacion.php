@@ -1,1 +1,1 @@
-<?php include_once("plantilla1.html"); ?>
+<?php include_once(".app/plantillas/plantilla1.html"); ?>
