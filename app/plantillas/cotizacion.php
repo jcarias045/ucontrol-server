@@ -47,10 +47,14 @@
         }
 
         #tb-cliente {
-        font-family: Arial, Helvetica, sans-serif;
+        font-family: "Segoe IU", sans-serif;
         border-collapse: collapse;
         width: 100%;
         font-size: 12px;
+        }
+        #tb-cliente td, #tb-cliente th {
+        border: 1px solid #ddd;
+        padding: 8px;
         }
         #customers td{
         border: 1px solid #ddd;
@@ -92,8 +96,9 @@
             height: 100px;
         }
         p {
-            font-family: "Segoe UI";
+            font-family: Arial;
             font-size: 12px;
+            font-weight: bold;
             }
         #logotd{
             width: 150px;
