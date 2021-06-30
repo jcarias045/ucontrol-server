@@ -59,7 +59,7 @@
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
         width: 100%;
-        font-size: 15px;
+        font-size: 8px;
         }
 
         #codigo {
@@ -104,7 +104,7 @@
                     
                      <td>
                          
-                         <p class='codigo'> # {{codigo}} </p>
+                         <p class='codigo'> Cotización # {{codigo}} </p>
                         
                      </td>
                  </tr>
