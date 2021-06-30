@@ -47,14 +47,17 @@
         }
 
         #tb-cliente {
-        font-family: "Segoe IU", sans-serif;
+        font-family: Arial;
         border-collapse: collapse;
         width: 100%;
-        font-size: 12px;
+        font-size: 10px;
         }
         #tb-cliente td, #tb-cliente th {
         border: 1px solid #ddd;
         padding: 8px;
+        }
+        #tb-cliente span {
+            font-weight: bold;
         }
         #customers td{
         border: 1px solid #ddd;
@@ -104,6 +107,12 @@
             width: 150px;
             height: 200px;
         }
+
+        #title {
+            font-family: Arial;
+            font-size: 8px;
+            font-weight: bold;
+        }
 </style>
 
            <body>
@@ -127,7 +136,7 @@
          <div class='row'>
              <table id='tb-info'>
                  <tr>
-                     <td> <p> Fecha</p>  {{fecha}}</td>
+                     <td> <span > Fecha {{fecha}} </span></td>
                     
                      <td style='text-align:right'>
                          
@@ -145,28 +154,28 @@
             <table id='tb-cliente'>
                 <tr>
                     <td>
-                        Para: {{para}} 
+                       <span class='title'> Para: </span>{{para}} 
                       
                     </td>
                     
                 </tr>
                 <tr>
                     <td>
-                    Cliente: {{cliente}} 
+                    <span class='title'> Cliente: </span> {{cliente}} 
                   
                      
                     </td>
                 </tr>
                 <tr>
                     <td>
-                    Dirección: {{direccion}} 
+                    <span class='title'>DirecciónPara: </span>{{direccion}} 
                       
                     </td>
                     
                 </tr>
                 <tr>
                     <td>
-                    Correo: {{correo}} 
+                    <span class='title'> Correo: </span> {{correo}} 
                       
                     </td>
                     
@@ -195,22 +204,22 @@
                      </tbody>
                      <tfoot>
                          <tr>
-                             <td colspan='4' class='pie'>
+                             <td colspan='3' class='pie'>
                                  <h4>Subtotal</h4>
                              </td>
-                             <td>
+                             <td colspan='2'>
                                  <h4>{{subtotal}}</h4>
                              </td>
                          </tr>
                          <tr>
-                             <td colspan='4' class='pie' ></td>
-                             <td>{{impuestos}}</td>
+                             <td colspan='3' class='pie' ></td>
+                             <td colspan='2'>{{impuestos}}</td>
                          </tr>
                          <tr>
-                             <td colspan='4' class='pie'>
+                             <td colspan='3' class='pie'>
                                  <h4>Total</h4>
                              </td>
-                             <td>
+                             <td colspan='2'>
                                  <h4>{{total}}</h4>
                              </td>
                          </tr>
