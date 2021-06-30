@@ -53,6 +53,10 @@
         width: 100%;
         font-size: 15px;
         }
+        #customers td{
+        border: 1px solid #ddd;
+        padding: 8px;
+        }
         #tb-info {
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
@@ -107,11 +111,31 @@
             <table id='tb-cliente'>
                 <tr>
                     <td>
-                         <strong>Para:</strong>    <h1 class='cliente'><?php print("GOLA ") ?> {{para}} </h1>
-                        <strong>Cliente:</strong>    <h1 class='cliente'> {{cliente}} </h1>
-                        <strong>Dirección:</strong>    <h1 class='cliente'> {{direccion}} </h1>
-                        <strong>Correo:</strong>    <h1 class='cliente'> {{correo}} </h1>
+                        Para: {{para}} 
+                      
                     </td>
+                    
+                </tr>
+                <tr>
+                    <td>
+                    Cliente: {{cliente}} 
+                  
+                     
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                    Dirección: {{direccion}} 
+                      
+                    </td>
+                    
+                </tr>
+                <tr>
+                    <td>
+                    Correo: {{correo}} 
+                      
+                    </td>
+                    
                 </tr>
             </table>
             
