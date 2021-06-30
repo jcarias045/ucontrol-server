@@ -807,6 +807,7 @@ async function ImprimirCotizacionPDsF(req,res){
         contenidoHtml = contenidoHtml.replace("{{nombreEmpresa}}", cotizacion.User.Company.Name);
         contenidoHtml = contenidoHtml.replace("{{direccionEmpresa}}", cotizacion.User.Company.Address);
         contenidoHtml = contenidoHtml.replace("{{webEmpresa}}", cotizacion.User.Company.Web);
+        contenidoHtml = contenidoHtml.replace("{{correoEmpresa}}", cotizacion.User.UserName);
         contenidoHtml = contenidoHtml.replace("{{para}}", cotizacion.Customer.Images?cotizacion.Customer.Images:cotizacion.Customer.Name);
         contenidoHtml = contenidoHtml.replace("{{cliente}}", cotizacion.Customer.Name);
         contenidoHtml = contenidoHtml.replace("{{direccion}}", cotizacion.Customer.City+ ","+ cotizacion.Customer.ZipCode+","+cotizacion.Customer.Country);

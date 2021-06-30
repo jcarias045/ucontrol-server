@@ -134,6 +134,7 @@
                              <p> {{nombreEmpresa}}</p> <br/>
                               {{direccionEmpresa}} <br/>
                               {{webEmpresa}} <br/>
+                              {{correoEmpresa}}
                         
                      </td>
                  </tr>
