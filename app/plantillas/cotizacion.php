@@ -77,6 +77,10 @@
         p{
             
         }
+        #logotd{
+            width: 150px;
+            height: 200px;
+        }
 </style>
 
            <body>
@@ -85,7 +89,7 @@
          <div class='row'>
              <table id='tb-empresa'>
                  <tr>
-                     <td> {{logo}}</td>
+                     <td class='logotd'> {{logo}}</td>
                     
                      <td style='text-align:right' width='400px'>
                          <div class='col'
