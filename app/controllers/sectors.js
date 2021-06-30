@@ -48,7 +48,7 @@ function getAllSectors(req, res) {
     sector.find()
         .then(sector => {
             if (!sector) {
-                res.status(404).send({ message: "No se obuto sectores" });
+                res.status(404).send({ message: "No se obtuvo sectores" });
             } else {
                 res.status(200).send({ sector });
             }

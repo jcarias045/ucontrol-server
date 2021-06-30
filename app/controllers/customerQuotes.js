@@ -525,7 +525,7 @@ async function ImprimirCotizacionPDF(req, res) {
 
 
 
-        const subtotalPosition = invoiceTableTop + (i + 1) * 30;
+        const subtotalPosition = invoiceTableTop + (i + 1) * 50;
         generateTableRow(
             doc,
             subtotalPosition,
@@ -536,7 +536,7 @@ async function ImprimirCotizacionPDF(req, res) {
             formatCurrency(TotalSinIva.toFixed(2))
         );
 
-        const paidToDatePosition = subtotalPosition + 20;
+        const paidToDatePosition = subtotalPosition + 45;
         generateTableRow(
             doc,
             paidToDatePosition,

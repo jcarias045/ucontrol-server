@@ -76,6 +76,8 @@ let cashTransactionRoutes= require('./app/routers/cashtransaction.route');
 let checkbookRoutes= require('./app/routers/checkbook.route');
 let writeCheckRoutes= require('./app/routers/writecheck.route');
 let accountingAccountsRoutes= require('./app/routers/accountingaccounts.route');
+//tomando las rutas de coordinate
+let coordinatesRoutes = require('./app/routers/coordinatesInvoice.route');
 
 
 
@@ -183,7 +185,8 @@ app.use('/api',cashTransactionRoutes);
 app.use('/api',checkbookRoutes);
 app.use('/api',writeCheckRoutes);
 app.use('/api',accountingAccountsRoutes);
-
+//ruta de coordinate
+app.use('/api',coordinatesRoutes);
 
 
 if(process.env.NODE_ENV === 'production'){
@@ -198,17 +201,17 @@ if(process.env.NODE_ENV === 'production'){
 //**********CONEXION A BASE DE DATOS ****************************
 
 //url para conectarse de manera local a la base de datos (en caso contrario comentar la url)
-//const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
+const CONNECTION_URL='mongodb://ucontrol_sa:3Du9BSi3Bh3XTXU9@cluster0-shard-00-00.7t1pq.mongodb.net:27017,cluster0-shard-00-01.7t1pq.mongodb.net:27017,cluster0-shard-00-02.7t1pq.mongodb.net:27017/ucontrol?ssl=true&replicaSet=atlas-ap7dbv-shard-0&authSource=admin&retryWrites=true&w=majority'
 
 const PORT = process.env.PORT || 3050 ;
 
 //habilitar esta conxion cuando se haga el deploy y comentar la que se encuentra abajo 
 //hace referencia a variables colocadas en heroku
 
-mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+//mongoose.connect( process.env.CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 
 //para trabajar de manera local habilitar esta conexion Y NO OLVIDE COMENTAR LA DE ARRIBA
-//mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true })
 
  //NOTA SIEMPRE TIENE QUE COMENTAR ALGUNA DE LAS DOS DEPENDIENDO LAS SITUACIONES PLANTEADAS ANTERIORMENTE
 
