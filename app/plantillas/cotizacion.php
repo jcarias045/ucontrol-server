@@ -175,7 +175,7 @@
                 </tr>
                 <tr>
                     <td>
-                    <span class='title'>DirecciónPara: </span>{{direccion}} 
+                    <span class='title'>Dirección: </span>{{direccion}} 
                       
                     </td>
                     
