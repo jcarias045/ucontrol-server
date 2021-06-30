@@ -224,6 +224,9 @@
                              </td>
                            
                          </tr>
+                         <tr>
+                              <td colspan='5'><h4>Comentarios:  {{comentariosCotizacion}}</h4></td>
+                         </tr>
                      </tfoot>
                  </table>
              </div>

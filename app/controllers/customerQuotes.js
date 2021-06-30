@@ -817,6 +817,7 @@ async function ImprimirCotizacionHtmlPDF(req,res){
         contenidoHtml = contenidoHtml.replace("{{correo}}", cotizacion.Customer.Email);
         contenidoHtml = contenidoHtml.replace("{{fecha}}", cotizacion.CreationDate);
         contenidoHtml = contenidoHtml.replace("{{codigo}}", cotizacion.CodCustomerQuote);
+        contenidoHtml = contenidoHtml.replace("{{comentariosCotizacion}}", cotizacion.Description);
         contenidoHtml = contenidoHtml.replace("{{saludo}}", "Gracias por la preferencia, " + cotizacion.Customer.Name +
         ", saludos, " + cotizacion.User.Company.Name,)
 
