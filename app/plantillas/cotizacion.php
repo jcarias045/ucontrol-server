@@ -47,7 +47,7 @@
         }
 
         #tb-cliente {
-        font-family: Arial;
+        font-family: "Lucida Console", "Courier New", monospace;
         border-collapse: collapse;
         width: 100%;
         font-size: 10px;
