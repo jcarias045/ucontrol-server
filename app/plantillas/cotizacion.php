@@ -72,6 +72,10 @@
             border-radius: 4px;
             padding: 5px;
             width: 150px;
+            height: 200px;
+        }
+        p{
+            
         }
 </style>
 
@@ -96,11 +100,10 @@
          <div class='row'>
              <table id='tb-info'>
                  <tr>
-                     <td> <small>Fecha</small> <h6> {{fecha}}</h6></td>
-                     <td width='250px'> </td>
-                     <td style='text-align:right' width='450px'>
-                         <div class='col'
-                         <small>Cotización</small>
+                     <td> <p> Fecha</p>  {{fecha}}</td>
+                    
+                     <td>
+                         
                          <p class='codigo'> # {{codigo}} </p>
                         
                      </td>
