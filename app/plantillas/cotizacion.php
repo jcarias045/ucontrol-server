@@ -113,6 +113,12 @@
             font-size: 8px;
             font-weight: bold;
         }
+        #footer {
+            font-family: Arial;
+            font-size: 5px;
+            font-weight: bold;
+            text-align:center
+        }
 </style>
 
            <body>
