@@ -180,13 +180,7 @@
                     </td>
                     
                 </tr>
-                <tr>
-                    <td>
-                    <span class='title'> Correo: </span> {{correo}} 
-                      
-                    </td>
-                    
-                </tr>
+          
             </table>
             
              </div>

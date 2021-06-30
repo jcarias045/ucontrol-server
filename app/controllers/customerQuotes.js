@@ -60,7 +60,7 @@ async function createCustomerQuote(req,res){
     
     var ObjectID = require('mongodb').ObjectID;
    
-    const {Customer,CustomerName,Description,Total,User,companyId,SubTotal} = req.body;
+    const {Customer,CustomerName,Description,Total,User,companyId,SubTotal,AddressedTo} = req.body;
 
     const quoteDetail=req.body.details;
     const detalle=[];
@@ -101,6 +101,7 @@ async function createCustomerQuote(req,res){
     cotizacion.DateUpdate= creacion;
     cotizacion.SubTotal= SubTotal;
     cotizacion.Company= companyId;
+    cotizacion.AddressedTo=AddressedTo;
     console.log(cotizacion);
     cotizacion.save((err, cotizacionStored)=>{
         if(err){
@@ -179,6 +180,7 @@ async function updateCustomerQuote(req, res){
     updateQuote.Description=req.body.Description;
     updateQuote.CustomerName=req.body.CustomerName;
     updateQuote.Customer=req.body.Customer;
+    updateQuote.AddressedTo=req.body.AddressedTo;
     updateQuote.SubTotal=parseFloat(req.body.SubTotal).toFixed(2);
 
     updateQuote.Total=parseFloat(req.body.Total).toFixed(2);
@@ -720,13 +722,13 @@ async function ImprimirCotizacionPDF(req, res) {
 }
 
  
-async function ImprimirCotizacionPDsF(req,res){
+async function ImprimirCotizacionHtmlPDF(req,res){
     const { id, logo } = req.params;
     let img = "https://ucontrolv1.herokuapp.com/api/get-logo/" + logo;
     
-    const ubicacionPlantilla = require.resolve("../plantillas/cotizacion.php");
+    const ubicacionPlantilla = require.resolve("../plantillas/cotizacion.php");  //es php porq heroku no lee html
     let contenidoHtml = fs.readFileSync(ubicacionPlantilla, 'utf8')
-        console.log("CONTENIDI", contenidoHtml);
+       
 
         //se busca la informacion de la cotizacion (header)
     let cotizacion = await CustomerQuote.findOne({ _id: req.params.id })
@@ -807,7 +809,7 @@ async function ImprimirCotizacionPDsF(req,res){
         contenidoHtml = contenidoHtml.replace("{{nombreEmpresa}}", cotizacion.User.Company.Name);
         contenidoHtml = contenidoHtml.replace("{{direccionEmpresa}}", cotizacion.User.Company.Address);
         contenidoHtml = contenidoHtml.replace("{{webEmpresa}}", cotizacion.User.Company.Web);
-        contenidoHtml = contenidoHtml.replace("{{correoEmpresa}}", cotizacion.User.UserName);
+        contenidoHtml = contenidoHtml.replace("{{correoEmpresa}}", cotizacion.User.Email);
         contenidoHtml = contenidoHtml.replace("{{para}}", cotizacion.Customer.Images?cotizacion.Customer.Images:cotizacion.Customer.Name);
         contenidoHtml = contenidoHtml.replace("{{cliente}}", cotizacion.Customer.Name);
         contenidoHtml = contenidoHtml.replace("{{direccion}}", cotizacion.Customer.City+ ","+ cotizacion.Customer.ZipCode+","+cotizacion.Customer.Country);
@@ -1029,5 +1031,5 @@ module.exports={
     getQuotesbyCustomers,
     ImprimirCotizacionPDF,
     pdfMakePrueba,
-    ImprimirCotizacionPDsF
+    ImprimirCotizacionHtmlPDF
 }

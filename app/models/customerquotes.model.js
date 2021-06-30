@@ -27,6 +27,8 @@ const CustomerQuoteSchema = Schema({
     ref: "Company",
     // autopopulate: true,
   },
+  
+ AddressedTo:String  //dirigido a
 })
 
 module.exports = mongoose.model('CustomerQuote', CustomerQuoteSchema)
