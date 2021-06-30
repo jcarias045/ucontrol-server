@@ -51,9 +51,20 @@
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
         width: 100%;
-        font-size: 10px;
+        font-size: 15px;
         }
-        
+        #tb-info {
+        font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 15px;
+        }
+
+        #codigo {
+        font-family: Arial, Helvetica, sans-serif;
+    
+        font-size: 15px;
+        }
 </style>
 
            <body>
@@ -82,7 +93,7 @@
                      <td style='text-align:right' width='450px'>
                          <div class='col'
                          <small>Cotización</small>
-                         <h1 class='h2'> # {{codigo}} </h1>
+                         <p class='codigo'> # {{codigo}} </p>
                         
                      </td>
                  </tr>
