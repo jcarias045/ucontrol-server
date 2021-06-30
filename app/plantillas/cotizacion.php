@@ -72,7 +72,7 @@
             border-radius: 4px;
             padding: 5px;
             width: 100px;
-            height: 150px;
+            height: 100px;
         }
         p{
             
