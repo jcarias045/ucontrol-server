@@ -16,7 +16,7 @@ const InventoryTraceabilitySchema = Schema({
     ref: "Inventory",
     // autopopulate: true,
   },
- MovDate:String,
+ MovDate:String,  //fecha de movimiento
  MovementType:{type: Schema.ObjectId, 
   ref: "MovementType",
   // autopopulate: true,

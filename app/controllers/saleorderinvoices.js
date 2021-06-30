@@ -2329,31 +2329,31 @@ async function createSaleOrderInvoiceWithOrder2(req, res){
         let chequeMov;
         let chequeTipo;
         if(PaymentMethodName==="Transferencia"){
-            idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
+            idMovimiento=await bankMovement.findOne({Name:'Transferencias'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-            idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
+            idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
         }
         if(PaymentMethodName==="Contado"){
-            efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
+            efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
         }
 
         if(PaymentMethodName==="TarjetadeCredito"){
-            tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
+            tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-            tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
+            tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
         
         }
         if(PaymentMethodName==="Cheque"){
-            chequeMov=await bankMovement.findOne({Name:'Abono', Company:companyId},['_id'])
+            chequeMov=await bankMovement.findOne({Name:'Abono'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-            chequeTipo=await movementType.findOne({Name:'Cheque', Company:companyId},['_id'])
+            chequeTipo=await movementType.findOne({Name:'Cheque'},['_id'])
             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
         }
@@ -3857,23 +3857,23 @@ async function createSaleOrderInvoice2(req, res){
                     let tarjetaCreditoMov;
                     let tarjetaTipo;
                     if(PaymentMethodName==="Transferencia"){
-                    idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:companyId},['_id'])
+                    idMovimiento=await bankMovement.findOne({Name:'Transferencias'},['_id'])
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-                    idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa', Company:companyId},['_id'])
+                    idTipoMovimiento=await movementType.findOne({Name:'Transferencia Externa'},['_id'])
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
                     }
                     if(PaymentMethodName==="Contado"){
-                    efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:companyId},['_id'])
+                    efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso'},['_id'])
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                     }
 
                     if(PaymentMethodName==="TarjetadeCredito"){
-                    tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:companyId},['_id'])
+                    tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta'},['_id'])
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-                    tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:companyId},['_id'])
+                    tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito'},['_id'])
                     .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                     
                     }

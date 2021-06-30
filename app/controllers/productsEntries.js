@@ -176,7 +176,7 @@ async function createProductEntry(req, res){
                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                 let quantityInvoice=await purchaseInvoiceDetails.findOne({_id:item.PurchaseInvoiceDetail},'Quantity')
                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                console.log("INGRASADOS",proIngresados.Ingresados);
+                                console.log("INGRASADOS",item.PurchaseInvoiceDetail);
                                 let cantidad=0.0;
                                 let ingresos=0.0;
                                 let productRestante=0.0;

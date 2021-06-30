@@ -584,7 +584,7 @@ async function createSaleOrderWithQuote(req, res){
                                                 inventorytraceability.DocumentId=SaleOrderId;
                                                 inventorytraceability.DocumentNumber=codorder;
                                                 inventorytraceability.DocType="Orden de Venta";
-
+                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                         // res.status(500).send({message: err});
@@ -779,7 +779,7 @@ async function updateSaleOrder(req, res){
                                                 reversionInventario.DocumentId=saleId;
                                                 inventorytraceability.DocumentNumber=codorder;
                                                 inventorytraceability.DocType="Orden de Venta";
-
+                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                                 reversionInventario.save((err, traceabilityStored)=>{
                                                     if(err){

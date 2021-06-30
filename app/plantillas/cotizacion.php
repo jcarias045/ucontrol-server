@@ -27,10 +27,11 @@
         border-collapse: collapse;
         width: 100%;
         font-size: 10px;
+        
         }
 
         #customers td, #customers th {
-        /* border: 1px solid #ddd; */
+        border: 1px solid #fff;
         padding: 8px;
         }
 
@@ -143,8 +144,8 @@
          <div class='row'>
              <table id='tb-info'>
                  <tr>
+                     <td> <span > Cotización generada por: {{nombreusEmpresa}} </span></td>
                      <td> <span > Fecha {{fecha}} </span></td>
-                    
                      <td style='text-align:right'>
                          
                          <span class='codigo '> Cotización # {{codigo}} </span>
@@ -204,25 +205,24 @@
                          {{tablaProductos}}
                      </tbody>
                      <tfoot>
-                         <tr>
-                             <td colspan='3' class='pie'>
-                                 <h4>Subtotal</h4>
+                         
+                         <tr style="border-bottom: hidden;  text-align: right;">
+                             <td colspan='5' style="border-right: ; border-left: ;"  class='pie'>
+                                 <h4>Subtotal {{subtotal}}</h4>
                              </td>
-                             <td colspan='2'>
-                                 <h4>{{subtotal}}</h4>
-                             </td>
+                             <!-- <td colspan='2' >
+                                 <h4></h4>
+                             </td> -->
                          </tr>
-                         <tr>
-                             <td colspan='3' class='pie' ></td>
-                             <td colspan='2'>{{impuestos}}</td>
+                         <tr style="border: ; text-align: right; border-right: ;"> 
+                           
+                             <td colspan='5' style="border-right: ;" >{{impuestos}}</td>
                          </tr>
-                         <tr>
-                             <td colspan='3' class='pie'>
-                                 <h4>Total</h4>
+                         <tr style="border: ; text-align: right; border-right: ;">
+                             <td colspan='5' style="border-top: hidden;" class='pie'>
+                                 <h3>Total  {{total}}</h3>
                              </td>
-                             <td colspan='2'>
-                                 <h4>{{total}}</h4>
-                             </td>
+                           
                          </tr>
                      </tfoot>
                  </table>

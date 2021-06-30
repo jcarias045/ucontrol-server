@@ -61,10 +61,10 @@ async function updateCashAccount(req, res){
 async function desactivateBanksAccounts(req, res) {
     
     let CashAccountId = req.params.id;
-    console.log(req.params.id); 
-    
-    const {State} = req.body;  //
+    console.log("hla",req.params.id); 
     console.log(req.body);
+    const {State} = req.body;  //
+    
     try{
         
          cashAccount.findByIdAndUpdate(CashAccountId, {State}, (CashAccountStored) => {
@@ -72,6 +72,7 @@ async function desactivateBanksAccounts(req, res) {
                 res.status(404).send({ message: "No se ha encontrado la plaza." });
             }
             else {
+                console.log("edito",CashAccountStored);
                 res.status(200).send({ cuenta:CashAccountStored  });
             }
         })

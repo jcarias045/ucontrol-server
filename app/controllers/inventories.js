@@ -207,6 +207,7 @@ function getKardex(req, res){
    .populate({path:'WarehouseOrigin' , model: 'Inventory', populate: {path: 'Bodega', model: 'Bodega', match:{Company: id}}})
    .populate({path:'WarehouseDestination', model: 'Inventory', populate: {path: 'Bodega', model: 'Bodega', match:{Company: id}}})
    .populate({path: 'User', model: 'User'})
+   .sort({MovDate:-1})
      .then(inventory => {
          if(!inventory){
              res.status(404).send({message:"No hay "});
