@@ -96,7 +96,7 @@
           
             padding: 5px;
             width: 100px;
-            height: 100px;
+            height: 110px;
         }
         p {
             font-family: Arial;
