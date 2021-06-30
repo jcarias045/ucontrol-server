@@ -800,7 +800,7 @@ async function ImprimirCotizacionHtmlPDF(req,res){
         const descuento = 0;
          subtotal = cotizacion.SubTotal;
         let imgEmpresa=path.resolve(img);
-       
+        var date = new Date(cotizacion.CreationDate);
         // Remplazar el valor {{tablaProductos}} por el verdadero valor
         let imagenLogo= ` <img class="imagen" width="150px" height="200px" src="${img}" alt="Logobtipo" >`;
         contenidoHtml = contenidoHtml.replace("{{tablaProductos}}", tabla);
@@ -815,7 +815,7 @@ async function ImprimirCotizacionHtmlPDF(req,res){
         contenidoHtml = contenidoHtml.replace("{{cliente}}", cotizacion.Customer.Name);
         contenidoHtml = contenidoHtml.replace("{{direccion}}", cotizacion.Customer.City+ ","+ cotizacion.Customer.ZipCode+","+cotizacion.Customer.Country);
         contenidoHtml = contenidoHtml.replace("{{correo}}", cotizacion.Customer.Email);
-        contenidoHtml = contenidoHtml.replace("{{fecha}}", cotizacion.CreationDate);
+        contenidoHtml = contenidoHtml.replace("{{fecha}}", date.toLocaleDateString());
         contenidoHtml = contenidoHtml.replace("{{codigo}}", cotizacion.CodCustomerQuote);
         contenidoHtml = contenidoHtml.replace("{{comentariosCotizacion}}", cotizacion.Description);
         contenidoHtml = contenidoHtml.replace("{{saludo}}", "Gracias por la preferencia, " + cotizacion.Customer.Name +
