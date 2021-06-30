@@ -20,9 +20,7 @@
             text-align: right;
         }
 
-        p {
-        font-size: 14px;
-        }
+      
         #customers {
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
@@ -51,7 +49,7 @@
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
         width: 100%;
-        font-size: 15px;
+        font-size: 12px;
         }
         #customers td{
         border: 1px solid #ddd;
@@ -68,6 +66,12 @@
         font-family: Arial, Helvetica, sans-serif;
     
         font-size: 15px;
+        }
+        img{
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 5px;
+            width: 150px;
         }
 </style>
 
