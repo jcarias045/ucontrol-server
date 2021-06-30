@@ -114,9 +114,9 @@
             font-weight: bold;
         }
         #footer {
-            font-family: Arial;
+            font-family: "Times New Roman", Times, serif;
             font-size: 5px;
-            font-weight: bold;
+           
             text-align:center
         }
 </style>
