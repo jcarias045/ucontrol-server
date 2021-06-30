@@ -12,7 +12,7 @@
 
         .empresa {
         font-size: 10px;
-        font: small-caption;
+       
         }
         .cliente {
         font-size: 15px;
@@ -63,10 +63,23 @@
         font-size: 8px;
         }
 
+        #tb-empresa {
+        font-family: Arial, Helvetica, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 10px;
+        font: small-caption;
+        }
+        
+        #tb-empresa td, #tb-empresa th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        }
+
         #codigo {
         font-family: Arial, Helvetica, sans-serif;
-    
-        font-size: 15px;
+        text-align: right;
+        font-size: 20px;
         }
         img{
           
@@ -75,7 +88,8 @@
             height: 100px;
         }
         p {
-            
+            font-family: "Segoe UI";
+            font-size: 12px;
             }
         #logotd{
             width: 150px;
@@ -92,10 +106,10 @@
                      <td class='logotd'> <img src='{{logo}}' /></td>
                      
                      <td style='text-align:right' width='400px'>
-                         <div class='col'
-                             <p class='empresa'> {{nombreEmpresa}} </p>
-                             <p class='empresa'> {{direccionEmpresa}} </p>
-                             <p class='empresa'> {{webEmpresa}} </p>
+                        
+                             <p> {{nombreEmpresa}}</p> <br/>
+                              {{direccionEmpresa}} <br/>
+                              {{webEmpresa}} <br/>
                         
                      </td>
                  </tr>
@@ -108,7 +122,7 @@
                     
                      <td>
                          
-                         <p class='codigo pie'> Cotización # {{codigo}} </p>
+                         <p class='codigo '> Cotización # {{codigo}} </p>
                         
                      </td>
                  </tr>
