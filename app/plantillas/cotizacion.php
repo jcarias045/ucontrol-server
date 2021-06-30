@@ -60,9 +60,13 @@
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
         width: 100%;
-        font-size: 8px;
+        font-size: 10px;
         }
-
+        #tb-info td, #tb-info th {
+        border: 1px solid #ddd;
+        padding: 8px;
+        
+        }
         #tb-empresa {
         font-family: Arial, Helvetica, sans-serif;
         border-collapse: collapse;
@@ -120,9 +124,9 @@
                  <tr>
                      <td> <p> Fecha</p>  {{fecha}}</td>
                     
-                     <td>
+                     <td style='text-align:right'>
                          
-                         <p class='codigo '> Cotización # {{codigo}} </p>
+                         <span class='codigo '> Cotización # {{codigo}} </span>
                         
                      </td>
                  </tr>
