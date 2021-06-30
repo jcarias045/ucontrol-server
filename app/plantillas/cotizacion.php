@@ -108,7 +108,7 @@
                     
                      <td>
                          
-                         <p class='codigo'> Cotización # {{codigo}} </p>
+                         <p class='codigo pie'> Cotización # {{codigo}} </p>
                         
                      </td>
                  </tr>
