@@ -34,16 +34,16 @@
         padding: 8px;
         }
 
-        #customers tr:nth-child(even){background-color: #f2f2f2;}
+        #customers tr:nth-child(even){background-color: ;}
 
-        #customers tr:hover {background-color: #ddd;}
+        #customers tr:hover {background-color: #;}
 
         #customers th {
         padding-top: 12px;
         padding-bottom: 12px;
         text-align: left;
-        background-color: #04AA6D;
-        color: white;
+        background-color: #D7E2E2;
+        color: black;
         }
 
         #tb-cliente {

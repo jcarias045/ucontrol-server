@@ -841,8 +841,8 @@ async function ImprimirCotizacionPDsF(req,res){
             contents: {
             //   first: 'Cover page',
             //   2: 'Second page', // Any page number is working. 1-based index
-              default: " <small class='h6 text-center'> Gracias por la preferencia, " + cotizacion.Customer.Name +
-              ", saludos, " + cotizacion.User.Company.Name +"</small>" // fallback value
+              default: " <p > Gracias por la preferencia, " + cotizacion.Customer.Name +
+              ", saludos, " + cotizacion.User.Company.Name +"</p>" // fallback value
             //   last: 'Last Page'
             }
           },
