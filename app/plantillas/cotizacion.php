@@ -30,7 +30,7 @@
         }
 
         #customers td, #customers th {
-        border: 1px solid #ddd;
+        /* border: 1px solid #ddd; */
         padding: 8px;
         }
 
@@ -53,7 +53,7 @@
         font-size: 10px;
         }
         #tb-cliente td, #tb-cliente th {
-        border: 1px solid #ddd;
+        /* border: 1px solid #ddd; */
         padding: 8px;
         }
         #tb-cliente span {
@@ -70,7 +70,7 @@
         font-size: 10px;
         }
         #tb-info td, #tb-info th {
-        border: 1px solid #ddd;
+        /* border: 1px solid #ddd; */
         padding: 8px;
         
         }
@@ -83,7 +83,7 @@
         }
         
         #tb-empresa td, #tb-empresa th {
-        border: 1px solid #ddd;
+        /* border: 1px solid #ddd; */
         padding: 8px;
         }
 
