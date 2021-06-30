@@ -12,6 +12,7 @@
 
         .empresa {
         font-size: 10px;
+        font: small-caption;
         }
         .cliente {
         font-size: 15px;
@@ -68,15 +69,14 @@
         font-size: 15px;
         }
         img{
-            border: 1px solid #ddd;
-            border-radius: 4px;
+          
             padding: 5px;
             width: 100px;
             height: 100px;
         }
-        p{
+        p {
             
-        }
+            }
         #logotd{
             width: 150px;
             height: 200px;
