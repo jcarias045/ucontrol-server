@@ -800,10 +800,10 @@ async function ImprimirCotizacionPDsF(req,res){
         let imgEmpresa=path.resolve(img);
        
         // Remplazar el valor {{tablaProductos}} por el verdadero valor
-        let imagenLogo= ` <img class="imagen" width="150px" height="200px" src="${img}" alt="Logobtipo" border="1" >`;
+        let imagenLogo= ` <img class="imagen" width="150px" height="200px" src="${img}" alt="Logobtipo" >`;
         contenidoHtml = contenidoHtml.replace("{{tablaProductos}}", tabla);
         contenidoHtml = contenidoHtml.replace("{{impuestos}}", tableImpuestos);
-        contenidoHtml = contenidoHtml.replace("{{logo}}", imagenLogo);
+        contenidoHtml = contenidoHtml.replace("{{logo}}", img);
         contenidoHtml = contenidoHtml.replace("{{nombreEmpresa}}", cotizacion.User.Company.Name);
         contenidoHtml = contenidoHtml.replace("{{direccionEmpresa}}", cotizacion.User.Company.Address);
         contenidoHtml = contenidoHtml.replace("{{webEmpresa}}", cotizacion.User.Company.Web);

@@ -71,8 +71,8 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             padding: 5px;
-            width: 150px;
-            height: 200px;
+            width: 100px;
+            height: 150px;
         }
         p{
             
@@ -89,8 +89,8 @@
          <div class='row'>
              <table id='tb-empresa'>
                  <tr>
-                     <td class='logotd'> {{logo}}</td>
-                    
+                     <td class='logotd'> <img src='{{logo}}' /></td>
+                     
                      <td style='text-align:right' width='400px'>
                          <div class='col'
                              <p class='empresa'> {{nombreEmpresa}} </p>
