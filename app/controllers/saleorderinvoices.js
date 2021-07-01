@@ -4940,67 +4940,67 @@ async function ImprimirPdf(req, res) {
     }
 }
 
-var pdf = require('html-pdf')
+//var pdf = require('html-pdf')
 //funcion para probar la libreria html-pdf
-async function InvoiceHtmlPdf(req, res) {
-    var html = fs.readFileSync('app/templates/factura1.php', 'utf8');
-    var options = { format: 'Letter' }
-    //obteniendo la informacion que se mostrara en la factura
-    //obtenmos la cabecera de la factura
-    let facturas = await saleOrderInvoice.findOne({ _id: req.params.id })
-        .populate({
-            path: 'Customer', model: 'Customer'
-            , populate: { path: 'Sector', model: 'Sector' }
-        })
-        .populate({ path: 'User', model: 'User', populate: { path: 'Company', model: 'Company' } })
-        .populate({ path: 'SaleOrder', model: 'SaleOrder' })
-        .populate({
-            path: 'DocumentCorrelative', model: 'DocumentCorrelative'
-            , populate: { path: 'DocumentType', model: 'DocumentType' }
-        })
-        .then((facturas1) => { return facturas1 }).catch(err => { console.log("error en proveedir"); return err });
-    console.log(facturas);
-    //obtemos el cuerpo de la factura es decir todos sus prodcuctos
-    let resultado = await saleOrderInvoiceDetails.find({ SaleOrderInvoice: facturas._id })
-        .populate({
-            path: 'Inventory', model: 'Inventory',
-            populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),
-            populate: ({
-                path: 'Product', model: 'Product',
-                populate: { path: 'Measure', model: 'Measure' }
-            }
-            )
-        })
-        .populate({ path: 'SaleOrderInvoice', model: 'SaleOrderInvoice' })
-        .then((resultado1) => { return resultado1 }).catch(err => { console.log("error en proveedir"); return err });
-    //fin de busqueda de informacion
+// async function InvoiceHtmlPdf(req, res) {
+//     var html = fs.readFileSync('app/templates/factura1.php', 'utf8');
+//     var options = { format: 'Letter' }
+//     //obteniendo la informacion que se mostrara en la factura
+//     //obtenmos la cabecera de la factura
+//     let facturas = await saleOrderInvoice.findOne({ _id: req.params.id })
+//         .populate({
+//             path: 'Customer', model: 'Customer'
+//             , populate: { path: 'Sector', model: 'Sector' }
+//         })
+//         .populate({ path: 'User', model: 'User', populate: { path: 'Company', model: 'Company' } })
+//         .populate({ path: 'SaleOrder', model: 'SaleOrder' })
+//         .populate({
+//             path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+//             , populate: { path: 'DocumentType', model: 'DocumentType' }
+//         })
+//         .then((facturas1) => { return facturas1 }).catch(err => { console.log("error en proveedir"); return err });
+//     console.log(facturas);
+//     //obtemos el cuerpo de la factura es decir todos sus prodcuctos
+//     let resultado = await saleOrderInvoiceDetails.find({ SaleOrderInvoice: facturas._id })
+//         .populate({
+//             path: 'Inventory', model: 'Inventory',
+//             populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),
+//             populate: ({
+//                 path: 'Product', model: 'Product',
+//                 populate: { path: 'Measure', model: 'Measure' }
+//             }
+//             )
+//         })
+//         .populate({ path: 'SaleOrderInvoice', model: 'SaleOrderInvoice' })
+//         .then((resultado1) => { return resultado1 }).catch(err => { console.log("error en proveedir"); return err });
+//     //fin de busqueda de informacion
 
-    let rowProducts = ``;
-    resultado.forEach(function (valor) {
-        rowProducts +=
-            `<tr>
-        <td>${valor.Quantity}</td>
-        <td>${valor.ProductName}</td>
-        <td>${valor.Price}</td>
-        </tr>   `
-    })
+//     let rowProducts = ``;
+//     resultado.forEach(function (valor) {
+//         rowProducts +=
+//             `<tr>
+//         <td>${valor.Quantity}</td>
+//         <td>${valor.ProductName}</td>
+//         <td>${valor.Price}</td>
+//         </tr>   `
+//     })
 
-    //reemplazando elementos en el html
-    html = html.replace("{{tablaProductos}}", rowProducts);
-    html = html.replace("{{nombrecliente}}", facturas.Customer.Name)
-    html = html.replace("{{fechafactura}}", facturas.Customer.InvoiceDate)
-    html = html.replace("{{direccion}}", facturas.Customer.Address)
-    html = html.replace("{{nit}}", facturas.Customer.Nit)
-    html = html.replace("{{condicion}}", `<p>${facturas.Customer.PaymentCondition}</p>`)
+//     //reemplazando elementos en el html
+//     html = html.replace("{{tablaProductos}}", rowProducts);
+//     html = html.replace("{{nombrecliente}}", facturas.Customer.Name)
+//     html = html.replace("{{fechafactura}}", facturas.Customer.InvoiceDate)
+//     html = html.replace("{{direccion}}", facturas.Customer.Address)
+//     html = html.replace("{{nit}}", facturas.Customer.Nit)
+//     html = html.replace("{{condicion}}", `<p>${facturas.Customer.PaymentCondition}</p>`)
 
-    pdf.create(html, options).toFile('app/download/factura1.pdf', function (err, res) {
-        if (err) {
-            console.log(err)
-        } else {
-            console.log(res)
-        }
-    });
-}
+//     pdf.create(html, options).toFile('app/download/factura1.pdf', function (err, res) {
+//         if (err) {
+//             console.log(err)
+//         } else {
+//             console.log(res)
+//         }
+//     });
+// }
 
 
 async function getSalesThisMonth(req, res) {
@@ -5103,7 +5103,6 @@ async function getSalesLastMonth(req, res) {
         }).catch(err => { console.log(err) })
 }
 module.exports = {
-    InvoiceHtmlPdf,
     getSaleOrderInvoices,
     getSaleOrdersClosed,
     getSaleOrderInfo,
