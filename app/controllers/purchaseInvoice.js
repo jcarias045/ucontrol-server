@@ -26,7 +26,7 @@ function getSuppliersInvoices(req, res){
             if(!facturas){
                 res.status(404).send({message:"No hay "});
             }else{
-                console.log(facturas);
+                //console.log(facturas);
                 var invoices = facturas.filter(function (item) {
                     return item.Supplier!==null;
                   });
@@ -474,6 +474,8 @@ async function createSupplierInvoice(req, res){
 }
 
 async function createNewSupplierInvoice(req, res){  //creacion de factura sin orden de compra
+
+    console.log("si es esta la funcion para crear facturas sin orden de compra");
     const invoice= new purchaseInvoice();
     const entryData=new productEntry();
 
@@ -488,11 +490,11 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
 
-    console.log(invoiceDetalle);
+    //console.log(invoiceDetalle);
     var date = new Date(fechaInvoice);
-   console.log("fecha factura",date);
+   //console.log("fecha factura",date);
    date.setDate(date.getDate() + diasEntrega); //calculo de le fecha de entrega
-   console.log("dia de entrega", date);
+   //console.log("dia de entrega", date);
 
 
     const {PurchaseOrder,InvoiceDate,Supplier,InvoiceNumber,Total,User
@@ -595,7 +597,7 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
             else{
                 let invoiceId=invoiceStored._id;
                 let invoiceN=invoiceStored.InvoiceNumber;
-                 console.log(invoiceStored);
+                 //console.log(invoiceStored);
                 if(invoiceDetalle.length>0){
                     invoiceDetalle.map(async item => {
                     details.push({   //creacion del arreglo de objetos (detalle de prodcutos de la factura)
@@ -648,7 +650,8 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
                     });
                 }
 
-                if(!requiredIncome){    //si ingreso requerido =falso entonces se registra entrada de producto al generar la factura
+                if(requiredIncome == false){    //si ingreso requerido =falso entonces se registra entrada de producto al generar la factura
+                    console.log("entro a la condicion para saber si es falso el registro requerido");
                     entryData.EntryDate=creacion;
                     entryData.User=User;
                     entryData.Comments="Ingreso automatico "+creacion;
@@ -697,7 +700,8 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
 
                                             let inStock=await inventory.findOne({_id:item.Inventory},'Stock')  //stock actual del producto
                                             .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
-                                            console.log('EN STOCK:',inStock);
+                                            console.log('EN STOCK actual del producto:',inStock);
+                                            console.log("AaAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
                                             inventory.findByIdAndUpdate({_id:item.Inventory},{  //ingresamos a inventario el producto
                                                 Stock:parseFloat(inStock.Stock + item.Quantity),
                                             })
@@ -705,7 +709,7 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
                                          })
                                         productEntryDetails.insertMany(entryDataDetail).then(async function (entries) {
                                             console.log("movimiento de inventario");
-                                            console.log(entries);
+                                            //console.log(entries);
                                             let movementId=await MovementTypes.findOne({Name:'ingreso'},['_id'])
                                                 .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
                                             const inventorytraceability= new inventoryTraceability();
@@ -735,7 +739,7 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
                                                       console.log("NO INSERTO TRANSACCION DE INVENTARIO");
                                                 }else {
 
-                                                        console.log(entries);
+                                                        //console.log(entries);
 
                                                 }
                                              });
@@ -759,30 +763,30 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
 
                         if(invoiceDetalle.length>0){
                             invoiceDetalle.map(item => {
-                                console.log(item.totalImpuestos);
-                                console.log(item.total);
-                                console.log(item.Price);
-                                console.log('stock',item.Stock);
+                               // console.log(item.totalImpuestos);
+                               // console.log(item.total);
+                               // console.log(item.Price);
+                              //  console.log('stock',item.Stock);
                                 //CALCULO DEL COSTO PROMEDIO
                                 let facturaProveedor=tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total;
                                 let fact1=parseFloat((item.Stock*item.Price)+facturaProveedor);
                                 let fact2=parseFloat(item.Stock)+parseFloat(item.Quantity);
-                                console.log('fact1',fact2);
-                                console.log('fact2',fact1);
+                               // console.log('fact1',fact2);
+                               // console.log('fact2',fact1);
                                 costo=parseFloat((fact1)/(fact2));
                                 let costoprom={
                                     AverageCost : parseFloat(averageCost?parseFloat(costo):
                                     (tipoProveedor==='CreditoFiscal'? item.totalImpuestos:item.total ))
 
                                 }
-                                console.log('costo promedio prodcutos nuevows',costo);
+                              //  console.log('costo promedio prodcutos nuevows',costo);
                                 //fin
                                 product.updateMany({_id: item.ProductId},costoprom)  //actualizamos costo promedio
                                 .then(function () {
-                                    console.log("Se actualizo costo promedio nuevo");
+                              //      console.log("Se actualizo costo promedio nuevo");
                                 })
                                 .catch(function (err) {
-                                    console.log(err);
+                             //       console.log(err);
                                 });
                             })
                         }
@@ -801,7 +805,7 @@ async function createNewSupplierInvoice(req, res){  //creacion de factura sin or
                         console.log(err);
                         console.log(err);
                     }else{
-                        console.log("DEUDA ACTUATILZADA",updateDeuda);
+                       // console.log("DEUDA ACTUATILZADA",updateDeuda);
                     }
                 });
 

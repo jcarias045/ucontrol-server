@@ -27,4 +27,7 @@ router.get('/get-productifrecipe/:id', products.getProductsRecipes); //para obte
 router.get('/get-productdata/:id', products.getProductData); //para obtener solo informacion del prodcuto seleccionado
 router.get('/get-recipedetailsinventary/:id/:company', products.getRecipeDetails); //para obtener solo informacion del prodcuto seleccionado
 
+//obteniendo producto por codigo
+router.get('/get-product-cod/:codproduct/:companyId', products.getProductByCod)
+
 module.exports = router;

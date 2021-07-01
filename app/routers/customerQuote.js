@@ -1,8 +1,6 @@
+const quotes = require('../controllers/customerQuotes');
 let express = require('express');
 let router = express.Router();
-
-
-const quotes = require('../controllers/customerQuotes');
 
 
 router.get('/get-customerquotes/:id/:company/:profile', quotes.getCustomerQuote);

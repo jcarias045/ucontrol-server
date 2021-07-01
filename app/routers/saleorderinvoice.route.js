@@ -20,7 +20,10 @@ router.put('/anular-saleorderinvoice/:id', saleinvoice.anularSaleInovice);
 router.get('/get-saleinvoicesnopagadas/:id/:company', saleinvoice.getSaleInvoicesNoPagadas);
 router.get('/get-saleinvoiceheader/:id/:user/:company', saleinvoice.getSaleInvoiceHeader);
 router.get('/get-saleinvoicenoingresados/:id', saleinvoice.getSaleInvoicePendientesIngreso);
-router.get('/get-saleorderinvoicepdf/:id', saleinvoice.ImprimirPdf);
+//ruta para imprimir pedf de una factura de venta
+router.get('/get-saleorderinvoicepdf/:id/:companyId', saleinvoice.ImprimirPdf);
+//ruta 2 para generar factura
+//router.get('/get-invoice-sale/:id', saleinvoice.InvoiceHtmlPdf);
 router.get('/get-charges/:id/:user/:profile', saleinvoice.getChargestoCustomers);
 router.get('/get-saleorderinvoicebycustomer/:id/:fecha1/:fecha2', saleinvoice.getSaleOrderInvoicebyCustomers);
 router.post('/pruebascorrelativos', saleinvoice.funcionPruebaCorrelativos);

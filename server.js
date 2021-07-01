@@ -76,6 +76,8 @@ let cashTransactionRoutes= require('./app/routers/cashtransaction.route');
 let checkbookRoutes= require('./app/routers/checkbook.route');
 let writeCheckRoutes= require('./app/routers/writecheck.route');
 let accountingAccountsRoutes= require('./app/routers/accountingaccounts.route');
+//tomando las rutas de coordinate
+let coordinatesRoutes = require('./app/routers/coordinatesInvoice.route');
 
 
 
@@ -184,7 +186,8 @@ app.use('/api',cashTransactionRoutes);
 app.use('/api',checkbookRoutes);
 app.use('/api',writeCheckRoutes);
 app.use('/api',accountingAccountsRoutes);
-
+//ruta de coordinate
+app.use('/api',coordinatesRoutes);
 
 
 if(process.env.NODE_ENV === 'production'){
