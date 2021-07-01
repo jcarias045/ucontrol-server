@@ -87,7 +87,7 @@ async function createCustomerQuote(req, res) {
 
         });
     console.log("CODUIGO COT", codigoQuote);
-    //sumando 1 para siguiente correlativo 
+    //sumando 1 para siguiente correlativo
     if (!codigoQuote) {
         codigo = 1;
     } else { codigo = codigoQuote + 1 }
@@ -312,19 +312,35 @@ async function changeQuoteState(req, res) {
 
 function getCustomerAllQuotesDetails(req, res) { //pendiente
 
-    QuoteDetails.find().populate({
-        path: 'Inventory', model: 'Inventory',
-        populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),
-        populate: ({ path: 'Product', model: 'Product', populate: { path: 'Measure', model: 'Measure' } })
-    })
-        .populate({ path: 'CustomerQuotes', model: 'CustomerQuotes' })
+    const companyId = req.params.companyId;
+    console.log(companyId)
+    CustomerQuote.find({ Company: req.params.companyId })
+        .populate({
+            path: 'Inventory', model: 'Inventory',
+            populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),
+            populate: ({ path: 'Product', model: 'Product', populate: { path: 'Measure', model: 'Measure' } })
+        })
+        .populate({ path: 'CustomerQuoteDetails', model: 'CustomerQuoteDetails' })
         .then(quote => {
             if (!quote) {
                 res.status(404).send({ message: "No hay " });
             } else {
                 res.status(200).send({ quote })
             }
-        });
+        })
+    // QuoteDetails.find({ Company: req.params.companyId }).populate({
+    //     path: 'Inventory', model: 'Inventory',
+    //     populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),
+    //     populate: ({ path: 'Product', model: 'Product', populate: { path: 'Measure', model: 'Measure' } })
+    // })
+    //     .populate({ path: 'CustomerQuotes', model: 'CustomerQuotes' })
+    //     .then(quote => {
+    //         if (!quote) {
+    //             res.status(404).send({ message: "No hay " });
+    //         } else {
+    //             res.status(200).send({ quote })
+    //         }
+    //     });
 }
 
 function getQuotesbyCustomers(req, res) {
@@ -838,7 +854,7 @@ async function ImprimirCotizacionHtmlPDF(req, res) {
     // contenidoHtml = contenidoHtml.replace("{{impuestos}}", formateador.format(impuestos));
     contenidoHtml = contenidoHtml.replace("{{total}}", cotizacion.Total);
     var options = {
-        // directory: "/tmp", 
+        // directory: "/tmp",
         format: 'Letter',
         border: {
             top: "0.5in",            // default is 0, units: mm, cm, in, px
