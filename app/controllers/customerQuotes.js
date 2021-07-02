@@ -12,6 +12,7 @@ const taxes = require('../models/taxes.model');
 const pdf = require("html-pdf");
 const pdfMake = require("pdfmake/src/printer");
 const pdfFonts = require("pdfmake/build/vfs_fonts");
+const { ObjectID } = require("mongodb");
 
 // pdfMake.vfs = vfsFonts.pdfMake.vfs;
 
@@ -310,10 +311,33 @@ async function changeQuoteState(req, res) {
     })
 }
 
-function getCustomerAllQuotesDetails(req, res) { //pendiente
+//con esta funcion se obtiene los datos para generar el excel
+function getCustomerAllQuotesDetails(req, res) {
 
+    //se va a utilizar aggregate para obtener la informacion por fechas
+    //tomando las fechas que se reciben
+    let fecha1 = new Date(req.params.fecha1);
+    let fecha2 = new Date(req.params.fecha2);
+    console.log(fecha1)
+    console.log(fecha2);
     const companyId = req.params.companyId;
     console.log(companyId)
+
+    //utilizando aggregate
+    // CustomerQuote.aggregate([
+    //     {
+    //         $match: {
+    //             Company: ObjectID(companyId),
+    //             CreationDate: { $lte: fecha2, $gte: fecha1 }
+    //         }
+    //     }
+    // ])
+    //     .then(result => {
+    //         res.status(200).send(result)
+    //     })
+    //     .catch(err => { console.log(err) })
+
+
     CustomerQuote.find({ Company: req.params.companyId })
         .populate({
             path: 'Inventory', model: 'Inventory',
@@ -328,6 +352,7 @@ function getCustomerAllQuotesDetails(req, res) { //pendiente
                 res.status(200).send({ quote })
             }
         })
+
     // QuoteDetails.find({ Company: req.params.companyId }).populate({
     //     path: 'Inventory', model: 'Inventory',
     //     populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),

@@ -18,7 +18,7 @@ const CustomerQuoteSchema = Schema({
     ref: "User",
     // autopopulate: true,
   },
-  CreationDate: String,
+  CreationDate: Date,
   Description:String,
   Active:Boolean,
   CustomerName:String,
