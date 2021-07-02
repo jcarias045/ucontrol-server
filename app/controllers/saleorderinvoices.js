@@ -3613,7 +3613,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
 
 }
 
-async function getSalesForUsers(req, res) {
+async function getSalesForUsers(req, res) {  
     //se encarga de obtener todo lo facturado por los usuarios
     const id = req.params.id;
     const supplierId = req.params.customer;

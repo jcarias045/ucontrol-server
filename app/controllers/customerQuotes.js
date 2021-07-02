@@ -752,7 +752,7 @@ async function ImprimirCotizacionHtmlPDF(req, res) {
     let img = "https://ucontrolv1.herokuapp.com/api/get-logo/" + logo;
 
     const ubicacionPlantilla = require.resolve("../plantillas/cotizacion.php");  //es php porq heroku no lee html
-    let contenidoHtml = fs.readFileSync("../plantillas/cotizacion.php", 'utf8')
+    let contenidoHtml = fs.readFileSync(ubicacionPlantilla, 'utf8')
 
 
     //se busca la informacion de la cotizacion (header)
@@ -811,7 +811,7 @@ async function ImprimirCotizacionHtmlPDF(req, res) {
         if (cotizacion.Customer.TypeofTaxpayer === 'CreditoFiscal') {
             tableImpuestos += `
             <div>
-            ${item.Name} (${parseFloat(item.percentage)}): ${parseFloat(parseFloat(cotizacion.SubTotal) * parseFloat(item.percentage / 100)).toFixed(2)}
+            ${item.Name} (${parseFloat(item.percentage)}%): ${parseFloat(parseFloat(cotizacion.SubTotal) * parseFloat(item.percentage / 100)).toFixed(2)}
             <br/>
             </div>
             `;
