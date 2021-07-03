@@ -473,7 +473,7 @@ async function createSaleOrderWithQuote(req, res){
                             Inventory :item.Inventory._id,
                             Measure:item.Inventory.Product.Measure.Name,
                             CodProduct:item.CodProduct,
-                            SubTotal: parseFloat(parseFloat(item.Price) * parseFloat(item.Quantity)),
+                            SubTotal: parseFloat(item.SubTotal),
                             Product:item.Inventory.Product._id,
                             iniQuantity:parseFloat(item.Quantity) ,
                             // Priceiva:parseFloat(item.Priceiva)
