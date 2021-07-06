@@ -3,6 +3,7 @@ const Schema =  mongoose.Schema;
 const Customer = require('./customer.model');
 const User= require('./user.model');
 const CustomerQuote= require('./customerquotes.model');
+const Company = require('./company.model')
 
 const SaleOrderSchema = Schema({
   Customer: {type: Schema.ObjectId, 
@@ -26,7 +27,11 @@ const SaleOrderSchema = Schema({
     ref: "CustomerQuote",
     // autopopulate: true,
   },
-  AdvancePayment:Boolean
+  AdvancePayment:Boolean,
+  Company: {type: Schema.ObjectId, 
+    ref: "Company",
+    // autopopulate: true,
+  },
 })
 
 module.exports = mongoose.model('SaleOrder', SaleOrderSchema)

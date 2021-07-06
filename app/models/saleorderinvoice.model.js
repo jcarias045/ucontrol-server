@@ -6,6 +6,7 @@ const User = require('./user.model');
 const PaymentSupplier=require('./paymentstoSuppliers.model');
 const Product=require('./product.model');
 const DocumentCorrelative= require('./documentcorrelatives.model')
+const Company = require('./company.model')
 
 const SaleOrderInvoiceSchema = Schema({
   SaleOrder: {type: Schema.ObjectId, 
@@ -35,7 +36,11 @@ const SaleOrderInvoiceSchema = Schema({
     ref: "DocumentCorrelative",
     // autopopulate: true,
   },
-  iva:Number
+  iva:Number,
+  Company: {type: Schema.ObjectId, 
+    ref: "Company",
+    // autopopulate: true,
+  },
  
 })
 

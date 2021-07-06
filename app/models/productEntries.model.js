@@ -1,31 +1,36 @@
 const mongoose = require('mongoose');
-const Schema =  mongoose.Schema;
+const Schema = mongoose.Schema;
 const User = require('./user.model');
 const Company = require('./company.model');
 const Product = require('./product.model');
 const Supplier = require('./supplier.model');
 const ProductEntrySchema = Schema({
-  EntryDate:String,
-  User: {type: Schema.ObjectId, 
+  EntryDate: String,
+  User: {
+    type: Schema.ObjectId,
     ref: "User",
     // autopopulate: true,
   },
-  Comments:String,
-  State:Boolean,
-  CodEntry:Number,
-  Company: {type: Schema.ObjectId, 
+  Comments: String,
+  State: Boolean,
+  CodEntry: Number,
+  Company: {
+    type: Schema.ObjectId,
     ref: "Company",
     // autopopulate: true,
   },
-  PurchaseInvoice:String,
-  Supplier:String,
-  SupplierId:{type: Schema.ObjectId, 
+  PurchaseInvoice: String,
+  Supplier: String,
+  SupplierId: {
+    type: Schema.ObjectId,
     ref: "Supplier",
     // autopopulate: true,
   },
-  InvoiceNumber:String, 
- 
- 
+  InvoiceNumber: String,
+  ConceptEntryExit: {
+    type: Schema.ObjectId,
+    ref: "ConcepEntryExit"
+  }
 })
 
 
@@ -45,7 +50,7 @@ module.exports = mongoose.model('ProductEntry', ProductEntrySchema);
 //       },
 //       Comments	:{
 //         type: Sequelize.STRING,
-	  	
+
 //       },
 //       State:{
 //         type: Sequelize.BOOLEAN
@@ -57,12 +62,12 @@ module.exports = mongoose.model('ProductEntry', ProductEntrySchema);
 //       ID_Company:{
 //         type: Sequelize.INTEGER
 //       }
-      
-   
+
+
 // 	},{ //colocamos este parametro para que SEQUELIZE nos deje colocar el nombre del modelo y NO lo coloque plural
 //         freezeTableName: true,
 //         timestamps: false,
 // 	  });
-	
+
 // 	return productEntry;
 // }

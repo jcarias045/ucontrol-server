@@ -61,7 +61,7 @@ async function createPurchaseOrder(req,res){
     console.log(Supplier);
     let codigo=0;
 
-    let codigoPurchase=await PurchaseOrder.findOne().sort({CodPurchase:-1})   //de esta manera ggenero los numeros correlativos por empresa (1,2,3,...)
+    let codigoPurchase=await PurchaseOrder.findOne({Company: companyId}).sort({CodPurchase:-1})   //de esta manera ggenero los numeros correlativos por empresa (1,2,3,...)
     .populate({path: 'Supplier', model: 'Supplier', match:{Company: companyId}}).then(function(doc){
             if(doc){
                     if(doc.CodPurchase!==null){
@@ -89,6 +89,8 @@ async function createPurchaseOrder(req,res){
     orden.State='Abierta'; 
     orden.Description=Description; 
     orden.CodPurchase=codigo;
+    orden.Company=companyId;
+
    
     console.log(orden);
     orden.save((err, ordenStored)=>{

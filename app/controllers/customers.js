@@ -1,166 +1,171 @@
 const bcrypt = require("bcrypt-nodejs");
 const jwt = require("../services/jwt");
 const Customer = require("../models/customer.model");
-const company= require("../models/company.model");
+const company = require("../models/company.model");
 
 function createCustomer(req, res) {
 
     const customerNew = new Customer();
 
-    const { Name,LastName,codCustomer,Email, Password,Country,City,ZipCode,
-            Phone,MobilPhone,idNumber,Images,AccountsReceivable,Access,
-            PaymentTime, Discount, User, Company, Active, Sector, Sector1, Sector2,
-            Nit,Ncr,TypeofTaxpayer,PaymentCondition, Classification, Contributor, Exempt} = req.body;
-        
-            customerNew.Name = Name;
-            customerNew.LastName = LastName;
-            customerNew.codCustomer = codCustomer;
-            customerNew.Email = Email;
-            customerNew.Password = Password;
-            customerNew.Country = Country;
-            customerNew.City = City;
-            customerNew.ZipCode = ZipCode;
-            customerNew.Phone = Phone;
-            customerNew.MobilPhone = MobilPhone;
-            customerNew.idNumber = idNumber;
-            customerNew.Images = Images;
-            customerNew.AccountsReceivable = AccountsReceivable;
-            customerNew.Access = Access;
-            customerNew.PaymentTime = PaymentTime;
-            customerNew.Discount = Discount;
-            customerNew.User = User;
-            customerNew.Active= Active;
-            customerNew.Company = Company;
-            customerNew.Ncr=Ncr;
-            customerNew.Sector=Sector;
-            customerNew.Sector1=Sector1;
-            customerNew.Sector2=Sector2;
-            customerNew.Nit=Nit;
-            customerNew.TypeofTaxpayer = TypeofTaxpayer;
-            customerNew.PaymentCondition= PaymentCondition;
-            customerNew.Classification=Classification;
-            customerNew.Exempt=Exempt;
-            customerNew.Contributor=Contributor;
-            console.log(customerNew.codCustomer);
-            const comparar = customerNew.codCustomer;
-            console.log(comparar);
-            console.log(customerNew.Company);
-            const compararCompany = customerNew.Company;
-            console.log(compararCompany);
-            if (!Password) {
-                res.status(500).send({ message: "La contraseña es obligatoria." });
-                } else {
-                bcrypt.hash(Password, null, null, (err, hash) => {
-                if (err) {
-                    res.status(500).send({ message: "Error al encriptar la contraseña." });
-                 } else {
-                    customerNew.Password = hash;
-                }
-            });
-        }
-        Customer.findOne({Company: compararCompany, codCustomer: comparar})
-            .then(customer=>{
-                console.log(customer);
-                console.log(customerNew.codCustomer);
-                console.log(!customer);
-                console.log("entra");
-                console.log(customerNew.Company);
-                if(!customer){
-                    console.log("si entra al if");
-                                 customerNew.save((err, customerStored)=>{
-                                    if(err){
-                                        res.status(500).send({message: err});
-                                    }else{
-                                        if(!customerStored){
-                                            res.status(500).send({message: "Error"});
-                                        }else{
-                                            res.status(200).send({Customer: customerStored});
-                                        }
-                                     }
-                                 });
-                }else{
-                    console.log("entra2");
-                    console.log("Usuario Ya existe");
-                    res.status(500).send({ message: "Error el cliente ya existe." });
-                }
-            })
-    }
+    const { Name, LastName, codCustomer, Email, Password, Country, City, ZipCode,
+        Phone, MobilPhone, idNumber, Images, AccountsReceivable, Access,
+        PaymentTime, Discount, User, Company, Active, Sector, Sector1, Sector2,
+        Nit, Ncr, TypeofTaxpayer, PaymentCondition, Classification, Contributor, Exempt } = req.body;
 
-    
-    
-async function getCustomers(req, res){
+    customerNew.Name = Name;
+    customerNew.LastName = LastName;
+    customerNew.codCustomer = codCustomer;
+    customerNew.Email = Email;
+    customerNew.Password = Password;
+    customerNew.Country = Country;
+    customerNew.City = City;
+    customerNew.ZipCode = ZipCode;
+    customerNew.Phone = Phone;
+    customerNew.MobilPhone = MobilPhone;
+    customerNew.idNumber = idNumber;
+    customerNew.Images = Images;
+    if (!AccountsReceivable) {
+        customerNew.AccountsReceivable = 0;
+    } else { customerNew.AccountsReceivable = AccountsReceivable; }
+    //log para validar que se recibe y valida correctamente la deuda por cobrar
+    //console.log(customerNew.AccountsReceivable);
+    customerNew.Access = Access;
+    customerNew.PaymentTime = PaymentTime;
+    customerNew.Discount = Discount;
+    customerNew.User = User;
+    customerNew.Active = Active;
+    customerNew.Company = Company;
+    customerNew.Ncr = Ncr;
+    customerNew.Sector = Sector;
+    customerNew.Sector1 = Sector1;
+    customerNew.Sector2 = Sector2;
+    customerNew.Nit = Nit;
+    customerNew.TypeofTaxpayer = TypeofTaxpayer;
+    customerNew.PaymentCondition = PaymentCondition;
+    customerNew.Classification = Classification;
+    customerNew.Exempt = Exempt;
 
-    const {userid,id,profile} = req.params;
-    let companyParams=await company.findById(id) //esta variable la mando a llamar luego que se ingreso factura
-    .then(params => {
-        if(!params){
-            res.status(404).send({message:"No hay "});
-        }else{
-            return(params)
-        }
-    });
-    if(companyParams.CompanyRecords){
-        Customer.find({Company: id })
-        .populate({path: "User", model: "User"})
-        .populate({path: "Company", model: "Company"})
-        .populate({path: "Discount", model: "Discount"})
-        .populate({path: "Sector", model: "Sector"})
-        .populate({path: "Sector1", model: "Sector"})
-        .populate({path: "Sector2", model: "Sector"})
-        .then(customer => {
-            if(!customer){
-                res.status(404).send({message:"No hay "});
-            }else{
-                res.status(200).send({customer})
+    customerNew.Contributor = Contributor;
+    console.log(customerNew.codCustomer);
+    const comparar = customerNew.codCustomer;
+    console.log(comparar);
+    console.log(customerNew.Company);
+    const compararCompany = customerNew.Company;
+    console.log(compararCompany);
+    if (!Password) {
+        res.status(500).send({ message: "La contraseña es obligatoria." });
+    } else {
+        bcrypt.hash(Password, null, null, (err, hash) => {
+            if (err) {
+                res.status(500).send({ message: "Error al encriptar la contraseña." });
+            } else {
+                customerNew.Password = hash;
             }
         });
-    }else{
-        if(profile==="Admin"){
-           
-            Customer.find({Company: id })
-            .populate({path: "User", model: "User"})
-            .populate({path: "Company", model: "Company"})
-            .populate({path: "Discount", model: "Discount"})
-            .populate({path: "Sector", model: "Sector"})
-            .populate({path: "Sector1", model: "Sector"})
-            .populate({path: "Sector2", model: "Sector"})
+    }
+    Customer.findOne({ Company: compararCompany, codCustomer: comparar })
+        .then(customer => {
+            console.log(customer);
+            console.log(customerNew.codCustomer);
+            console.log(!customer);
+            console.log("entra");
+            console.log(customerNew.Company);
+            if (!customer) {
+                console.log("si entra al if");
+                customerNew.save((err, customerStored) => {
+                    if (err) {
+                        res.status(500).send({ message: err });
+                    } else {
+                        if (!customerStored) {
+                            res.status(500).send({ message: "Error" });
+                        } else {
+                            res.status(200).send({ Customer: customerStored });
+                        }
+                    }
+                });
+            } else {
+                console.log("entra2");
+                console.log("Usuario Ya existe");
+                res.status(500).send({ message: "Error el cliente ya existe." });
+            }
+        })
+}
+
+
+
+async function getCustomers(req, res) {
+
+    const { userid, id, profile } = req.params;
+    let companyParams = await company.findById(id) //esta variable la mando a llamar luego que se ingreso factura
+        .then(params => {
+            if (!params) {
+                res.status(404).send({ message: "No hay " });
+            } else {
+                return (params)
+            }
+        });
+    if (companyParams.CompanyRecords) {
+        Customer.find({ Company: id })
+            .populate({ path: "User", model: "User" })
+            .populate({ path: "Company", model: "Company" })
+            .populate({ path: "Discount", model: "Discount" })
+            .populate({ path: "Sector", model: "Sector" })
+            .populate({ path: "Sector1", model: "Sector" })
+            .populate({ path: "Sector2", model: "Sector" })
             .then(customer => {
-                if(!customer){
-                    res.status(404).send({message:"No hay "});
-                }else{
-                    res.status(200).send({customer})
+                if (!customer) {
+                    res.status(404).send({ message: "No hay " });
+                } else {
+                    res.status(200).send({ customer })
                 }
             });
-        }else{
-           
-            Customer.find({ User: userid})
-                .populate({path: "User", model: "User", match:{_id:userid}})
-                .populate({path: "Company", model: "Company"})
-                .populate({path: "Discount", model: "Discount"})
-                .populate({path: "Sector", model: "Sector"})
-                .populate({path: "Sector1", model: "Sector"})
-                .populate({path: "Sector2", model: "Sector"})
-            .then(customer => {
-                if(!customer){
-                    res.status(404).send({message:"No hay "});
-                }else{
-                    res.status(200).send({customer})
-                }
-            });
+    } else {
+        if (profile === "Admin") {
+
+            Customer.find({ Company: id })
+                .populate({ path: "User", model: "User" })
+                .populate({ path: "Company", model: "Company" })
+                .populate({ path: "Discount", model: "Discount" })
+                .populate({ path: "Sector", model: "Sector" })
+                .populate({ path: "Sector1", model: "Sector" })
+                .populate({ path: "Sector2", model: "Sector" })
+                .then(customer => {
+                    if (!customer) {
+                        res.status(404).send({ message: "No hay " });
+                    } else {
+                        res.status(200).send({ customer })
+                    }
+                });
+        } else {
+
+            Customer.find({ User: userid })
+                .populate({ path: "User", model: "User", match: { _id: userid } })
+                .populate({ path: "Company", model: "Company" })
+                .populate({ path: "Discount", model: "Discount" })
+                .populate({ path: "Sector", model: "Sector" })
+                .populate({ path: "Sector1", model: "Sector" })
+                .populate({ path: "Sector2", model: "Sector" })
+                .then(customer => {
+                    if (!customer) {
+                        res.status(404).send({ message: "No hay " });
+                    } else {
+                        res.status(200).send({ customer })
+                    }
+                });
         }
 
     }
-    
-        
+
+
 }
 
-async function desactivateCustomer(req, res){
-    let customerId = req.params.id; 
-  
-    const {Active} = req.body;  
-    try{
-        
-        await Customer.findByIdAndUpdate(customerId, {Active}, (customerSotred) => {
+async function desactivateCustomer(req, res) {
+    let customerId = req.params.id;
+
+    const { Active } = req.body;
+    try {
+
+        await Customer.findByIdAndUpdate(customerId, { Active }, (customerSotred) => {
             if (!customerSotred) {
                 res.status(404).send({ message: "No se ha encontrado el proveedor." });
             }
@@ -168,8 +173,8 @@ async function desactivateCustomer(req, res){
                 res.status(200).send({ message: "Proveedor desactivado correctamente." });
             }
         })
-        
-    } catch(error){
+
+    } catch (error) {
         res.status(500).json({
             message: "Error -> No se puede actualizar el usuario con ID = " + req.params.id,
             error: error.message
@@ -177,132 +182,139 @@ async function desactivateCustomer(req, res){
     }
 }
 
-async function updateCustomer(req,res){
+async function updateCustomer(req, res) {
     let customerData = req.body;
     const params = req.params;
     console.log("loq ue se obyirnr", req.body);
-    Customer.findByIdAndUpdate({_id: params.id}, customerData, (err, customerUpdate)=>{
-        if(err){
-            res.status(500).send({message: "Error del Servidor."});
+    Customer.findByIdAndUpdate({ _id: params.id }, customerData, (err, customerUpdate) => {
+        if (err) {
+            res.status(500).send({ message: "Error del Servidor." });
         } else {
-            if(!customerUpdate){
-                res.status(404).send({message: "No hay"});
-            }else{
-                res.status(200).send({message: "Trabajo Actualizado"})
+            if (!customerUpdate) {
+                res.status(404).send({ message: "No hay" });
+            } else {
+                res.status(200).send({ message: "Trabajo Actualizado" })
             }
         }
     })
 }
 
-function getCustomersDetails(req, res){
-    const {id} = req.params;
+function getCustomersDetails(req, res) {
+    const { id } = req.params;
     console.log(id);
-        Customer.find({_id: id})
-            .populate({path: "Discount", model: "Discount"})
+    Customer.find({ _id: id })
+        .populate({ path: "Discount", model: "Discount" })
         .then(customer => {
-            if(!customer){
-                res.status(404).send({message:"No hay "});
-            }else{
-                res.status(200).send({customer})
+            if (!customer) {
+                res.status(404).send({ message: "No hay " });
+            } else {
+                res.status(200).send({ customer })
             }
         });
 }
 
-async function getCustomersforSaleOrder(req, res){
+async function getCustomersforSaleOrder(req, res) {
 
-    const {id,userid} = req.params;
-    let now= new Date();
-    let fechaAct=now.toISOString().substring(0, 10);
+    const { id, userid } = req.params;
+    let now = new Date();
+    let fechaAct = now.toISOString().substring(0, 10);
     console.log(id);
-    let companyParams=await company.findById(id) //esta variable la mando a llamar luego que se ingreso factura
-    .then(params => {
-        if(!params){
-            res.status(404).send({message:"No hay "});
-        }else{
-            return(params) 
-        }
-    });
-    if(companyParams.OrderWithWallet){
-        Customer.find({Company: id , User: userid})
-            .populate({path: "User", model: "User"})
-            .populate({path: "Company", model: "Company"})
-            .populate({path: "Discount", model: "Discount"})
-        .then(customer => {
-            if(!customer){
-                res.status(404).send({message:"No hay wallet"});
-            }else{
-                res.status(200).send({customer})
+    let companyParams = await company.findById(id) //esta variable la mando a llamar luego que se ingreso factura
+        .then(params => {
+            if (!params) {
+                res.status(404).send({ message: "No hay " });
+            } else {
+                return (params)
             }
         });
-    }
-    else{
-        Customer.aggregate([
-            {$match:{ $expr:
-                { $and:
-                   [
-                     { Company: id},
-                     { User:userid},
-                    
-                   ]
+    if (companyParams.OrderWithWallet) {
+        Customer.find({ Company: id, User: userid })
+            .populate({ path: "User", model: "User" })
+            .populate({ path: "Company", model: "Company" })
+            .populate({ path: "Discount", model: "Discount" })
+            .then(customer => {
+                if (!customer) {
+                    res.status(404).send({ message: "No hay wallet" });
+                } else {
+                    res.status(200).send({ customer })
                 }
-             }},
-            
-                {
-                    
-                    $lookup: {
-                        from: "customerinvoices",
-                        let: { customerId: "$_id" },
-                        pipeline: [
-                            { $match:
-                                { $expr:
-                                    { $and:
-                                       [
-                                         { $eq: [ "$Customer",  "$$customerId" ] },
-                                         { $gte: [fechaAct, "$CreationDate" ] },
-                                        //  { $eq: [ "$Pagada",  true ] },
-                                       ]
-                                    }
-                                 }
-                            },
-                           
-                           
-                         ],
-                        as:"invoice",
-                        
-                    },
-                    
-                },
-                //   {
-                //      $unwind:  "$invoice"
-                //   },
-                  
-            ])
-            .exec((err, customer) => {
-                    if(!customer){
-                        res.status(404).send({message:"No hay "});
-                    }else{
-                        let invo=null;
-                        customer.map(item =>{
-                            invo=item.invoice;
-                            // return invo.map(i=>{return i.Pagada})===false;
-                            invo.map(item => { console.log(item.Pagada) });
-                        })
-                        let index = invo.findIndex(item => { return item.Pagada === false});
-                        
-                        console.log(l);
-                        if(index > -1){
-                            invo.splice(index, 1);
-                            }
-                        // console.log(index);
-                            // if(index > -1){
-                            //     customer.splice(index, 1);
-                            //     }
-                                res.status(200).send({customer});
+            });
+    }
+    else {
+        Customer.aggregate([
+            {
+                $match: {
+                    $expr:
+                    {
+                        $and:
+                            [
+                                { Company: id },
+                                { User: userid },
+
+                            ]
                     }
-                });
+                }
+            },
+
+            {
+
+                $lookup: {
+                    from: "customerinvoices",
+                    let: { customerId: "$_id" },
+                    pipeline: [
+                        {
+                            $match:
+                            {
+                                $expr:
+                                {
+                                    $and:
+                                        [
+                                            { $eq: ["$Customer", "$$customerId"] },
+                                            { $gte: [fechaAct, "$CreationDate"] },
+                                            //  { $eq: [ "$Pagada",  true ] },
+                                        ]
+                                }
+                            }
+                        },
+
+
+                    ],
+                    as: "invoice",
+
+                },
+
+            },
+            //   {
+            //      $unwind:  "$invoice"
+            //   },
+
+        ])
+            .exec((err, customer) => {
+                if (!customer) {
+                    res.status(404).send({ message: "No hay " });
+                } else {
+                    let invo = null;
+                    customer.map(item => {
+                        invo = item.invoice;
+                        // return invo.map(i=>{return i.Pagada})===false;
+                        invo.map(item => { console.log(item.Pagada) });
+                    })
+                    let index = invo.findIndex(item => { return item.Pagada === false });
+
+                    console.log(l);
+                    if (index > -1) {
+                        invo.splice(index, 1);
+                    }
+                    // console.log(index);
+                    // if(index > -1){
+                    //     customer.splice(index, 1);
+                    //     }
+                    res.status(200).send({ customer });
+                }
+            });
     }
 
-  
+
 }
 
 module.exports = {
@@ -351,7 +363,7 @@ module.exports = {
 //         customer.ID_User=req.body.ID_User;
 //         customer.ID_Discount = req.body.ID_Discount;
 //         customer.Active = req.body.Active;
-        
+
 //         Customer.findOne({attributes:['ID_Customer','Email','User'],
 //             where:{[Op.and]: [
 //             { Email: customer.Email},
@@ -424,7 +436,7 @@ module.exports = {
 //              'PaymentTime','ID_Discount', 'Active']})
 //            .then(customers => {
 //                res.status(200).send({customers});
-             
+
 //             })
 //         }
 //         else{
@@ -449,7 +461,7 @@ module.exports = {
 // }
 
 //  async function updateCustomer(req, res){
-   
+
 //     let customerId = req.params.id;
 
 //     const { Name,LastName,User,Email, Password,Country,City,ZipCode,
@@ -588,12 +600,12 @@ module.exports = {
 
 //     let customerId = req.params.id;
 //     const {Active} = req.body;  //
-    
+
 //     try{
 //         let customer = await Customer.findByPk(customerId,{
 //             attributes:['Name']
 //         });
-        
+
 //         if(!customer){
 //            // retornamos el resultado al cliente
 //             res.status(404).json({
@@ -644,7 +656,7 @@ module.exports = {
 //         else{
 //             res.sendFile(path.resolve(filePath));
 //         }
-       
+
 //     });
 // }
 

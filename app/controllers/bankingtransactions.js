@@ -21,15 +21,17 @@ function createBankingTransaction(req, res){
     BankingTransaction.Type= Type
     BankingTransaction.TransactionDate= TransactionDate;
     BankingTransaction.Concept= Concepto;
-    BankingTransaction.OperationNumber=OperationNumber;
+    BankingTransaction.OperationNumber=ConceptName==="Cheque" && BankMovementName==="Retiro"?ChequeraId
+    : (ConceptName==="Transferencia interna"?DestinationAccount:"-");
     BankingTransaction.User= User;
     BankingTransaction.DocumentNumber=ConceptName==="Cheque" && BankMovementName==="Retiro"?NoCheque: DocumentNumber;
     BankingTransaction.Deposit= Deposit?Deposit:0;
     BankingTransaction.Withdrawal= Withdrawal? Withdrawal:0;
     BankingTransaction.BankMovement= BankMovement;
     BankingTransaction.Account= CurrentAccount;
+    BankingTransaction.Extra= ConceptName==="Cheque" && BankMovementName==="Retiro"?Receiver: "-";
 
-    console.log(BankMovementName);
+    console.log(BankingTransaction);
     BankingTransaction.save(async (err, BankingTransactionStored)=>{
         if(err){
             res.status(500).send({message: err});
@@ -211,7 +213,7 @@ async function updateBankingTransaction(req,res){
     console.log("loq ue se obyirnr", req.body);
     const {Type, TransactionDate, Concepto, OperationNumber,User,DocumentNumber,Deposit,Withdrawal,BankMovement, 
         BankMovementName, ConceptName,DestinationAccount,BankId,CurrentAccount,NumberAccount,BankOrigin,
-        MontoAnterior,BankMovementini,ConceptNameini} = req.body
+        MontoAnterior,BankMovementini,ConceptNameini,Extra} = req.body
     let update={
         Type:Type,
         TransactionDate:TransactionDate,
@@ -223,6 +225,8 @@ async function updateBankingTransaction(req,res){
         Withdrawal:Withdrawal? Withdrawal:0,
         BankMovement:BankMovement,
         Account:CurrentAccount,
+        Extra:Extra,
+        OperationNumber:OperationNumber
     }
      bankingTransaction.findByIdAndUpdate({_id: params.id}, update, async (err, transactionUpdate)=>{
         if(err){

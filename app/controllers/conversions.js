@@ -273,6 +273,8 @@ function ConversionInProcess(req, res){
                             inventorytraceability.DocumentId=productConversion._id;
                             inventorytraceability.ProductDestiny=productConversion.Receta._id;
                             inventorytraceability.Cost=parseFloat(item.Utilizar)*parseFloat(item.Product.BuyPrice);
+                            inventorytraceability.DocumentNumber=productConversion.Codigo;
+                            inventorytraceability.DocType="Conversion";
                             inventorytraceability.save((err, traceabilityStored)=>{
                                 if(err){
                                     // res.status(500).send({message: err});
@@ -361,8 +363,10 @@ function ConversionCompleted(req, res){
                             inventorytraceability.User=productConversion.User._id;
                             inventorytraceability.Company=productConversion.User.Company;
                             inventorytraceability.DocumentId=productConversion._id;
-                            inventorytraceability.ProductDestiny=productConversion.Receta._id;
+                            inventorytraceability.ProductDestiny=productConversion.Receta._id;  //bodega destino de la receta
                             inventorytraceability.Cost=parseFloat(item.Utilizar)*parseFloat(item.Product.BuyPrice);
+                            inventorytraceability.DocumentNumber=productConversion.Codigo;
+                            inventorytraceability.DocType="Conversion";
                             inventorytraceability.save((err, traceabilityStored)=>{
                                 if(err){
                                     // res.status(500).send({message: err});
@@ -493,6 +497,8 @@ function ConversionCompleted(req, res){
                                                  inventorytraceability.DocumentId=entryid;
                                                  inventorytraceability.ProductDestiny=null;
                                                  inventorytraceability.Cost=parseFloat(entryDetailStored.Quantity)*parseFloat(entryDetailStored.Price);
+                                                 inventorytraceability.DocumentNumber=productConversion.Codigo;
+                                                 inventorytraceability.DocType="Conversion";
                                                  inventorytraceability.save((err, traceabilityStored)=>{
                                                      if(err){
                                                            console.log(err);
@@ -594,6 +600,8 @@ function ConversionAnular(req, res){
                                 inventorytraceability.DocumentId=productConversion._id;
                                 inventorytraceability.ProductDestiny=productConversion.Receta._id;
                                 inventorytraceability.Cost=parseFloat(item.Utilizar)*parseFloat(item.Product.BuyPrice);
+                                inventorytraceability.DocumentNumber=productConversion.Codigo;
+                                inventorytraceability.DocType="Conversion";
                                 inventorytraceability.save((err, traceabilityStored)=>{
                                     if(err){
                                         // res.status(500).send({message: err});

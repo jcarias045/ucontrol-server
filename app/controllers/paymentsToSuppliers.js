@@ -35,6 +35,8 @@ async function addPaymentToInvoice(req, res){
         CashAccount,NumberAccountBank,NumberAccountId,ChequeraId,BankId,Proveedor,NoCheque,NoChequeAct,idFactura}=req.body;
 
     console.log(req.body);
+
+
     ///////********OBTENIENDO CODIGOS DE MOVIMIENTOS Y TIPOS ******** */
     let idMovimiento;
     let idTipoMovimiento;     
@@ -43,6 +45,7 @@ async function addPaymentToInvoice(req, res){
     let tarjetaTipo;
     let saldoCurrentAccount;
     if(PaymentMethodName==="Transferencia" || PaymentMethodName==="TarjetadeCredito" || PaymentMethodName==="Cheque"){
+
         saldoCurrentAccount  =await bankAccount.findOne({_id:NumberAccountId},'Saldo').then(result=>{return result.Saldo});
         console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
     }
@@ -51,27 +54,27 @@ async function addPaymentToInvoice(req, res){
         console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
     }
     if(PaymentMethodName==="Transferencia"){
-       idMovimiento=await bankMovement.findOne({Name:'Transferencias', Company:Company},['_id'])
+       idMovimiento=await bankMovement.findOne({Name:'Transferencias'},['_id'])
        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-       idTipoMovimiento=await movementType.findOne({Name:'Transferencia a Terceros', Company:Company},['_id'])
+       idTipoMovimiento=await movementType.findOne({Name:'Transferencia a Terceros'},['_id'])
        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
       
 
     }
     if(PaymentMethodName==="Contado"){
-       efectivoMovimiento=await cashMovement.findOne({Name:'Egreso', Company:Company},['_id'])
+       efectivoMovimiento=await cashMovement.findOne({Name:'Egreso'},['_id'])
        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
     //    saldoCurrentAccount  =await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
     //                                    console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
     }
 
     if(PaymentMethodName==="TarjetadeCredito"){
-        tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta', Company:Company},['_id'])
+        tarjetaCreditoMov=await bankMovement.findOne({Name:'Operaciones con Tarjeta'},['_id'])
        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
-       tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito', Company:Company},['_id'])
+       tarjetaTipo=await movementType.findOne({Name:'Tarjeta de Credito'},['_id'])
        .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
 
        
@@ -706,27 +709,27 @@ async function cancelledPaymentInvoice(req, res){
             console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
         }
         if(PaymentMethodName==="Transferencia"){
-           idMovimiento=await bankMovement.findOne({Name:'Ajuste', Company:Company},['_id'])
+           idMovimiento=await bankMovement.findOne({Name:'Ajuste'},['_id'])
            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
     
-           idTipoMovimiento=await movementType.findOne({Name:'Ingreso', Company:Company},['_id'])
+           idTipoMovimiento=await movementType.findOne({Name:'Ingreso'},['_id'])
            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
     
           
     
         }
         if(PaymentMethodName==="Contado"){
-           efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso', Company:Company},['_id'])
+           efectivoMovimiento=await cashMovement.findOne({Name:'Ingreso'},['_id'])
            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
         //    saldoCurrentAccount  =await cashAccount.findOne({_id:CashAccount},'Saldo').then(result=>{return result.Saldo});
         //                                    console.log("SALDO DE LA CUENTA ACTUAL", saldoCurrentAccount);
         }
     
         if(PaymentMethodName==="TarjetadeCredito"){
-            tarjetaCreditoMov=await bankMovement.findOne({Name:'Ajuste', Company:Company},['_id'])
+            tarjetaCreditoMov=await bankMovement.findOne({Name:'Ajuste'},['_id'])
            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
     
-           tarjetaTipo=await movementType.findOne({Name:'Ingreso', Company:Company},['_id'])
+           tarjetaTipo=await movementType.findOne({Name:'Ingreso'},['_id'])
            .then(resultado =>{return resultado}).catch(err =>{console.log("error en proveedir");return err});
     
            

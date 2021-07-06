@@ -5,6 +5,7 @@ const Supplier = require('./supplier.model');
 const User = require('./user.model');
 const PaymentSupplier=require('./paymentstoSuppliers.model');
 const Product=require('./product.model');
+const Company = require('./company.model')
 
 const PurchaseInvoiceSchema = Schema({
   PurchaseOrder: {type: Schema.ObjectId, 
@@ -31,6 +32,10 @@ const PurchaseInvoiceSchema = Schema({
   Pagada: Boolean,
   State:String,
   InvoiceComments:String,
+  Company: {type: Schema.ObjectId, 
+    ref: "Company",
+    // autopopulate: true,
+  },
 })
 
 

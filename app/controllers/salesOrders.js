@@ -127,7 +127,7 @@ async function createSaleOrder(req, res){
     let codigo=0;
     
     //obteniendo el ultimo codigo ingresado para generar el siguiente correlativo
-    let codigoSaleOrder=await saleOrder.findOne().sort({CodSaleOrder:-1})
+    let codigoSaleOrder=await saleOrder.findOne({Company: companyId}).sort({CodSaleOrder:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
         console.log(doc);
             if(doc){
@@ -201,6 +201,7 @@ async function createSaleOrder(req, res){
     SaleOrder.CustomerName=CustomerName;
     SaleOrder.CustomerQuote=null;
     SaleOrder.AdvancePayment=false;
+    SaleOrder.Company=companyId;
 
     console.log(companyParams.OrderWithWallet);
     console.log(saledetails);
@@ -370,7 +371,7 @@ async function createSaleOrderWithQuote(req, res){
 
     let codigo=0;
     //OBTENIENDO ULTIMO CODIGO asignado (correlativo)
-    let codigoSaleOrder=await saleOrder.findOne().sort({CodSaleOrder:-1})
+    let codigoSaleOrder=await saleOrder.findOne({Company: companyId}).sort({CodSaleOrder:-1})
     .populate({path: 'Customer', model: 'Customer', match:{Company: companyId}}).then(function(doc){
         console.log(doc);
             if(doc){
@@ -441,6 +442,7 @@ async function createSaleOrderWithQuote(req, res){
     SaleOrder.CustomerName=CustomerName;
     SaleOrder.CustomerQuote=CustomerQuote;
     SaleOrder.AdvancePayment=false;
+    SaleOrder.Company=companyId;
 
   //verificamos si la compañia permite pedidos con cartera (es decir hacer pedidos aunque el cliente tenga deuda)
     //SI PERMITE ENTONCES NO IMPORTA QUE TENGA DEUDA EL CLIENTE EN CASO CONTRARIO LA ORDEN NO SE PODRA REGISTRAR
@@ -471,7 +473,7 @@ async function createSaleOrderWithQuote(req, res){
                             Inventory :item.Inventory._id,
                             Measure:item.Inventory.Product.Measure.Name,
                             CodProduct:item.CodProduct,
-                            SubTotal: parseFloat(parseFloat(item.Price) * parseFloat(item.Quantity)),
+                            SubTotal: parseFloat(item.SubTotal),
                             Product:item.Inventory.Product._id,
                             iniQuantity:parseFloat(item.Quantity) ,
                             // Priceiva:parseFloat(item.Priceiva)
@@ -582,7 +584,7 @@ async function createSaleOrderWithQuote(req, res){
                                                 inventorytraceability.DocumentId=SaleOrderId;
                                                 inventorytraceability.DocumentNumber=codorder;
                                                 inventorytraceability.DocType="Orden de Venta";
-
+                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
                                                 inventorytraceability.save((err, traceabilityStored)=>{
                                                     if(err){
                                                         // res.status(500).send({message: err});
@@ -777,7 +779,7 @@ async function updateSaleOrder(req, res){
                                                 reversionInventario.DocumentId=saleId;
                                                 inventorytraceability.DocumentNumber=codorder;
                                                 inventorytraceability.DocType="Orden de Venta";
-
+                                                inventorytraceability.Cost=parseFloat(item.Quantity)*parseFloat(item.Price);
 
                                                 reversionInventario.save((err, traceabilityStored)=>{
                                                     if(err){
@@ -958,7 +960,7 @@ async function deleteSaleOrderDetail(req,res){
     let now= new Date();
     let creacion=now.toISOString().substring(0, 10);
 
-    console.log(_id);
+    console.log("ordenes de venta detalle eliminado",_id);
     //obteniendo informacion de la compañia
     let companyParams=await company.findById(Company) //esta variable la mando a llamar luego que se ingreso factura
     .then(params => {
@@ -1102,11 +1104,11 @@ async function deleteSaleOrderDetail(req,res){
                             })
                              
                         }
-                            res.status(200).send({ userDeleted});
+                           
                     }
                 });
            }
-        
+           res.status(200).send({ userDeleted});
            
           }
         }

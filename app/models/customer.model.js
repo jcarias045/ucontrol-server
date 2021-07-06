@@ -17,7 +17,7 @@ const CustomerSchema = Schema({
   Phone: String,
   MobilPhone: String,
   idNumber: String,
-  Images: String,
+  Images: String,   //ESTE CAMPO ACTUALMENTE SE USA PARA ALMACENAR A QUIEN VA DIRIGIDA LA COTIZACION
   Access: Boolean,
   AccountsReceivable: Number,
   PaymentTime: Number,
