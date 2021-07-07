@@ -914,6 +914,9 @@ async function getAllPayments(req, res){
             if(!pagos){
                 res.status(404).send({message:"No hay "});
             }else{
+                var pagos = pagos.filter(function (item){
+                    return item.User !== null;
+                });
                 console.log(pagos);
                 res.status(200).send({pagos})
             }

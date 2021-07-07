@@ -1250,6 +1250,9 @@ function getExportInfoFacturas(req, res) {
             if (!details) {
                 res.status(404).send({ message: "No hay " });
             } else {
+                var details = details.filter(function (items){
+                    return items.SaleOrderInvoice.Company == Company;
+                });
                 res.status(200).send({ details })
             }
         });
