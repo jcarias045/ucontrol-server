@@ -1309,17 +1309,31 @@ async function changeSaleOrderState(req, res) {
 }
 
 function getAllSaleOrderDetails(req, res){
-    saleOrderDetails.find().populate({path: 'Inventory', model: 'Inventory',
-    populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
-    populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
-    .populate({path: 'SaleOrder', model: 'SaleOrder'})
-    .then(details => {
-        if(!details){
-            res.status(404).send({message:"No hay "});
-        }else{
-            res.status(200).send({details})
-        }
-    });
+    //realizando peticion tomando como primer tabla saleorder
+    const companyId = req.params.companyId;
+    saleOrder.find({ Company: companyId }).populate({
+        path: 'Inventory', model: 'Inventory',
+        populate: ({ path: 'Bodega', model: 'Bodega', match: { Name: 'Principal' } }),
+        populate: ({ path: 'Product', model: 'Product', populate: { path: 'Measure', model: 'Measure' } })
+    }).populate({ path: 'SaleOrderDetail', model: 'SaleOrderDetail' })
+        .then(details => {
+            if (!details) {
+                res.status(404).send({ message: "No hay " });
+            } else {
+                res.status(200).send({ details })
+            }
+        });
+    // saleOrderDetails.find().populate({path: 'Inventory', model: 'Inventory',
+    // populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+    // populate:({path: 'Product',model:'Product',populate:{path: 'Measure',model:'Measure'}})})
+    // .populate({path: 'SaleOrder', model: 'SaleOrder'})
+    // .then(details => {
+    //     if(!details){
+    //         res.status(404).send({message:"No hay "});
+    //     }else{
+    //         res.status(200).send({details})
+    //     }
+    // });
 }
 
 
