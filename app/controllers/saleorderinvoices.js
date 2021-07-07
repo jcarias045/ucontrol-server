@@ -39,8 +39,8 @@ const cashTransaction = require('../models/cashtransaction.model');
 const cashAccount = require('../models/cashaccounts.model');
 const cashMovement = require('../models/cashmovement.model');
 
-//llamando el modelo coordinate invoice para mostrar las facturas
-const coordinatesInvoice = require('../models/coordinatesInvoice.model');
+//importando el modelo de coordendas
+const coordinatesInvoice = require('../models/coordinatesInvoice.model')
 
 
 function getSaleOrderInvoices(req, res) {
@@ -4775,6 +4775,7 @@ async function createSaleOrderInvoice2(req, res) {
     }
 }
 
+//agregando nueva fucion de imprimir pdf para que se tomen las coordendas
 async function ImprimirPdf(req, res) {
     //se tiene que generar una factura sin ningun formato ya que esto se imprimera sobre una factura preimpresa de la compañia
     // ucontrol solo tiene que generar la informacion a imprimir
@@ -4952,6 +4953,130 @@ async function ImprimirPdf(req, res) {
         // console.log("Termino")
     }
 }
+
+
+// async function ImprimirPdf (req,res){
+//     //se tiene que generar una factura sin ningun formato ya que esto se imprimera sobre una factura preimpresa de la compañia
+//     // ucontrol solo tiene que generar la informacion a imprimir
+//     const {id} = req.params.id;
+
+//     //obtenmos la cabecera de la factura
+
+//     let facturas = await saleOrderInvoice.findOne({_id: req.params.id})
+//     .populate({path: 'Customer', model: 'Customer'
+//     ,populate:{path: 'Sector', model: 'Sector'}})
+//     .populate({path: 'User', model: 'User',populate:{path:'Company', model:'Company'}})
+//     .populate({path: 'SaleOrder', model: 'SaleOrder'})
+//     .populate({path: 'DocumentCorrelative', model: 'DocumentCorrelative'
+//     ,populate:{path: 'DocumentType', model: 'DocumentType'}})
+//     .then((facturas1) =>{ return facturas1}).catch(err =>{console.log("error en proveedir");return err});
+//     console.log(facturas);
+//    //obtemos el cuerpo de la factura es decir todos sus prodcuctos
+//     let resultado = await saleOrderInvoiceDetails.find({SaleOrderInvoice: facturas._id})
+//     .populate({path: 'Inventory', model: 'Inventory',
+//     populate:({path: 'Bodega', model: 'Bodega', match:{Name:'Principal'}}),
+//     populate:({path: 'Product',model:'Product',
+//     populate:{path: 'Measure',model:'Measure'}}
+//     )})
+//     .populate({path: 'SaleOrderInvoice', model:'SaleOrderInvoice'})
+//     .then((resultado1) =>{return resultado1}).catch(err =>{console.log("error en proveedir");return err});
+//     //se valida que tipo de factura es ya que son de formato diferente tipos : credito fiscal y consumidor final
+//     //varia la forma de visualizacion de los imppuestos, ya que para credito fiscal se muestra en el detalle de la factura
+//     if(facturas.Customer.TypeofTaxpayer === "ConsumidorFinal"){   //para consumidor final
+//             const invoiceName = 'Factura-' + facturas.CodInvoice + '.pdf';
+//             var i = 0
+//             let total = 0
+//             const doc = new PDFDocument()
+//             const filePath = 'Factura-'+facturas.InvoiceNumber+'.pdf';
+//             doc.pipe(fs.createWriteStream('Factura-'+facturas.CodInvoice+'.pdf'));
+//             doc.pipe(res);
+//             doc
+//             .font('Times-Roman',6)
+//             .text(facturas.InvoiceDate,335,130)
+//             .text(facturas.Customer.Name +' '+ facturas.Customer.LastName, 160,145)
+//             .text(facturas.Customer.Country+', '+facturas.Customer.City,160,160,)
+//             .text(facturas.Customer.Nit, 170, 175)
+//             .text(facturas.Customer.PaymentCondition, 170, 190)
+//             doc.y = 220;
+//             resultado.forEach(function(valor, indice, resultado){
+//                  let yPos = doc.y + 10 
+//                 doc.text(valor.Quantity,160, yPos )
+//                 .text(valor.ProductName,180,yPos  )
+//                 .text(valor.Price.toFixed(2), 335,yPos)
+//                 .text(valor.SubTotal.toFixed(2), 370, yPos )
+//                 total = valor.SubTotal + total;
+//                 doc.moveDown()
+//             })
+//             console.log(total);
+//             doc.text(total.toFixed(2),370,440)
+//             .text(total.toFixed(2),370,520)
+//             .moveDown();
+//             const stream = doc.pipe(blobStream())
+//             doc.end();
+//             fs.readFile('Factura-'+facturas.CodInvoice+'.pdf',(err,data)=>{
+//                 if(err){
+//                     console.log("error:", err);
+//                     console.log("entro al error");
+//                 }
+//                 else {                    
+//                     console.log("entro al else");
+//                     console.log(data);
+//                     fs.createReadStream('Factura-'+facturas.CodInvoice+'.pdf');
+//                     res.sendFile(path.resolve('Factura-'+facturas.CodInvoice+'.pdf'))
+//                 }
+//             });
+//             console.log("Termino")
+
+//         }else{   //en el caso de credito fiscal
+//             var i = 0
+//             let total = 0
+//             const doc = new PDFDocument()
+//             const filePath = 'CreditoFiscal-'+facturas.InvoiceNumber+'.pdf';
+//             doc.pipe(fs.createWriteStream('CreditoFiscal-'+facturas.CodInvoice+'.pdf'));
+//             doc.pipe(res);
+//             doc
+//             .font('Times-Roman',7)
+//             .text(facturas.CodInvoice,335,130)
+//             .text(facturas.Customer.Name +' '+ facturas.Customer.LastName, 160,145)
+//             .text(facturas.InvoiceDate,335,145)
+//             .text(facturas.Customer.Address,160,160,)
+//             .text(facturas.Customer.Sector.Name,260,160)
+//             .text(facturas.Customer.Ncr,260,175)
+//             .text(facturas.Customer.City,160,190)
+//             .text(facturas.Customer.Nit, 260, 190)
+//             .text(facturas.Customer.PaymentCondition, 260, 205)
+//             doc.y = 220;
+//             resultado.forEach(function(valor, indice, resultado){
+//                  let yPos = doc.y + 10
+//                 doc.text(valor.Quantity,160, yPos )
+//                 .text(valor.ProductName,180,yPos  )
+//                 .text(valor.Price.toFixed(2), 335,yPos)
+//                 .text(valor.SubTotal.toFixed(2), 370, yPos )
+//                 total = valor.SubTotal + total;
+//                 doc.moveDown()
+//             })
+//             console.log(total);
+//             doc.text(total.toFixed(2),370,440)
+//             .text((total-(total/1.13)).toFixed(2) , 370,460)
+//             .text((total+(total-(total/1.13))).toFixed(2),370,520)
+//             .moveDown();
+//             const stream = doc.pipe(blobStream())
+//             doc.end();
+//             fs.readFile('CreditoFiscal-'+facturas.CodInvoice+'.pdf',(err,data)=>{
+//                 if(err){
+//                     console.log("error:", err);
+//                     console.log("entro al error");
+//                 }
+//                 else {                    
+//                     console.log("entro al else");
+//                     console.log(data);
+//                     fs.createReadStream('CreditoFiscal-'+facturas.CodInvoice+'.pdf');
+//                     res.sendFile(path.resolve('CreditoFiscal-'+facturas.CodInvoice+'.pdf'))
+//                 }
+//             });
+//             console.log("Termino")
+//         }                       
+// }
 
 
 async function getSalesThisMonth(req, res) {
