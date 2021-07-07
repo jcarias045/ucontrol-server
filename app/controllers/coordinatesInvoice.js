@@ -9,13 +9,15 @@ async function createCoordinatesInvoice(req, res) {
     const CoordinatesInvoice = new coordinatesInvoices();
 
     //obteniendo valores que recibe la peticion del cuerpo
-    const { Company, pageSize, dateCoorX, dateCoorY, nameCoorX, nameCoorY, cityCoorX, cityCoorY, nitCoorX,
+    const { Company, pageSize, codInvoiceCoorX, codInvoiceCoorY, dateCoorX, dateCoorY, nameCoorX, nameCoorY, cityCoorX, cityCoorY, nitCoorX,
         nitCoorY, payConditionCoorX, payConditionCoorY, productsCoorX, productsCoorY, totalCoorX,
         totalCoorY, totalCoorY2, typeInvoice, posY, sectorNameCoorX, sectorNameCoorY, ncrCoorX, ncrCoorY
         , addressCoorX, addressCoorY, quantityCoorX, priceCoorX, subtotalCoor } = req.body;
 
     //pasamos los valores al objeto creado
     CoordinatesInvoice.Company = Company;
+    CoordinatesInvoice.codInvoiceCoorX = codInvoiceCoorX;
+    CoordinatesInvoice.codInvoiceCoorY = codInvoiceCoorY;
     CoordinatesInvoice.pageSize = pageSize;
     CoordinatesInvoice.dateCoorX = dateCoorX;
     CoordinatesInvoice.dateCoorY = dateCoorY;
