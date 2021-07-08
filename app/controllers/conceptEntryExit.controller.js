@@ -100,13 +100,7 @@ function getConceptById(req, res) {
             if (!result) {
                 res.status(404).send({ message: "no se encontro concepto" })
             } else {
-                if (result == null) {
-                    result= "";
-                    res.status(200).send({ result});
-                } else {
-                    res.status(200).send({ result })
-                }
-
+                res.status(200).send({ result })
             }
         })
 }

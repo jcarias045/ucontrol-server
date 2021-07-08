@@ -11,6 +11,11 @@ const product = require("../models/product.model");
 const inventoryTraceability = require("../models/inventorytraceability.model");
 const MovementTypes = require("../models/movementtype.model");
 
+//codigo agregado en el controlador
+//requiriendo el modelo de conceptos
+const ConceptEntryExit = require('../models/conceptEntryExit.model')
+//fin del requerimiento del modelo conceptos
+
 function getEntries(req, res) {
     const { id, company, profile } = req.params;
     var ObjectID = require('mongodb').ObjectID;
@@ -41,25 +46,25 @@ function getEntries(req, res) {
 
                 }
             },
-            // {
-            //     //codigo agregado para comprobar que me regrese el tipo de concepto especificado
-            //     $lookup: {
-            //         from: "concepentryexits",
-            //         let: { conceptentryexit: "$ConceptEntryExit" },
-            //         pipeline: [
-            //             {
-            //                 $match:
-            //                 {
-            //                     $expr: {
-            //                         $eq: ["$_id", "$$conceptentryexit"]
-            //                     }
-            //                 }
-            //             }
-            //         ],
-            //         as: "concetp"
-            //     }
-            //     //fin de codigo de concepto especificado
-            // }
+            {
+                //codigo agregado para comprobar que me regrese el tipo de concepto especificado
+                $lookup: {
+                    from: "concepentryexits",
+                    let: { conceptentryexit: "$ConceptEntryExit" },
+                    pipeline: [
+                        {
+                            $match:
+                            {
+                                $expr: {
+                                    $eq: ["$_id", "$$conceptentryexit"]
+                                }
+                            }
+                        }
+                    ],
+                    as: "concetp"
+                }
+                //fin de codigo de concepto especificado
+            }
 
 
 
@@ -146,6 +151,18 @@ async function createProductEntry(req, res) {
                 return (tipo.SupplierType.Name)
             }
         });
+
+    //en dado caso sea falso el requerido ira a buscar el id del concepto factura
+    let conceptId = await ConceptEntryExit.findOne({ Company: Company, entryorexit: "Entrada", conceptDescription: "Factura" })
+        .then(conceptid => {
+            if (!conceptid) {
+                res.status(404).send({ message: "no hay concepto" })
+            } else {
+                return (conceptid._id)
+            }
+        })
+    //fin de la condicion para obtener el id del concepto
+
     console.log("CODSIFO D FACTUA", InvoiceNumber);
 
     entryData.EntryDate = EntryDate;
@@ -158,6 +175,9 @@ async function createProductEntry(req, res) {
     entryData.Supplier = SupplierName;
     entryData.SupplierId = SupplierId;
     entryData.InvoiceNumber = InvoiceNumber;
+    //aqui toma el id del concepto para registrarlo en la base
+    entryData.ConceptEntryExit = conceptId;
+    //fin de toma del concepto para registrarlo
     entryData.save(async (err, entryStored) => {
         if (err) {
             res.status(500).send({ message: "Error del Servidor." });
