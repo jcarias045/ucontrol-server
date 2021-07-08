@@ -4842,7 +4842,7 @@ async function ImprimirPdf(req, res) {
         doc.pipe(fs.createWriteStream('Factura-' + facturas.CodInvoice + '.pdf'));
         doc.pipe(res);
         doc
-            .font('Times-Roman', 6)
+            .font('Times-Roman', 10)
             .text(date.toLocaleDateString(), coordenadasfinal.dateCoorX, coordenadasfinal.dateCoorY)
             .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, coordenadasfinal.nameCoorX, coordenadasfinal.nameCoorY)
             .text(facturas.Customer.Country + ', ' + facturas.Customer.City, coordenadasfinal.cityCoorX, coordenadasfinal.cityCoorY)
@@ -4897,7 +4897,7 @@ async function ImprimirPdf(req, res) {
         doc.pipe(fs.createWriteStream('CreditoFiscal-' + facturas.CodInvoice + '.pdf'));
         doc.pipe(res);
         doc
-            .font('Times-Roman', 5)
+            .font('Times-Roman', 10)
             // .text(facturas.CodInvoice, coordenadasfiscal.codInvoiceCoorX, coordenadasfiscal.codInvoiceCoorY)
             .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, coordenadasfiscal.nameCoorX, coordenadasfiscal.nameCoorY)
             .text(date.toLocaleDateString(), coordenadasfiscal.dateCoorX, coordenadasfiscal.dateCoorY)
