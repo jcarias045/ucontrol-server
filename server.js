@@ -78,7 +78,8 @@ let writeCheckRoutes= require('./app/routers/writecheck.route');
 let accountingAccountsRoutes= require('./app/routers/accountingaccounts.route');
 //tomando las rutas de coordinate
 let coordinatesRoutes = require('./app/routers/coordinatesInvoice.route');
-
+//tomando las rutas de concept
+let conceptEntryExit = require('./app/routers/conceptEntryExit.route');
 
 
 const app=express();
@@ -188,6 +189,9 @@ app.use('/api',writeCheckRoutes);
 app.use('/api',accountingAccountsRoutes);
 //ruta de coordinate
 app.use('/api',coordinatesRoutes);
+//rutas de concept
+app.use('/api',conceptEntryExit)
+
 
 
 if(process.env.NODE_ENV === 'production'){
