@@ -42,8 +42,10 @@ const cashMovement = require('../models/cashmovement.model');
 //importando el modelo de coordendas
 const coordinatesInvoice = require('../models/coordinatesInvoice.model')
 
-//modelo de concepto entradas y salidas
-const conceptEntryExit = require("../models/conceptEntryExit.model")
+//codigo agregado en el controlador
+//requiriendo el modelo de conceptos
+const conceptEntryExit = require('../models/conceptEntryExit.model')
+//fin del requerimiento del modelo conceptos
 
 
 function getSaleOrderInvoices(req, res) {
@@ -2502,7 +2504,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
     });
 
     //en dado caso sea falso el requerido ira a buscar el id del concepto factura
-    let conceptId = await conceptEntryExit.findOne({ Company: Company, entryorexit: "Salida", conceptDescription: "Factura" })
+    let conceptId = await conceptEntryExit.findOne({ Company: companyId, entryorexit: "Salida", conceptDescription: "Factura" })
         .then(conceptid => {
             if (!conceptid) {
                 res.status(404).send({ message: "no hay concepto" })
@@ -2511,7 +2513,6 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
             }
         })
 
-    let ConceptEntryExit = '';
     //fin de la condicion para obtener el id del concepto
 
     var tipo = customerType.toString();
@@ -3089,6 +3090,8 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
                     SaleOrderInvoice: item._id,
                     Customer: Customer,
                     InvoiceNumber: item.InvoiceNumber,
+                    //aqui agrego codigo para pasarle el id del concepto
+                    ConceptEntryExit: conceptId
                 }
             )
 
@@ -4098,6 +4101,17 @@ async function createSaleOrderInvoice2(req, res) {
     });
 
 
+    //en dado caso sea falso el requerido ira a buscar el id del concepto factura
+    let conceptId = await conceptEntryExit.findOne({ Company: companyId, entryorexit: "Salida", conceptDescription: "Factura" })
+        .then(conceptid => {
+            if (!conceptid) {
+                res.status(404).send({ message: "no hay concepto" })
+            } else {
+                return (conceptid._id)
+            }
+        })
+
+    //fin de la condicion para obtener el id del concepto
 
     let lengEndNumber = (correlativos.map(item => item.EndNumber)).toString().length;
     let nLineas = parseInt(companyParams.InvoiceLines);
@@ -4599,7 +4613,8 @@ async function createSaleOrderInvoice2(req, res) {
                     SaleOrderInvoice: item._id,
                     Customer: Customer,
                     InvoiceNumber: item.InvoiceNumber,
-
+                    //aqui le paso el id del concepto
+                    ConceptEntryExit: conceptId
                 }
             )
 
