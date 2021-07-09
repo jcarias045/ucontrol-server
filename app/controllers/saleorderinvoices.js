@@ -42,6 +42,9 @@ const cashMovement = require('../models/cashmovement.model');
 //importando el modelo de coordendas
 const coordinatesInvoice = require('../models/coordinatesInvoice.model')
 
+//modelo de concepto entradas y salidas
+const conceptEntryExit = require("../models/conceptEntryExit.model")
+
 
 function getSaleOrderInvoices(req, res) {
     const { id, company, profile } = req.params
@@ -2498,6 +2501,19 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
         }
     });
 
+    //en dado caso sea falso el requerido ira a buscar el id del concepto factura
+    let conceptId = await conceptEntryExit.findOne({ Company: Company, entryorexit: "Salida", conceptDescription: "Factura" })
+        .then(conceptid => {
+            if (!conceptid) {
+                res.status(404).send({ message: "no hay concepto" })
+            } else {
+                return (conceptid._id)
+            }
+        })
+
+    let ConceptEntryExit = '';
+    //fin de la condicion para obtener el id del concepto
+
     var tipo = customerType.toString();
     //*************************************************** */
 
@@ -3073,7 +3089,6 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
                     SaleOrderInvoice: item._id,
                     Customer: Customer,
                     InvoiceNumber: item.InvoiceNumber,
-
                 }
             )
 

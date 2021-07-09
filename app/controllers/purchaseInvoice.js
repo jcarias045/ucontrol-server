@@ -142,6 +142,16 @@ async function createSupplierInvoice(req, res) {
             }
         });
 
+    //en dado caso sea falso el requerido ira a buscar el id del concepto factura
+    let conceptId = await ConceptEntryExit.findOne({ Company: companyId, entryorexit: "Entrada", conceptDescription: "Factura" })
+        .then(conceptid => {
+            if (!conceptid) {
+                res.status(404).send({ message: "no hay concepto" })
+            } else {
+                return (conceptid._id)
+            }
+        })
+    //fin de la condicion para obtener el id del concepto
     //generando codigo (sumando  1 al obtenido)
     if (!codInvoice) {
         codigo = 1;
@@ -297,6 +307,9 @@ async function createSupplierInvoice(req, res) {
                     entryData1.PurchaseInvoice = invoiceId;
                     entryData1.Supplier = SupplierName;
                     entryData1.InvoiceNumber = InvoiceNumber;
+                    //codigo que yo agregue para registrar el concepto
+                    entryData1.ConceptEntryExit = conceptId;
+                    //fin de copdigo agregado para concepto
                     entryData1.save((err, entryStored) => {
                         if (err) {
                             console.log(err);
