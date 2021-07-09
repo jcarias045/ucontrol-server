@@ -194,6 +194,7 @@ app.use('/api',coordinatesRoutes);
 app.use('/api',conceptEntryExit)
 
 
+
 if(process.env.NODE_ENV === 'production'){
     app.use('/api',express.static('./ucontrol-front_end/build'));
     // app.get('*',(req, res)=>{
