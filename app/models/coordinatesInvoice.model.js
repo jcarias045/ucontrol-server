@@ -14,6 +14,7 @@ const CoordinatesInvoiceSchema = Schema({
     codInvoiceCoorX: Number,
     codInvoiceCoorY: Number,
     pageSize: String,
+    textSize: Number,
     dateCoorX: Number,
     dateCoorY: Number,
     nameCoorX: Number,

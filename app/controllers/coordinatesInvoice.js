@@ -9,7 +9,7 @@ async function createCoordinatesInvoice(req, res) {
     const CoordinatesInvoice = new coordinatesInvoices();
 
     //obteniendo valores que recibe la peticion del cuerpo
-    const { Company, codInvoiceCoorX, codInvoiceCoorY, pageSize, dateCoorX, dateCoorY, nameCoorX, nameCoorY, cityCoorX, cityCoorY, nitCoorX,
+    const {textSize, Company, codInvoiceCoorX, codInvoiceCoorY, pageSize, dateCoorX, dateCoorY, nameCoorX, nameCoorY, cityCoorX, cityCoorY, nitCoorX,
         nitCoorY, payConditionCoorX, payConditionCoorY, productsCoorX, productsCoorY, totalCoorX,
         totalCoorY, totalCoorY2, typeInvoice, posY, sectorNameCoorX, sectorNameCoorY, ncrCoorX, ncrCoorY
         , addressCoorX, addressCoorY, quantityCoorX, priceCoorX, subtotalCoor } = req.body;
@@ -21,6 +21,7 @@ async function createCoordinatesInvoice(req, res) {
     CoordinatesInvoice.codInvoiceCoorY = codInvoiceCoorY;
     //fin lineas agregadas
     CoordinatesInvoice.pageSize = pageSize;
+    CoordinatesInvoice.textSize = textSize;
     CoordinatesInvoice.dateCoorX = dateCoorX;
     CoordinatesInvoice.dateCoorY = dateCoorY;
     CoordinatesInvoice.nameCoorX = nameCoorX;

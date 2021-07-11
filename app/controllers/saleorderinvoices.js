@@ -42,6 +42,8 @@ const cashMovement = require('../models/cashmovement.model');
 //importando el modelo de coordendas
 const coordinatesInvoice = require('../models/coordinatesInvoice.model')
 
+//requiriendo el modelo de conceptos
+const conceptEntryExit = require('../models/conceptEntryExit.model')
 
 function getSaleOrderInvoices(req, res) {
     const { id, company, profile } = req.params
@@ -1253,7 +1255,7 @@ function getExportInfoFacturas(req, res) {
                 /**codigo agregado para filtrar las facturas por compañia
                  * y que no descargue los de todos
                  */
-                 var details = details.filter(function (items){
+                var details = details.filter(function (items) {
                     return items.SaleOrderInvoice.Company == Company;
                 });
 
@@ -2514,6 +2516,16 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
         return item.DocumentType != null;
     });
 
+    //en dado caso sea falso el requerido ira a buscar el id del concepto factura
+    let conceptId = await conceptEntryExit.findOne({ Company: companyId, entryorexit: "Salida", conceptDescription: "Factura" })
+        .then(conceptid => {
+            if (!conceptid) {
+                res.status(404).send({ message: "no hay concepto" })
+            } else {
+                return (conceptid._id)
+            }
+        })
+    //fin de la condicion para obtener el id del concepto
 
 
     let lengEndNumber = (correlativos.map(item => item.EndNumber)).toString().length; //para obtener la longitud del numero final del correlativo 
@@ -3073,7 +3085,7 @@ async function createSaleOrderInvoiceWithOrder2(req, res) {
                     SaleOrderInvoice: item._id,
                     Customer: Customer,
                     InvoiceNumber: item.InvoiceNumber,
-
+                    ConceptEntryExit: conceptId
                 }
             )
 
@@ -4082,7 +4094,16 @@ async function createSaleOrderInvoice2(req, res) {
         return item.DocumentType != null;
     });
 
-
+    //en dado caso sea falso el requerido ira a buscar el id del concepto factura
+    let conceptId = await conceptEntryExit.findOne({ Company: companyId, entryorexit: "Salida", conceptDescription: "Factura" })
+        .then(conceptid => {
+            if (!conceptid) {
+                res.status(404).send({ message: "no hay concepto" })
+            } else {
+                return (conceptid._id)
+            }
+        })
+    //fin de la condicion para obtener el id del concepto
 
     let lengEndNumber = (correlativos.map(item => item.EndNumber)).toString().length;
     let nLineas = parseInt(companyParams.InvoiceLines);
@@ -4584,7 +4605,7 @@ async function createSaleOrderInvoice2(req, res) {
                     SaleOrderInvoice: item._id,
                     Customer: Customer,
                     InvoiceNumber: item.InvoiceNumber,
-
+                    ConceptEntryExit: conceptId
                 }
             )
 
@@ -4842,7 +4863,8 @@ async function ImprimirPdf(req, res) {
         doc.pipe(fs.createWriteStream('Factura-' + facturas.CodInvoice + '.pdf'));
         doc.pipe(res);
         doc
-            .font('Times-Roman', 10)
+        //reemplazando el tamaño de letra por defecto por uno dinamico registrado en la base
+            .font('Times-Roman', coordenadasfinal.textSize)
             .text(date.toLocaleDateString(), coordenadasfinal.dateCoorX, coordenadasfinal.dateCoorY)
             .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, coordenadasfinal.nameCoorX, coordenadasfinal.nameCoorY)
             .text(facturas.Customer.Country + ', ' + facturas.Customer.City, coordenadasfinal.cityCoorX, coordenadasfinal.cityCoorY)
@@ -4897,7 +4919,7 @@ async function ImprimirPdf(req, res) {
         doc.pipe(fs.createWriteStream('CreditoFiscal-' + facturas.CodInvoice + '.pdf'));
         doc.pipe(res);
         doc
-            .font('Times-Roman', 10)
+            .font('Times-Roman', coordenadasfiscal.textSize)
             // .text(facturas.CodInvoice, coordenadasfiscal.codInvoiceCoorX, coordenadasfiscal.codInvoiceCoorY)
             .text(facturas.Customer.Name + ' ' + facturas.Customer.LastName, coordenadasfiscal.nameCoorX, coordenadasfiscal.nameCoorY)
             .text(date.toLocaleDateString(), coordenadasfiscal.dateCoorX, coordenadasfiscal.dateCoorY)
