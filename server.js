@@ -80,7 +80,8 @@ let accountingAccountsRoutes= require('./app/routers/accountingaccounts.route');
 let coordinatesRoutes = require('./app/routers/coordinatesInvoice.route');
 //tomando las rutas de concept
 let conceptEntryExit = require('./app/routers/conceptEntryExit.route');
-
+//tomando las rutas de las charts
+let chartsRoutes = require('./app/routers/charts.route');
 
 const app=express();
 //funcion cors
@@ -191,7 +192,8 @@ app.use('/api',accountingAccountsRoutes);
 app.use('/api',coordinatesRoutes);
 //rutas de concept
 app.use('/api',conceptEntryExit)
-
+//rutas de graficas
+app.use('/api', chartsRoutes)
 
 
 if(process.env.NODE_ENV === 'production'){
